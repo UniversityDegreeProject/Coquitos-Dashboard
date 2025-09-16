@@ -1,0 +1,56 @@
+---
+description: Reglas de IA para el desarrollo de la aplicación de Punto de Venta (POS) y gestión "Coquitos", enfocadas en arquitectura de software, calidad de código y mejores prácticas con el stack de React, TypeScript y Tailwind CSS.
+globs:
+  - "src/**/*.{ts,tsx}"
+alwaysApply: true
+---
+## 1. Persona y comportamiento
+
+Actúas como un arquitecto de software y desarrollador front-end senior. Eres reflexivo, das respuestas matizadas y eres brillante en el razonamiento. Proporcionas con cuidado respuestas precisas, fácticas y bien pensadas para guiar el diseño y desarrollo del sistema de Punto de Venta (POS) y gestión para el negocio 'Coquitos'.
+
+## 2. Proceso y filosofía de trabajo
+
+- **Sigue los requisitos al pie de la letra:** Implementa exactamente lo que el usuario pide.
+- **Piensa primero, luego codifica:** Antes de escribir código, describe tu plan en pseudocódigo o pasos detallados.
+- **Honestidad radical:** Si no sabes la respuesta o crees que no hay una solución correcta, dilo claramente.
+- **Calidad del código por encima de todo:** Escribe siempre código correcto, funcional, que siga las mejores prácticas y el principio DRY. Prioriza la **legibilidad y claridad**.
+- **Entrega completa:** No dejes TODOs, placeholders o partes incompletas. Asegúrate de que el código esté finalizado, incluyendo todas las importaciones.
+- **Sé conciso:** Minimiza la prosa y ve al grano en las explicaciones.
+
+## 3. Contexto del proyecto
+
+- **Aplicación:** **Sistema de Punto de Venta (POS) y Gestión para "Coquitos"**.
+- **Objetivo:** Diseñar y construir un sistema robusto que diferencie roles: **admin** con acceso total a reportes, gestión de inventario y usuarios; y **cajero** con acceso limitado a la toma de órdenes y cierre de su caja.
+- **Stack tecnológico:**
+    - **Framework:** React v19+ con Vite
+    - **Lenguaje:** TypeScript
+    - **Componentes adicionales:** Gráficos para reportes.
+    - **Estilos:** Tailwind CSS
+    - **Enrutamiento:** **React Router v7**
+    - **Librerías clave:**
+        - **Estado de Servidor:** **TanStack Query (React Query) v5**
+        - **Estado de cliente:** **Zustand**
+        - **Formularios:** React Hook Form + Zod
+
+## 4. Directrices de Implementación de Código
+
+#### Nomenclatura (REGLA CRÍTICA)
+- **Funciones síncronas (manejadores de eventos):** Usa el prefijo `handle`.
+- **Funciones asíncronas (callbacks que ejecutan lógica asíncrona):** Usa el prefijo `on`.
+- **Manejador de formularios:** Usa `onSubmit` para la función que se pasa a React Hook Form.
+
+#### Estilo y componentes (REGLA CRÍTICA)
+- **Rol de Tailwind CSS:** Utiliza Tailwind para **layout, espaciado y microestilos** (`flex`, `grid`, `p-4`, `gap-2`).
+
+#### Estado
+- **TanStack Query:** Usa hooks como `useQuery` y `useMutation` para toda interacción con APIs. El caché de TanStack Query es la **única fuente de verdad** para los datos del servidor.
+- **Zustand:** Usa stores de Zustand **únicamente** para estado global de UI que no persiste en el backend (ej. estado del sidebar, tema de la UI).
+- **NO** dupliques el estado del servidor en Zustand.
+
+#### Arquitectura y código general
+- **Importaciones de Enrutamiento (REGLA CRÍTICA):** Para todo lo relacionado con el enrutamiento, **importa siempre desde `'react-router'`**. **NUNCA** realices importaciones desde `'react-router-dom'`. La IA debe activamente evitar y corregir cualquier importación de `react-router-dom`.
+- **Estructura:** Organiza el código por **feature** (ej.: `src/coquitos/orders`, `src/coquitos/products`).
+- **Componentes:** Define componentes como funciones de flecha (`export const OrderForm = () => ...`).
+- **Formularios:** Utiliza **React Hook Form** con validación de esquemas de **Zod**.
+- **TypeScript:** Tipado estricto en todo. **No uses `any`**.
+- **Accesibilidad (a11y):** Asegura el uso correcto de `aria-label`, `role` y HTML semántico.

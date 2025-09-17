@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import type { MenuItem } from '../config/menuItems';
 import { memo } from 'react';
+import type { MenuItem } from '../config/menuItems';
 
 
 
@@ -11,16 +11,22 @@ interface SidebarMenuItemProps {
   expandedItems: string[];
   onToggleSubmenu: (itemLabel: string) => void;
   isCollapsed?: boolean;
+  onCloseSidebar?: () => void;
 }
 
 /**
  * Componente individual para cada elemento del menú del sidebar
  * Maneja tanto elementos simples como elementos con submenús expandibles
  */
-export const SidebarMenuItem = memo(({ item, level = 0, expandedItems, onToggleSubmenu, isCollapsed = false }: SidebarMenuItemProps) => {
+export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, expandedItems, onToggleSubmenu, isCollapsed = false, onCloseSidebar }) => {
   const isExpanded = expandedItems.includes(item.label);
   const hasSubmenu = item.submenu && item.submenu.length > 0;
   const indentClass = level > 0 ? 'ml-4' : '';
+
+  // Función optimizada para navegación
+  const handleNavigation = () => {
+    onCloseSidebar?.();
+  };
 
   // Renderizar elemento con submenú
   if (hasSubmenu) {
@@ -59,6 +65,7 @@ export const SidebarMenuItem = memo(({ item, level = 0, expandedItems, onToggleS
                       expandedItems={expandedItems}
                       onToggleSubmenu={onToggleSubmenu}
                       isCollapsed={isCollapsed}
+                      onCloseSidebar={onCloseSidebar}
                     />
                   ))}
                 </ul>
@@ -74,6 +81,7 @@ export const SidebarMenuItem = memo(({ item, level = 0, expandedItems, onToggleS
     <li className="relative">
       <NavLink 
         to={item.to}
+        onClick={handleNavigation}
         className={({ isActive }) => 
           `flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-3.5 text-gray-300 hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 hover:text-white transition-all duration-100 group relative rounded-lg ${
             isActive 
@@ -100,5 +108,14 @@ export const SidebarMenuItem = memo(({ item, level = 0, expandedItems, onToggleS
         )}
       </NavLink>
     </li>
+  );
+}, (prevProps, nextProps) => {
+  // Optimización: solo re-renderizar si cambian props relevantes
+  return (
+    prevProps.item.to === nextProps.item.to &&
+    prevProps.item.label === nextProps.item.label &&
+    prevProps.isCollapsed === nextProps.isCollapsed &&
+    prevProps.level === nextProps.level &&
+    prevProps.expandedItems.includes(prevProps.item.label) === nextProps.expandedItems.includes(nextProps.item.label)
   );
 });

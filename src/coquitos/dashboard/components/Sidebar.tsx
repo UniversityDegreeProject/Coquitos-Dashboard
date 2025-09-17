@@ -1,14 +1,18 @@
+import { memo } from 'react';
+
+//* components
 import { SidebarHeader } from './SidebarHeader';
 import { SidebarFooter } from './SidebarFooter';
-import { SidebarMenuItem } from './SidebarMenuItem';
 import { useSidebarState } from '../hooks/useSidebarState';
 import { menuItems } from '../config/menuItems';
+import { SidebarMenuItem } from './SidebarMenuItem';
 
 interface SidebarProps {
   isCollapsed?: boolean;
+  onCloseSidebar?: () => void;
 }
 
-export const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
+export const Sidebar = memo<SidebarProps>(({ isCollapsed = false, onCloseSidebar }: SidebarProps) => {
   const { expandedItems, handleToggleSubmenu } = useSidebarState();
 
   return (
@@ -26,6 +30,7 @@ export const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
               expandedItems={expandedItems}
               onToggleSubmenu={handleToggleSubmenu}
               isCollapsed={isCollapsed}
+              onCloseSidebar={onCloseSidebar}
             />
           ))}
         </ul>
@@ -35,4 +40,4 @@ export const Sidebar = ({ isCollapsed = false }: SidebarProps) => {
       <SidebarFooter isCollapsed={isCollapsed} />
     </div>
   );
-};
+});

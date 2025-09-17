@@ -1,10 +1,11 @@
 import { Outlet, useLocation } from "react-router";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 // components
 import { Sidebar } from "../components/Sidebar";
 import { Topbar } from "../components/Topbar";
 import { paths } from "@/router/paths";
+import { useMobileDetection } from "../hooks/useMobileDetection";
 
 const urlRoutes = {
   [paths.home]: { title : "Dashboard", subtitle : "Panel de Control"} ,
@@ -24,9 +25,28 @@ const urlRoutes = {
 export const CoquitoLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const handleToggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
+  
+  //? movil sidebar
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isMobile = useMobileDetection();
+
+  //? movil mode toggle|
+  const handleToggleSidebar = useCallback(() => {
+    if (isMobile) {
+      setIsSidebarOpen(prev => !prev);
+    } else {
+      setIsSidebarCollapsed(prev => !prev);
+    }
+  }, [isMobile]);
+
+  //?Cerrar sidebar al navegar en móvil
+  const handleCloseSidebar = useCallback(() => {
+    if (isMobile) {
+      setIsSidebarOpen(false);
+    }
+  }, [isMobile]);
+
+  //* browser
 
   const { pathname } = useLocation();
   const urlRoute = urlRoutes[pathname as keyof typeof urlRoutes];
@@ -34,25 +54,37 @@ export const CoquitoLayout = () => {
 
 
   return (
-    <div className="flex h-screen bg-[#F5F7E7] text-gray-800">
-      {/* Columna Izquierda Fija: Sidebar */}
-      <Sidebar isCollapsed={isSidebarCollapsed} />
+    <div className="flex h-screen bg-[#F5F7E7] text-gray-800 relative">
+      {/* Overlay en móvil cuando el sidebar está abierto */}
+      {isMobile && isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-transparent bg-opacity-50 z-40"
+          onClick={handleCloseSidebar}
+        />
+      )}
 
-      {/* Columna Derecha Flexible (ocupa el resto del espacio) */}
+      {/* Sidebar - Solo visible en desktop o cuando está abierto en móvil */}
+      {(!isMobile || isSidebarOpen) && (
+        <div className={`${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'relative'} ${isMobile ? 'w-80' : ''}`}>
+          <Sidebar 
+            isCollapsed={!isMobile && isSidebarCollapsed} 
+            onCloseSidebar={handleCloseSidebar}
+          />
+        </div>
+      )}
+
+      {/* Contenido principal */}
       <div className="flex flex-1 flex-col overflow-hidden">
         
-        {/* Fila Superior: Topbar */}
         <Topbar 
           title={urlRoute.title} 
           subtitle={urlRoute.subtitle}
           onToggleSidebar={handleToggleSidebar}
-          isSidebarCollapsed={isSidebarCollapsed}
+          isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
         />
 
-        {/* Fila Inferior: Área de contenido principal con scroll */}
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
-            {/* AQUÍ es donde React Router renderizará tus páginas (ej. DashboardPage) */}
             <Outlet />
           </div>
         </main>

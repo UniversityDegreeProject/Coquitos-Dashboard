@@ -1,2 +1,62 @@
 
-@import "tailwindcss"
+@import "tailwindcss";
+
+/* Variables CSS personalizadas para la paleta de colores de Cokitos */
+:root {
+  --color-primary: #275081;      /* Azul oscuro - Color principal */
+  --color-accent: #F9E44E;       /* Amarillo vibrante - Color de acento */
+  --color-background: #F5F7E7;   /* Cremita - Color de fondo */
+  
+  /* Nuevas variaciones para diseño oscuro */
+  --color-dark-bg: #1a1a1a;      /* Fondo principal oscuro */
+  --color-dark-surface: #2d2d2d;  /* Superficie oscura */
+  --color-dark-surface-light: #3a3a3a; /* Superficie oscura clara */
+  --color-text-light: #ffffff;    /* Texto claro */
+  --color-text-secondary: #b3b3b3; /* Texto secundario */
+  --color-text-muted: #808080;    /* Texto atenuado */
+  
+  /* Variaciones de opacidad para el color principal */
+  --color-primary-50: rgba(39, 80, 129, 0.05);
+  --color-primary-100: rgba(39, 80, 129, 0.1);
+  --color-primary-200: rgba(39, 80, 129, 0.2);
+  --color-primary-300: rgba(39, 80, 129, 0.3);
+  --color-primary-400: rgba(39, 80, 129, 0.4);
+  
+  /* Variaciones de opacidad para el color de acento */
+  --color-accent-50: rgba(249, 228, 78, 0.05);
+  --color-accent-100: rgba(249, 228, 78, 0.1);
+  --color-accent-200: rgba(249, 228, 78, 0.2);
+  --color-accent-300: rgba(249, 228, 78, 0.3);
+  
+  /* Variaciones de opacidad para el color de fondo */
+  --color-background-50: rgba(245, 247, 231, 0.5);
+  --color-background-100: rgba(245, 247, 231, 0.8);
+}
+
+/* Clases utilitarias personalizadas */
+.bg-primary { background-color: var(--color-primary); }
+.text-primary { color: var(--color-primary); }
+.border-primary { border-color: var(--color-primary); }
+
+.bg-accent { background-color: var(--color-accent); }
+.text-accent { color: var(--color-accent); }
+.border-accent { border-color: var(--color-accent); }
+
+.bg-custom-background { background-color: var(--color-background); }
+.text-custom-background { color: var(--color-background); }
+
+/* Estados hover personalizados */
+.hover-primary:hover { 
+  background-color: var(--color-primary); 
+  color: white; 
+}
+
+.hover-accent:hover { 
+  background-color: var(--color-accent); 
+  color: var(--color-primary); 
+}
+
+.hover-background:hover { 
+  background-color: var(--color-background); 
+  color: var(--color-primary); 
+}

@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 
 // components Layouts
 import { CoquitoLayout } from "@/coquitos/dashboard/layouts/CoquitoLayout";
@@ -16,43 +16,47 @@ import { SettingPage } from "@/coquitos/settings/pages/SettingPage";
 
 export const appRouter = createBrowserRouter([
   {
-    path: '/',
+    path: "/dashboard",
     element: <CoquitoLayout />,
     children: [
       {
         index: true,
+        element: <Navigate to="/dashboard/home" replace />,
+      },
+      {
+        path: "home",
         element: <DashboardPage />,
       },
       {
-        path: '/orders',
+        path: "orders",
         element: <OrdersPage />,
       },
       {
-        path: '/products',
+        path: "products",
         element: <ProductPage />,
       },
       {
-        path: '/categories',
+        path: "categories",
         element: <CategoriesPage />,
       },
       {
-        path: '/clients',
+        path: "clients",
         element: <ClientsPage />,
       },
       {
-        path: '/users',
+        path: "users",
         element: <UsersPage />,
       },
       {
-        path: '/reports',
+        path: "reports",
         element: <ReportPage />,
       },
       {
-        path: '/cash-closing',
+        path: "cash-closing",
         element: <CashClosePage />,
       },
       {
-        path: '/settings',
+        path: "settings",
         element: <SettingPage />,
       }
     ],

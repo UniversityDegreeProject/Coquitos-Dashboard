@@ -1,0 +1,104 @@
+import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+
+interface UserDropdownProps {
+  user: {
+    name: string;
+    role: string;
+    initials: string;
+  };
+  onLogout: () => void;
+}
+
+/**
+ * Componente del menú desplegable del usuario
+ * Incluye opciones como perfil, configuración y cerrar sesión
+ */
+export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Cerrar dropdown cuando se hace click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    onLogout();
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      {/* Botón del usuario */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 transition-colors duration-100 group"
+      >
+        <div className="relative">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#F9E44E] to-[#F5F7E7] font-bold text-[#275081] shadow-lg group-hover:shadow-xl transition-shadow duration-100">
+            {user.initials}
+          </div>
+          {/* Indicador de estado online */}
+          <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-[#F9E44E] border-2 border-[#275081] rounded-full animate-pulse"></div>
+        </div>
+        <div className="text-left">
+          <p className="text-sm font-semibold text-white group-hover:text-[#F9E44E] transition-colors">
+            {user.name}
+          </p>
+          <p className="text-xs text-[#F5F7E7] font-medium">
+            {user.role}
+          </p>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-100 ${
+          isOpen ? 'rotate-180' : ''
+        }`} />
+      </button>
+
+      {/* Menú desplegable */}
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-2 w-56 bg-gradient-to-br from-[#2d2d2d] to-[#1a1a1a] rounded-lg shadow-xl border border-gray-700 py-2 z-50">
+          {/* Header del dropdown */}
+          <div className="px-4 py-3 border-b border-gray-700">
+            <p className="text-sm font-semibold text-white">{user.name}</p>
+            <p className="text-xs text-[#F5F7E7]">{user.role}</p>
+          </div>
+
+          {/* Opciones del menú */}
+          <div className="py-1">
+            <button className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 hover:text-white transition-colors duration-100">
+              <User className="w-4 h-4" />
+              <span>Mi Perfil</span>
+            </button>
+            
+            <button className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 hover:text-white transition-colors duration-100">
+              <Settings className="w-4 h-4" />
+              <span>Configuración</span>
+            </button>
+          </div>
+
+          {/* Separador */}
+          <div className="border-t border-gray-700 my-1"></div>
+
+          {/* Botón de cerrar sesión */}
+          <div className="py-1">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors duration-100"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Salir</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

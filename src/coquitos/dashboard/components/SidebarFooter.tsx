@@ -15,7 +15,7 @@ export const SidebarFooter = memo(({ isCollapsed = false }: SidebarFooterProps) 
   const isDark = useIsDark();
 
   return (
-    <div className={`absolute bottom-0 left-0 right-0 border-t ${isDark ? 'border-[#275081]' : 'border-gray-200'} ${isDark ? 'bg-[#275081]' : 'bg-[#F5F7E7]'} ${isCollapsed ? 'p-2' : 'p-6'}`}>
+    <div className={`border-t ${isDark ? 'border-[#275081]' : 'border-gray-200'} ${isDark ? 'bg-[#275081]' : 'bg-[#F5F7E7]'} ${isCollapsed ? 'p-2' : 'p-6'}`}>
       <div className="text-center">
         <p className={`${isDark ? 'text-[#F5F7E7]' : 'text-[#6B7280]'} font-medium ${isCollapsed ? 'text-xs' : 'text-xs'}`}>
           {isCollapsed ? 'v1.0' : 'Sistema POS v1.0'}

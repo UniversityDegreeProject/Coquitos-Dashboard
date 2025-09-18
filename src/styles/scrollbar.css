@@ -1,0 +1,27 @@
+/* Estilos personalizados para el scrollbar del sidebar - COMPLETAMENTE INVISIBLE */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox - Scrollbar completamente invisible */
+.sidebar-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* Scroll completamente invisible - sin efectos adicionales */

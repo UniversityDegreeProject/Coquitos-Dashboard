@@ -19,11 +19,13 @@ export const Sidebar = memo<SidebarProps>(({ isCollapsed = false, onCloseSidebar
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-72'} ${css.sidebar.background} ${css.sidebar.shadow} border-r ${css.sidebar.border} transition-all duration-200 relative flex flex-col h-full`}>
-      {/* Header del Sidebar */}
-      <SidebarHeader isCollapsed={isCollapsed} />
+      {/* Header del Sidebar - Fijo en la parte superior */}
+      <div className="flex-shrink-0">
+        <SidebarHeader isCollapsed={isCollapsed} />
+      </div>
       
-      {/* Navegación principal */}
-      <nav className={`flex-1 py-6 ${isCollapsed ? 'px-2' : 'px-4'}`}>
+      {/* Navegación principal - Con scroll invisible */}
+      <nav className={`flex-1 py-6 ${isCollapsed ? 'px-2' : 'px-4'} overflow-y-auto sidebar-scroll`}>
         <ul className="space-y-1">
           {menuItems.map((item) => (
             <SidebarMenuItem
@@ -38,8 +40,10 @@ export const Sidebar = memo<SidebarProps>(({ isCollapsed = false, onCloseSidebar
         </ul>
       </nav>
       
-      {/* Footer del Sidebar */}
-      <SidebarFooter isCollapsed={isCollapsed} />
+      {/* Footer del Sidebar - Fijo en la parte inferior */}
+      <div className="flex-shrink-0">
+        <SidebarFooter isCollapsed={isCollapsed} />
+      </div>
     </div>
   );
 });

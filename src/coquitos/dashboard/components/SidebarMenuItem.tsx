@@ -57,10 +57,11 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
           
             {/* Submenú expandible mejorado */}
             {!isCollapsed && (
-              <div className={`overflow-hidden ${
+              <div className={`overflow-hidden transition-all duration-300 ${
                 isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
               }`}>
-                <ul className={`${isDark ? 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/5 border-[#275081]/20' : 'bg-gradient-to-r from-[#F5F7E7]/50 to-[#F9E44E]/10 border-gray-200'} rounded-lg py-1 mt-1 border`}>
+                <div className={`${isDark ? 'bg-gradient-to-r from-[#275081]/20 to-[#F9E44E]/10 border-[#275081]/30' : 'bg-gradient-to-r from-[#F5F7E7]/80 to-[#F9E44E]/20 border-gray-200'} rounded-lg py-2 mt-1 border shadow-sm`}>
+                  <ul className="space-y-1">
                   {item.submenu?.map(subItem => (
                     <SidebarMenuItem
                       key={subItem.to}
@@ -72,7 +73,8 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
                       onCloseSidebar={onCloseSidebar}
                     />
                   ))}
-                </ul>
+                  </ul>
+                </div>
               </div>
             )}
         </div>

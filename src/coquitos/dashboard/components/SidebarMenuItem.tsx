@@ -2,6 +2,8 @@ import { NavLink } from 'react-router';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { memo } from 'react';
 import type { MenuItem } from '../config/menuItems';
+import { useTheme } from '@/shared/hooks/useTheme';
+import { useIsDark } from '@/shared/hooks/useThemeSelectors';
 
 
 
@@ -22,6 +24,8 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
   const isExpanded = expandedItems.includes(item.label);
   const hasSubmenu = item.submenu && item.submenu.length > 0;
   const indentClass = level > 0 ? 'ml-4' : '';
+  const { css } = useTheme();
+  const isDark = useIsDark();
 
   // Función optimizada para navegación
   const handleNavigation = () => {
@@ -35,28 +39,28 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
         <div>
           <button
             onClick={() => onToggleSubmenu(item.label)}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'justify-between px-4'} py-3.5 text-left text-gray-300 hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 hover:text-white transition-all duration-100 group rounded-lg ${indentClass}`}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2' : 'justify-between px-4'} py-3.5 text-left ${isDark ? 'text-gray-300' : 'text-[#6B7280]'} ${css.interactive.hover} group rounded-lg ${indentClass}`}
             title={isCollapsed ? item.label : undefined}
           >
             <div className={`flex items-center ${isCollapsed ? '' : 'space-x-3'}`}>
-              <div className="w-8 h-8 rounded-lg bg-[#2d2d2d] group-hover:bg-gradient-to-br group-hover:from-[#275081]/30 group-hover:to-[#F9E44E]/20 flex items-center justify-center transition-all duration-100 shadow-sm">
-                <item.icon className="w-4 h-4 text-[#F5F7E7] group-hover:text-white transition-colors duration-100" />
+              <div className={`w-8 h-8 rounded-lg ${isDark ? 'bg-[#2d2d2d]' : 'bg-white/80'} group-hover:bg-gradient-to-br group-hover:from-[#275081]/30 group-hover:to-[#F9E44E]/20 flex items-center justify-center shadow-sm`}>
+                <item.icon className={`w-4 h-4 ${isDark ? 'text-[#F5F7E7]' : 'text-[#275081]'} group-hover:text-white`} />
               </div>
               {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
             </div>
             {!isCollapsed && (isExpanded ? (
-              <ChevronDown className="w-4 h-4 transition-transform duration-100 text-gray-400" />
+              <ChevronDown className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`} />
             ) : (
-              <ChevronRight className="w-4 h-4 transition-transform duration-100 text-gray-400" />
+              <ChevronRight className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`} />
             ))}
           </button>
           
             {/* Submenú expandible mejorado */}
             {!isCollapsed && (
-              <div className={`overflow-hidden transition-all duration-150 ease-in-out ${
+              <div className={`overflow-hidden ${
                 isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
               }`}>
-                <ul className="bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/5 rounded-lg py-1 mt-1 border border-[#275081]/20">
+                <ul className={`${isDark ? 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/5 border-[#275081]/20' : 'bg-gradient-to-r from-[#F5F7E7]/50 to-[#F9E44E]/10 border-gray-200'} rounded-lg py-1 mt-1 border`}>
                   {item.submenu?.map(subItem => (
                     <SidebarMenuItem
                       key={subItem.to}
@@ -83,24 +87,24 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
         to={item.to}
         onClick={handleNavigation}
         className={({ isActive }) => 
-          `flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-3.5 text-gray-300 hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 hover:text-white transition-all duration-100 group relative rounded-lg ${
+          `flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-3.5 ${isDark ? 'text-gray-300' : 'text-[#6B7280]'} ${css.interactive.hover} group relative rounded-lg ${
             isActive 
-              ? 'bg-gradient-to-r from-[#275081] to-[#F9E44E] text-white font-semibold shadow-lg shadow-[#275081]/30' 
+              ? css.interactive.active
               : ''
           } ${indentClass}`
         }
       >
         {({ isActive }) => (
           <>
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-100 ${
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
               isActive 
                 ? 'bg-white/20 shadow-sm' 
-                : 'bg-[#2d2d2d] group-hover:bg-gradient-to-br group-hover:from-[#275081]/30 group-hover:to-[#F9E44E]/20'
+                : `${isDark ? 'bg-[#2d2d2d]' : 'bg-white/80'} group-hover:bg-gradient-to-br group-hover:from-[#275081]/30 group-hover:to-[#F9E44E]/20`
             }`}>
-              <item.icon className={`w-4 h-4 transition-colors duration-100 ${
+              <item.icon className={`w-4 h-4 ${
                 isActive 
                   ? 'text-white' 
-                  : 'text-[#F5F7E7] group-hover:text-white'
+                  : `${isDark ? 'text-[#F5F7E7]' : 'text-[#275081]'} group-hover:text-white`
               }`} />
             </div>
             {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}

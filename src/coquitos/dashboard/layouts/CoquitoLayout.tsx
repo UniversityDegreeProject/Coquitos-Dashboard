@@ -6,6 +6,7 @@ import { Sidebar } from "../components/Sidebar";
 import { Topbar } from "../components/Topbar";
 import { paths } from "@/router/paths";
 import { useMobileDetection } from "../hooks/useMobileDetection";
+import { useTheme } from "@/shared/hooks/useTheme";
 
 const urlRoutes = {
   [paths.home]: { title : "Dashboard", subtitle : "Panel de Control"} ,
@@ -29,6 +30,7 @@ export const CoquitoLayout = () => {
   //? movil sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMobileDetection();
+  const { css } = useTheme();
 
   //? movil mode toggle|
   const handleToggleSidebar = useCallback(() => {
@@ -51,10 +53,15 @@ export const CoquitoLayout = () => {
   const { pathname } = useLocation();
   const urlRoute = urlRoutes[pathname as keyof typeof urlRoutes];
   
-
+  const routeBreadcrumb = urlRoute?.title || 'Panel de administración';
+  const routeSubtitle = urlRoute?.subtitle || 'Panel de control de Coquitos';
+  
+  if (!routeBreadcrumb) {
+    return <div>404</div>;
+  }
 
   return (
-    <div className="flex h-screen bg-[#F5F7E7] text-gray-800 relative">
+    <div className={`flex h-screen ${css.content.background} ${css.content.text} relative`}>
       {/* Overlay en móvil cuando el sidebar está abierto */}
       {isMobile && isSidebarOpen && (
         <div 
@@ -77,8 +84,8 @@ export const CoquitoLayout = () => {
       <div className="flex flex-1 flex-col overflow-hidden">
         
         <Topbar 
-          title={urlRoute.title} 
-          subtitle={urlRoute.subtitle}
+          title={routeBreadcrumb} 
+          subtitle={routeSubtitle}  
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
         />

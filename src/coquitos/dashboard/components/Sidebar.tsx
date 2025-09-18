@@ -6,6 +6,7 @@ import { SidebarFooter } from './SidebarFooter';
 import { useSidebarState } from '../hooks/useSidebarState';
 import { menuItems } from '../config/menuItems';
 import { SidebarMenuItem } from './SidebarMenuItem';
+import { useTheme } from '@/shared/hooks/useTheme';
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -14,9 +15,10 @@ interface SidebarProps {
 
 export const Sidebar = memo<SidebarProps>(({ isCollapsed = false, onCloseSidebar }: SidebarProps) => {
   const { expandedItems, handleToggleSubmenu } = useSidebarState();
+  const { css } = useTheme();
 
   return (
-    <div className={`${isCollapsed ? 'w-16' : 'w-72'} bg-[#275081] shadow-xl border-r border-[#275081] transition-all duration-200 relative flex flex-col h-full`}>
+    <div className={`${isCollapsed ? 'w-16' : 'w-72'} ${css.sidebar.background} ${css.sidebar.shadow} border-r ${css.sidebar.border} transition-all duration-200 relative flex flex-col h-full`}>
       {/* Header del Sidebar */}
       <SidebarHeader isCollapsed={isCollapsed} />
       

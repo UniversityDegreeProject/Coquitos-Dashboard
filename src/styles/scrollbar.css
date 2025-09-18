@@ -25,3 +25,73 @@
 }
 
 /* Scroll completamente invisible - sin efectos adicionales */
+
+/* ========================================
+   SCROLL PERSONALIZADO PARA CONTENIDO PRINCIPAL
+   ======================================== */
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.main-content-scroll::-webkit-scrollbar {
+  width: 8px;
+  transition: width 0.2s ease-in-out;
+}
+
+.main-content-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  margin: 8px 0;
+}
+
+.main-content-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #275081 0%, #F9E44E 100%);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: all 0.3s ease-in-out;
+}
+
+.main-content-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #1e3a5f 0%, #e6d142 100%);
+  border: 1px solid rgba(39, 80, 129, 0.2);
+  transform: scale(1.1);
+}
+
+.main-content-scroll::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #1a2f4a 0%, #d4c23a 100%);
+  border: 1px solid rgba(39, 80, 129, 0.3);
+}
+
+.main-content-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox */
+.main-content-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #275081 rgba(0, 0, 0, 0.05);
+}
+
+/* Versión para modo oscuro */
+.dark .main-content-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark .main-content-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #F9E44E 0%, #275081 100%);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.dark .main-content-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #e6d142 0%, #1e3a5f 100%);
+  border: 1px solid rgba(249, 228, 78, 0.2);
+}
+
+.dark .main-content-scroll::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #d4c23a 0%, #1a2f4a 100%);
+  border: 1px solid rgba(249, 228, 78, 0.3);
+}
+
+.dark .main-content-scroll {
+  scrollbar-color: #F9E44E rgba(255, 255, 255, 0.05);
+}

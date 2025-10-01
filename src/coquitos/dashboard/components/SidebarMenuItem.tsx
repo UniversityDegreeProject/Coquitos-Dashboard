@@ -43,15 +43,15 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
             title={isCollapsed ? item.label : undefined}
           >
             <div className={`flex items-center ${isCollapsed ? '' : 'space-x-3'}`}>
-              <div className={`w-8 h-8 rounded-lg ${isDark ? 'bg-[#2d2d2d]' : 'bg-white/80'} group-hover:bg-gradient-to-br group-hover:from-[#275081]/30 group-hover:to-[#F9E44E]/20 flex items-center justify-center shadow-sm`}>
-                <item.icon className={`w-4 h-4 ${isDark ? 'text-[#F5F7E7]' : 'text-[#275081]'} group-hover:text-white`} />
+              <div className={`w-8 h-8 rounded-lg ${isDark ? 'bg-[#334155]' : 'bg-white/80'} group-hover:bg-gradient-to-br group-hover:from-[#1E3A8A]/30 group-hover:to-[#F59E0B]/20 flex items-center justify-center shadow-sm transition-all duration-200`}>
+                <item.icon className={`w-4 h-4 ${isDark ? 'text-[#E2E8F0]' : 'text-[#275081]'} group-hover:text-white transition-colors duration-200`} />
               </div>
               {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
             </div>
             {!isCollapsed && (isExpanded ? (
-              <ChevronDown className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`} />
+              <ChevronDown className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} transition-colors duration-200`} />
             ) : (
-              <ChevronRight className={`w-4 h-4 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'}`} />
+              <ChevronRight className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} transition-colors duration-200`} />
             ))}
           </button>
           
@@ -60,7 +60,7 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
               <div className={`overflow-hidden transition-all duration-300 ${
                 isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
               }`}>
-                <div className={`${isDark ? 'bg-gradient-to-r from-[#275081]/20 to-[#F9E44E]/10 border-[#275081]/30' : 'bg-gradient-to-r from-[#F5F7E7]/80 to-[#F9E44E]/20 border-gray-200'} rounded-lg py-2 mt-1 border shadow-sm`}>
+                <div className={`${isDark ? 'bg-gradient-to-r from-[#334155]/40 to-[#475569]/20 border-[#334155]/50' : 'bg-gradient-to-r from-[#F5F7E7]/80 to-[#F9E44E]/20 border-gray-200'} rounded-lg py-2 mt-1 border shadow-sm`}>
                   <ul className="space-y-1">
                   {item.submenu?.map(subItem => (
                     <SidebarMenuItem
@@ -89,7 +89,7 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
         to={item.to}
         onClick={handleNavigation}
         className={({ isActive }) => 
-          `flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-3.5 ${isDark ? 'text-gray-300' : 'text-[#6B7280]'} ${css.interactive.hover} group relative rounded-lg ${
+          `flex items-center ${isCollapsed ? 'justify-center px-2' : 'space-x-3 px-4'} py-3.5 ${isDark ? 'text-[#E2E8F0]' : 'text-[#6B7280]'} ${css.interactive.hover} group relative rounded-lg ${
             isActive 
               ? css.interactive.active
               : ''
@@ -98,15 +98,15 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
       >
         {({ isActive }) => (
           <>
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
               isActive 
                 ? 'bg-white/20 shadow-sm' 
-                : `${isDark ? 'bg-[#2d2d2d]' : 'bg-white/80'} group-hover:bg-gradient-to-br group-hover:from-[#275081]/30 group-hover:to-[#F9E44E]/20`
+                : `${isDark ? 'bg-[#334155]' : 'bg-white/80'} group-hover:bg-gradient-to-br group-hover:from-[#1E3A8A]/30 group-hover:to-[#F59E0B]/20`
             }`}>
-              <item.icon className={`w-4 h-4 ${
+              <item.icon className={`w-4 h-4 transition-colors duration-200 ${
                 isActive 
                   ? 'text-white' 
-                  : `${isDark ? 'text-[#F5F7E7]' : 'text-[#275081]'} group-hover:text-white`
+                  : `${isDark ? 'text-[#E2E8F0]' : 'text-[#275081]'} group-hover:text-white`
               }`} />
             </div>
             {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
@@ -116,12 +116,16 @@ export const SidebarMenuItem = memo<SidebarMenuItemProps>(({ item, level = 0, ex
     </li>
   );
 }, (prevProps, nextProps) => {
-  // Optimización: solo re-renderizar si cambian props relevantes
-  return (
-    prevProps.item.to === nextProps.item.to &&
-    prevProps.item.label === nextProps.item.label &&
-    prevProps.isCollapsed === nextProps.isCollapsed &&
-    prevProps.level === nextProps.level &&
-    prevProps.expandedItems.includes(prevProps.item.label) === nextProps.expandedItems.includes(nextProps.item.label)
-  );
+  // Optimización mejorada: comparación más eficiente y legible
+  const isItemEqual = prevProps.item.to === nextProps.item.to && 
+                     prevProps.item.label === nextProps.item.label;
+  
+  const isStateEqual = prevProps.isCollapsed === nextProps.isCollapsed && 
+                      prevProps.level === nextProps.level;
+  
+  const isExpansionEqual = prevProps.expandedItems.includes(prevProps.item.label) === 
+                          nextProps.expandedItems.includes(nextProps.item.label);
+  
+  // Solo re-renderizar si alguna propiedad relevante ha cambiado
+  return isItemEqual && isStateEqual && isExpansionEqual;
 });

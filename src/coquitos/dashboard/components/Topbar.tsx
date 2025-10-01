@@ -38,7 +38,7 @@ export const Topbar = ({  title, subtitle, onToggleSidebar, isSidebarCollapsed }
         {/* Botón de colapso del sidebar */}
         <button
           onClick={onToggleSidebar}
-                  className={`flex-shrink-0 p-1.5 sm:p-2 ${css.topbar.text} hover:bg-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F9E44E] focus:ring-offset-2`}
+          className={`flex-shrink-0 p-1.5 sm:p-2 ${css.topbar.text} hover:bg-gradient-to-r hover:from-[#334155]/20 hover:to-[#475569]/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:ring-offset-2 transition-all duration-200`}
           aria-label={isSidebarCollapsed ? 'Expandir sidebar' : 'Contraer sidebar'}
         >
           <PanelLeft className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -48,7 +48,7 @@ export const Topbar = ({  title, subtitle, onToggleSidebar, isSidebarCollapsed }
           <h1 className={`text-lg sm:text-xl lg:text-2xl font-bold ${css.topbar.text} tracking-tight truncate`}> 
             {title } 
           </h1>
-          <p className={`text-xs sm:text-sm ${isDark ? 'text-[#F5F7E7]' : 'text-[#6B7280]'} font-medium truncate hidden sm:block`}> 
+          <p className={`text-xs sm:text-sm ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} font-medium truncate hidden sm:block`}> 
             {subtitle || 'Panel de administración'} 
           </p>
         </div>
@@ -61,7 +61,7 @@ export const Topbar = ({  title, subtitle, onToggleSidebar, isSidebarCollapsed }
           type="button"
           onClick={toggleTheme}
           aria-label={`Cambiar a tema ${isDark ? 'claro' : 'oscuro'}`}
-                  className={`hidden sm:flex relative p-1.5 sm:p-2 ${isDark ? 'text-gray-400' : 'text-[#6B7280]'} ${css.interactive.hover} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F9E44E] focus:ring-offset-2`}
+          className={`hidden sm:flex relative p-1.5 sm:p-2 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} ${css.interactive.hover} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:ring-offset-2`}
         >
           {isDark ? (
             <Sun className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -71,7 +71,7 @@ export const Topbar = ({  title, subtitle, onToggleSidebar, isSidebarCollapsed }
         </button>
 
         {/* Separador visual - Solo visible en pantallas medianas y grandes */}
-        <div className={`hidden sm:block h-6 sm:h-8 border-l ${isDark ? 'border-gray-600' : 'border-gray-300'}`} aria-hidden="true"></div>
+        <div className={`hidden sm:block h-6 sm:h-8 border-l ${isDark ? 'border-[#334155]' : 'border-gray-300'}`} aria-hidden="true"></div>
 
         {/* Menú desplegable del usuario */}
         <UserDropdown user={user} onLogout={handleLogout} />

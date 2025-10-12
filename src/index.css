@@ -2,19 +2,19 @@
 @import "tailwindcss";
 @import "./styles/scrollbar.css";
 
-/* Variables CSS personalizadas para la paleta de colores de Cokitos */
+
 :root {
-  --color-primary: #275081;      /* Azul oscuro - Color principal */
-  --color-accent: #F9E44E;       /* Amarillo vibrante - Color de acento */
-  --color-background: #F5F7E7;   /* Cremita - Color de fondo */
+  --color-primary: #275081;      
+  --color-accent: #F9E44E;       
+  --color-background: #F5F7E7;   
   
   /* Nuevas variaciones para diseño oscuro */
-  --color-dark-bg: #1a1a1a;      /* Fondo principal oscuro */
-  --color-dark-surface: #2d2d2d;  /* Superficie oscura */
-  --color-dark-surface-light: #3a3a3a; /* Superficie oscura clara */
-  --color-text-light: #ffffff;    /* Texto claro */
-  --color-text-secondary: #b3b3b3; /* Texto secundario */
-  --color-text-muted: #808080;    /* Texto atenuado */
+  --color-dark-bg: #1a1a1a;      
+  --color-dark-surface: #2d2d2d;  
+  --color-dark-surface-light: #3a3a3a; 
+  --color-text-light: #ffffff;    
+  --color-text-secondary: #b3b3b3; 
+  --color-text-muted: #808080;    
   
   /* Variaciones de opacidad para el color principal */
   --color-primary-50: rgba(39, 80, 129, 0.05);
@@ -29,7 +29,7 @@
   --color-accent-200: rgba(249, 228, 78, 0.2);
   --color-accent-300: rgba(249, 228, 78, 0.3);
   
-  /* Variaciones de opacidad para el color de fondo */
+
   --color-background-50: rgba(245, 247, 231, 0.5);
   --color-background-100: rgba(245, 247, 231, 0.8);
 }

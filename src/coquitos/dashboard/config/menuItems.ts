@@ -23,27 +23,27 @@ export interface MenuItem {
  * Define la estructura de navegación de la aplicación
  */
 export const menuItems: MenuItem[] = [
-  { to: paths.home, label: "Inicio", icon: Home },
-  { to: paths.orders, label: "Órdenes", icon: ShoppingCart },
+  { to: paths.dashboard.home, label: "Inicio", icon: Home },
+  { to: paths.dashboard.orders, label: "Órdenes", icon: ShoppingCart },
   { 
-    to: paths.sales, 
+    to: paths.dashboard.products, 
     label: "Gestión de Ventas", 
     icon: Package, 
     submenu: [
-      { to: paths.products, label: "Productos", icon: Package },
-      { to: paths.categories, label: "Categorías", icon: Grid3X3 },
-      { to: paths.clients, label: "Clientes", icon: Users },
+      { to: paths.dashboard.products, label: "Productos", icon: Package },
+      { to: paths.dashboard.categories, label: "Categorías", icon: Grid3X3 },
+      { to: paths.dashboard.clients, label: "Clientes", icon: Users },
     ] 
   },
   { 
-    to: paths.admin.users, 
+    to: paths.dashboard.users, 
     label: "Administración", 
     icon: Shield, 
     submenu: [
-      { to: paths.users, label: "Usuarios", icon: Users },
+      { to: paths.dashboard.users, label: "Usuarios", icon: Users },
     ] 
   },
-  { to: paths.reports, label: "Reportes", icon: BarChart3 },
-  { to: paths.cashClosing, label: "Cierre de Caja", icon: Calculator },
-  { to: paths.settings, label: "Configuración", icon: Settings },
+  { to: paths.dashboard.reports, label: "Reportes", icon: BarChart3 },
+  { to: paths.dashboard.cashClosing, label: "Cierre de Caja", icon: Calculator },
+  { to: paths.dashboard.settings, label: "Configuración", icon: Settings },
 ];

@@ -9,16 +9,15 @@ import { useMobileDetection } from "../hooks/useMobileDetection";
 import { useTheme } from "@/shared/hooks/useTheme";
 
 const urlRoutes = {
-  [paths.home]: { title : "Dashboard", subtitle : "Panel de Control"} ,
-  [paths.orders]: { title : "Órdenes", subtitle : "Gestiona, administra y visualiza las órdenes"},
-  [paths.products]: { title : "Productos", subtitle : "Gestiona, administra y visualiza los productos"},
-  [paths.categories]: { title : "Categorías", subtitle : "Gestiona, administra y visualiza las categorías"},
-  [paths.clients]: { title : "Clientes", subtitle : "Gestiona, administra y visualiza los clientes"},
-  [paths.users]: { title : "Usuarios", subtitle : "Gestiona, administra y visualiza los usuarios"},
-  [paths.reports]: { title : "Reportes", subtitle : "Gestiona, administra y visualiza los reportes"},
-  [paths.cashClosing]: { title : "Cierre de Caja", subtitle : "Gestiona, administra y visualiza el cierre de caja"},
-  [paths.settings]: { title : "Configuración", subtitle : "Configuración de Coquitos"},
-  [paths.admin.users]: { title : "Usuarios", subtitle : "Gestiona, administra y visualiza los usuarios"},
+  [paths.dashboard.home]: { title : "Dashboard", subtitle : "Panel de Control"} ,
+  [paths.dashboard.orders]: { title : "Órdenes", subtitle : "Gestiona, administra y visualiza las órdenes"},
+  [paths.dashboard.products]: { title : "Productos", subtitle : "Gestiona, administra y visualiza los productos"},
+  [paths.dashboard.categories]: { title : "Categorías", subtitle : "Gestiona, administra y visualiza las categorías"},
+  [paths.dashboard.clients]: { title : "Clientes", subtitle : "Gestiona, administra y visualiza los clientes"},
+  [paths.dashboard.users]: { title : "Usuarios", subtitle : "Gestiona, administra y visualiza los usuarios"},
+  [paths.dashboard.reports]: { title : "Reportes", subtitle : "Gestiona, administra y visualiza los reportes"},
+  [paths.dashboard.cashClosing]: { title : "Cierre de Caja", subtitle : "Gestiona, administra y visualiza el cierre de caja"},
+  [paths.dashboard.settings]: { title : "Configuración", subtitle : "Configuración de Coquitos"},
 }
 
 

@@ -16,7 +16,7 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
-      theme: 'dark' as Theme, // Por defecto modo dark
+      theme: 'light' as Theme, // Por defecto modo light
       
       toggleTheme: () => {
         set((state) => ({
@@ -29,9 +29,9 @@ export const useThemeStore = create<ThemeState>()(
       }
     }),
     {
-      name: 'coquitos-theme-storage', // Nombre único para localStorage
-      partialize: (state) => ({ theme: state.theme }), // Solo persistir el tema
-      skipHydration: false, // Asegurar hidratación correcta
+      name: 'coquitos-theme-storage', 
+      partialize: (state) => ({ theme: state.theme }), 
+      skipHydration: false, 
     }
   )
 );

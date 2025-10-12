@@ -8,12 +8,12 @@ export const loginUserSchema = zod.object({
   password: zod
     .string({ error: "Contraseña es requerida" })
     .min(6, { error: "Contraseña debe tener al menos 6 caracteres" })
-    // .regex(
-    //   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-    //   { 
-    //     error: "Contraseña debe tener al menos una letra mayuscula, una letra minuscula, un numero y un caracter especial" 
-    //   }
-    // )
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+      { 
+        error: "Contraseña debe tener al menos una letra mayuscula, una letra minuscula, un numero y un caracter especial" 
+      }
+    )
     .max(16, { error: "Contraseña debe tener menos de 16 caracteres" }),
 });
 

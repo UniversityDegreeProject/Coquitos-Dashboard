@@ -11,7 +11,7 @@ interface SidebarFooterProps {
  * Muestra información de la versión del sistema POS
  */
 export const SidebarFooter = memo(({ isCollapsed = false }: SidebarFooterProps) => {
-  const { css } = useTheme();
+  const {  } = useTheme();
   const isDark = useIsDark();
 
   return (

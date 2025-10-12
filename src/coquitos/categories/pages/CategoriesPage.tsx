@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Plus, Search, Edit2, Trash2, X } from 'lucide-react';
 
 export const CategoriesPage = () => {

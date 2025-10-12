@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Plus, Search, Eye, Printer, X, ShoppingCart } from 'lucide-react';
 
 export const OrdersPage = () => {

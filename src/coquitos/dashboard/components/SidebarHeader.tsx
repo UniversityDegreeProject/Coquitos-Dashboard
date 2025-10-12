@@ -1,15 +1,13 @@
 import { ChefHat } from 'lucide-react';
-import React from 'react';
-import { useTheme } from '@/shared/hooks/useTheme';
 import { useIsDark } from '@/shared/hooks/useThemeSelectors';
+import { memo } from 'react';
 
 
 interface SidebarHeaderProps {
   isCollapsed?: boolean;
 }
 
-export const SidebarHeader = React.memo(({ isCollapsed = false }: SidebarHeaderProps) => {
-  const { css } = useTheme();
+export const SidebarHeader = memo(({ isCollapsed = false }: SidebarHeaderProps) => {
   const isDark = useIsDark();
 
   return (

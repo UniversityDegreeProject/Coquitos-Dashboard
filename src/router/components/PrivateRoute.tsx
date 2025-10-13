@@ -8,7 +8,7 @@ import { useAuthStore } from '@/auth/store/auth.store';
 export const PrivateRoute = () => {
   const status = useAuthStore((state) => state.status);
 
-  // Mientras verifica autenticación, mostrar loading
+
   if (status === 'authenticating') {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-[#275081] via-[#2d5a8f] to-[#030405]">
@@ -20,12 +20,11 @@ export const PrivateRoute = () => {
     );
   }
 
-  // Si no está autenticado, redirigir al login
   if (status === 'not-authenticated') {
     return <Navigate to="/auth/login" replace />;
   }
 
-  // Si está autenticado, permitir acceso
+
   return <Outlet />;
 };
 

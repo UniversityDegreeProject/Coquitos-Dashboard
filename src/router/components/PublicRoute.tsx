@@ -8,7 +8,7 @@ import { useAuthStore } from '@/auth/store/auth.store';
 export const PublicRoute = () => {
   const status = useAuthStore((state) => state.status);
 
-  // Si ya está autenticado, redirigir al dashboard
+
   if (status === 'authenticated') {
     return <Navigate to="/dashboard" replace />;
   }

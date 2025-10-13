@@ -26,7 +26,7 @@ const authApi : StateCreator<AuthState, [["zustand/devtools", never], ["zustand/
 
       set({ user, token, status: "authenticated", error: null }, false , "Login success");
       
-      // Establecer tema por defecto como claro al iniciar sesión
+ 
       useThemeStore.getState().setTheme('light');
       
       toast.success(`¡Bienvenido, ${user.firstName}!`);
@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>()(
       name: "auth-storage",
       partialize: (state) => ({ user: state.user, token: state.token }),
       onRehydrateStorage: () => (state) => {
-        // Cuando se recupera del localStorage, actualizar el estado de autenticación
+        //? Cuando se recupera del localStorage, actualizar el estado de autenticación
         if (state) {
           if (state.user && state.token) {
             state.status = "authenticated";

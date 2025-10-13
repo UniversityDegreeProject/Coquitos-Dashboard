@@ -3,16 +3,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
 
-import { User, Lock, ArrowRight, Beef, StoreIcon, Eye, EyeOff } from 'lucide-react';
+import { User, ArrowRight, Beef, StoreIcon } from 'lucide-react';
 
 import AnimatedWelcome from '@/auth/pages/AnimatedWelcome';
 import { useAuthStore } from '../store/auth.store';
 import { loginUserSchema } from '../schemas/login-user.schema';
 import type { UserLoginFormData } from '../interface';
 import { paths } from '@/router/paths';
+import { LabelInputString, LabelPasswordInput } from '@/shared/components';
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function LoginPage() {
   const status = useAuthStore((state) => state.status);
   const clearError = useAuthStore((state) => state.clearError);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<UserLoginFormData>({
+  const {control,handleSubmit,formState: { errors } } = useForm<UserLoginFormData>({
     resolver: zodResolver(loginUserSchema),
   });
 
@@ -97,64 +97,27 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 lg:space-y-5">
-              <div className="space-y-2">
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Usuario
-                </label>
-                <div className="relative group">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#275081] transition-colors" />
-                  <input
-                    id="username"
-                    type="text"
-                    {...register('username')}
-                    className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${
-                      errors.username 
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' 
-                        : 'border-gray-200 focus:border-[#275081] focus:ring-[#275081]/10'
-                    } focus:ring-4 outline-none transition-all text-gray-800 placeholder:text-gray-400`}
-                    placeholder="Ejemplo: IIJesusII"
-                    disabled={status === 'authenticating'}
-                  />
-                </div>
-                {errors.username && (
-                  <p className="text-red-600 text-xs mt-1">{errors.username.message}</p>
-                )}
-              </div>
+              <LabelInputString
+                label="Usuario"
+                name="username"
+                control={control}
+                error={errors.username?.message}
+                placeholder="Ejemplo: IIJesusII"
+                icon={User}
+                disabled={status === 'authenticating'}
+                required
+              />
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Contraseña
-                </label>
-                <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#275081] transition-colors" />
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    {...register('password')}
-                    className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 ${
-                      errors.password 
-                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' 
-                        : 'border-gray-200 focus:border-[#275081] focus:ring-[#275081]/10'
-                    } focus:ring-4 outline-none transition-all text-gray-800 placeholder:text-gray-400`}
-                    placeholder="••••••••"
-                    disabled={status === 'authenticating'}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#275081] transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-red-600 text-xs mt-1">{errors.password.message}</p>
-                )}
-              </div>
+              <LabelPasswordInput
+                label="Contraseña"
+                name="password"
+                control={control}
+                error={errors.password?.message}
+                placeholder="••••••••"
+                disabled={status === 'authenticating'}
+                required
+                autoComplete="current-password"
+              />
 
               <button
                 type="submit"

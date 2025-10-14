@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuthStore } from '@/auth/store/auth.store';
 
-/**
+/** 
  * Componente para proteger rutas privadas
  * Solo permite acceso a usuarios autenticados
  */

@@ -1,62 +1,66 @@
-import { useState } from 'react';
-import { Plus, Search, Edit2, Trash2, X, UserCheck } from 'lucide-react';
+//* Librerias
+import { useState } from "react";
+import { Plus, Edit2, Trash2, X, UserCheck } from "lucide-react";
+
+//* Components
+import { getRoleColor } from "../helpers";
+import { SearchPage } from "@/shared/pages";
+import { LabelInputString } from "@/shared/components";
+import { useForm } from "react-hook-form";
 
 export const UsersPage = () => {
   const [showCreateUser, setShowCreateUser] = useState(false);
+  const {control,formState: { errors } } = useForm<any>({
+    // resolver: zodResolver(loginUserSchema),
+  });
 
   const users = [
     {
       id: 1,
-      name: 'Admin Principal',
-      email: 'admin@cokitos.com',
-      role: 'Administrador',
-      status: 'Activo',
-      lastLogin: '2024-01-15 14:30'
+      name: "Admin Principal",
+      email: "admin@cokitos.com",
+      role: "Administrador",
+      status: "Activo",
+      lastLogin: "2024-01-15 14:30",
     },
     {
       id: 2,
-      name: 'María Cajera',
-      email: 'maria@cokitos.com',
-      role: 'Cajero',
-      status: 'Activo',
-      lastLogin: '2024-01-15 13:45'
+      name: "María Cajera",
+      email: "maria@cokitos.com",
+      role: "Cajero",
+      status: "Activo",
+      lastLogin: "2024-01-15 13:45",
     },
     {
       id: 3,
-      name: 'Carlos Supervisor',
-      email: 'carlos@cokitos.com',
-      role: 'Supervisor',
-      status: 'Activo',
-      lastLogin: '2024-01-15 12:20'
+      name: "Carlos Supervisor",
+      email: "carlos@cokitos.com",
+      role: "Supervisor",
+      status: "Activo",
+      lastLogin: "2024-01-15 12:20",
     },
     {
       id: 4,
-      name: 'Ana Mesera',
-      email: 'ana@cokitos.com',
-      role: 'Mesero',
-      status: 'Inactivo',
-      lastLogin: '2024-01-10 18:00'
-    }
+      name: "Ana Mesera",
+      email: "ana@cokitos.com",
+      role: "Mesero",
+      status: "Inactivo",
+      lastLogin: "2024-01-10 18:00",
+    },
   ];
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'Administrador': return 'bg-red-100 text-red-800';
-      case 'Supervisor': return 'bg-blue-100 text-blue-800';
-      case 'Cajero': return 'bg-green-100 text-green-800';
-      case 'Mesero': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const getStatusColor = (status: string) => {
-    return status === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+    return status === "Activo"
+      ? "bg-green-100 text-green-800"
+      : "bg-red-100 text-red-800";
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Usuarios del Sistema</h1>
+        <h3 className="text-xl font-bold text-gray-800">
+          Usuarios del Sistema
+        </h3>
         <button
           onClick={() => setShowCreateUser(true)}
           className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
@@ -67,42 +71,44 @@ export const UsersPage = () => {
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar usuarios..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-          <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-            <option value="">Todos los roles</option>
-            <option value="admin">Administrador</option>
-            <option value="supervisor">Supervisor</option>
-            <option value="cashier">Cajero</option>
-            <option value="waiter">Mesero</option>
-          </select>
-        </div>
-      </div>
+      <SearchPage
+        children={
+          <LabelInputString
+            label="Buscar usuarios..."
+            name="search"
+            control={control}
+            // error={errors.search?.message}
+            placeholder="Buscar usuarios..."
+          />
+        }
+      />
 
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div className="p-6 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800">Lista de Usuarios</h2>
+          <h2 className="text-lg font-semibold text-gray-800">
+            Lista de Usuarios
+          </h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Último Acceso</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Usuario
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Rol
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Último Acceso
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -114,22 +120,36 @@ export const UsersPage = () => {
                         <UserCheck className="w-5 h-5 text-white" />
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {user.email}
+                        </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(user.role)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(
+                        user.role
+                      )}`}
+                    >
                       {user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(user.status)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                        user.status
+                      )}`}
+                    >
                       {user.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.lastLogin}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {user.lastLogin}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex space-x-2">
                       <button className="text-blue-600 hover:text-blue-900">
@@ -149,10 +169,12 @@ export const UsersPage = () => {
 
       {/* Create User Modal */}
       {showCreateUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-slate-50 bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-800">Agregar Usuario</h2>
+              <h2 className="text-xl font-bold text-gray-800">
+                Agregar Usuario
+              </h2>
               <button
                 onClick={() => setShowCreateUser(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -163,7 +185,9 @@ export const UsersPage = () => {
 
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre Completo
+                </label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -172,7 +196,9 @@ export const UsersPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Correo Electrónico
+                </label>
                 <input
                   type="email"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -181,7 +207,9 @@ export const UsersPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contraseña
+                </label>
                 <input
                   type="password"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -190,7 +218,9 @@ export const UsersPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirmar Contraseña
+                </label>
                 <input
                   type="password"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
@@ -199,7 +229,9 @@ export const UsersPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Rol
+                </label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                   <option value="">Seleccionar rol</option>
                   <option value="admin">Administrador</option>

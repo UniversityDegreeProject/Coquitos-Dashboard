@@ -25,6 +25,10 @@ export const appRouter = createBrowserRouter([
     element: <RootRedirect />,
   },
   {
+    path: "/login",
+    element: <Navigate to="/auth/login" replace />,
+  },
+  {
     path: "/auth",
     element: <PublicRoute />,
     children: [

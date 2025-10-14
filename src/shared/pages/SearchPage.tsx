@@ -1,4 +1,6 @@
 
+import { useTheme } from '@/shared/hooks/useTheme';
+
 interface SearchPageProps {
   children: React.ReactNode;
   roleFilter?: React.ReactNode;
@@ -6,8 +8,10 @@ interface SearchPageProps {
 }
 
 export const SearchPage = ({ children, roleFilter, statusFilter }: SearchPageProps) => {
+  const { isDark } = useTheme();
+  
   return (
-    <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 backdrop-blur-sm">
+    <div className={`${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} rounded-xl p-6 shadow-lg border backdrop-blur-sm`}>
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Campo de búsqueda */}
         <div className="flex-1">

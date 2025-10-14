@@ -9,6 +9,7 @@ import { UserGrid } from "../components";
 import { useGetUsers } from "../hooks/useGetUsers";
 import { useUserStore } from "../store/user.store";
 import { FormUserModal } from "../components";
+import { useTheme } from "@/shared/hooks/useTheme";
 // import { Role, Status } from "../interfaces";
 
 export const UsersPage = () => {
@@ -17,6 +18,8 @@ export const UsersPage = () => {
   const setOpenModalCreateUser = useUserStore(state => state.setOpenModalCreateUser);
   // * HooksTanstack
   const { data: users = [] } = useGetUsers();
+  // * Theme
+  const { colors, isDark } = useTheme();
   // * React Hook Form
   const { control } = useForm({
     // resolver: zodResolver(loginUserSchema),
@@ -44,16 +47,16 @@ export const UsersPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-orange-100 rounded-lg">
-            <Users className="w-6 h-6 text-orange-600" />
+          <div className={`p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
+            <Users className={`w-6 h-6 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">
+          <h3 className={`text-2xl font-bold ${colors.text.primary}`}>
             Usuarios del Sistema
           </h3>
         </div>
         <button
           onClick={() => setOpenModalCreateUser()}
-          className="flex items-center px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.primary} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
         >
           <Plus className="w-5 h-5 mr-2" />
           Agregar Usuario

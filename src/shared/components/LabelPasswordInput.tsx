@@ -12,6 +12,7 @@ interface LabelPasswordInputProps<T extends FieldValues> {
   required?: boolean;
   autoComplete?: string;
   className?: string;
+  icon?: React.ComponentType<any>;
 }
 
 export const LabelPasswordInput = <T extends FieldValues>({
@@ -24,6 +25,7 @@ export const LabelPasswordInput = <T extends FieldValues>({
   required = false,
   autoComplete = 'current-password',
   className = '',
+  icon: Icon = Lock,
 }: LabelPasswordInputProps<T>) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -33,12 +35,12 @@ export const LabelPasswordInput = <T extends FieldValues>({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+      <label htmlFor={name} className="block text-sm font-semibold text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
       <div className="relative group">
-        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#275081] transition-colors" />
+        <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-600 transition-colors duration-200 z-10" />
         <Controller
           name={name}
           control={control}
@@ -47,11 +49,11 @@ export const LabelPasswordInput = <T extends FieldValues>({
               {...field}
               id={name}
               type={showPassword ? 'text' : 'password'}
-              className={`w-full pl-12 pr-12 py-3 rounded-xl border-2 ${
+              className={`w-full pl-12 pr-12 py-3.5 rounded-xl border-2 bg-white/80 backdrop-blur-sm shadow-sm ${
                 error
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
-                  : 'border-gray-200 focus:border-[#275081] focus:ring-[#275081]/10'
-              } focus:ring-4 outline-none transition-all text-gray-800 placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 focus:shadow-red-100'
+                  : 'border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 focus:shadow-orange-100'
+              } focus:ring-4 outline-none transition-all duration-200 text-gray-800 placeholder:text-gray-400 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
               placeholder={placeholder}
               disabled={disabled}
               autoComplete={autoComplete}
@@ -63,7 +65,7 @@ export const LabelPasswordInput = <T extends FieldValues>({
         <button
           type="button"
           onClick={handleTogglePassword}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#275081] transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-600 transition-colors duration-200 p-1 rounded-md hover:bg-orange-50"
           aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
           disabled={disabled}
         >
@@ -71,7 +73,7 @@ export const LabelPasswordInput = <T extends FieldValues>({
         </button>
       </div>
       {error && (
-        <p id={`${name}-error`} className="text-red-600 text-xs mt-1" role="alert">
+        <p id={`${name}-error`} className="text-red-600 text-xs mt-1 font-medium" role="alert">
           {error}
         </p>
       )}

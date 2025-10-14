@@ -1,4 +1,4 @@
-import type { User } from "@/coquitos/users/interfaces/user.interface";
+import type { User } from "@/coquitos-features/users/interfaces/user.interface";
 import type { UserLoginFormData } from "./user-login-form-data";
 
 

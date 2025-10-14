@@ -1,5 +1,5 @@
 import { CoquitoApi } from "@/config";
-import type { UserResponse } from "@/coquitos/users/interfaces/user.interface";
+import type { UserResponse } from "@/coquitos-features/users/interfaces/user.interface";
 import type { UserLoginFormData } from "../interface";
 
 export const login = async ({ username, password }: UserLoginFormData): Promise<UserResponse> => {

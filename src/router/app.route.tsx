@@ -1,22 +1,22 @@
 import { createBrowserRouter, Navigate } from "react-router";
 
 // components Layouts
-import { CoquitoLayout } from "@/coquitos/dashboard/layouts/CoquitoLayout";
+import { CoquitoLayout } from "@/coquitos-features/dashboard/layouts/CoquitoLayout";
 import { AuthLayout } from "@/auth/layout/AuthLayout";
 
 // components Route Guards
 import { PrivateRoute, PublicRoute, RootRedirect } from "./components";
 
 // components Pages
-import { DashboardPage } from "@/coquitos/dashboard/pages/DashboardPage";
-import { OrdersPage } from "@/coquitos/orders/pages/OrdersPage";
-import { ProductPage } from "@/coquitos/products/pages/ProductPage";
-import { CategoriesPage } from "@/coquitos/categories/pages/CategoriesPage";
-import { ClientsPage } from "@/coquitos/clients/pages/ClientsPage";
-import { UsersPage } from "@/coquitos/users/pages/UsersPage";
-import { ReportPage } from "@/coquitos/reports/pages/ReportPage";
-import { CashClosePage } from "@/coquitos/cash-closing/pages/CashClosePage";
-import { SettingPage } from "@/coquitos/settings/pages/SettingPage";
+import { DashboardPage } from "@/coquitos-features/dashboard/pages/DashboardPage";
+import { OrdersPage } from "@/coquitos-features/orders/pages/OrdersPage";
+import { ProductPage } from "@/coquitos-features/products/pages/ProductPage";
+import { CategoriesPage } from "@/coquitos-features/categories/pages/CategoriesPage";
+import { ClientsPage } from "@/coquitos-features/clients/pages/ClientsPage";
+import { UsersPage } from "@/coquitos-features/users/pages/UsersPage";
+import { ReportPage } from "@/coquitos-features/reports/pages/ReportPage";
+import { CashClosePage } from "@/coquitos-features/cash-closing/pages/CashClosePage";
+import { SettingPage } from "@/coquitos-features/settings/pages/SettingPage";
 import LoginPage from "@/auth/pages/LoginPage";
 
 export const appRouter = createBrowserRouter([

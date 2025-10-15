@@ -49,15 +49,15 @@ export default function AnimatedWelcome() {
 
         {/* Ondas de energía concéntricas - comienzan fuera de la esfera */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-full h-full border-2 border-[#87CEEB]/15 rounded-full animate-pulse-wave" style={{ animationDuration: '6s' }}></div>
+          <div className="w-full h-full border-2 border-[#87CEEB]/25 rounded-full animate-pulse-wave" style={{ animationDuration: '6s' }}></div>
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-full h-full border-2 border-[#4682B4]/10 rounded-full animate-pulse-wave" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
+          <div className="w-full h-full border-2 border-[#4682B4]/20 rounded-full animate-pulse-wave" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
         </div>
 
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-full h-full border-2 border-[#5F9EA0]/8 rounded-full animate-pulse-wave" style={{ animationDuration: '10s', animationDelay: '2s' }}></div>
+          <div className="w-full h-full border-2 border-[#5F9EA0]/18 rounded-full animate-pulse-wave" style={{ animationDuration: '10s', animationDelay: '2s' }}></div>
         </div>
       </div>
     </div>

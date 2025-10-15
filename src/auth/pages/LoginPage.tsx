@@ -11,6 +11,7 @@ import { loginUserSchema } from '../schemas/login-user.schema';
 import type { UserLoginFormData } from '../interface';
 import { paths } from '@/router/paths';
 import { LabelInputString, LabelPasswordInput } from '@/shared/components';
+import SplashCursor from '@/components/SplashCursor';
 
 export default function LoginPage() {
   const [isHovered, setIsHovered] = useState(false);
@@ -62,10 +63,10 @@ export default function LoginPage() {
         
         {/* Ondas de energía sutiles - comienzan fuera de la esfera */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-full h-full border border-[#87CEEB]/5 rounded-full animate-pulse-wave" style={{ animationDuration: '8s' }}></div>
+          <div className="w-full h-full border border-[#87CEEB]/15 rounded-full animate-pulse-wave" style={{ animationDuration: '8s' }}></div>
         </div>
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-full h-full border border-[#4682B4]/8 rounded-full animate-pulse-wave" style={{ animationDuration: '12s', animationDelay: '2s' }}></div>
+          <div className="w-full h-full border border-[#4682B4]/18 rounded-full animate-pulse-wave" style={{ animationDuration: '12s', animationDelay: '2s' }}></div>
         </div>
       </div>
 
@@ -217,6 +218,9 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      
+      {/* SlashCursor personalizado para el login */}
+      <SplashCursor />
     </div>
   );
 }

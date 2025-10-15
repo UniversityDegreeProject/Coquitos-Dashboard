@@ -1,6 +1,7 @@
 import { type User } from "../interfaces";
 import { getRoleColor, getStatusColor } from "../helpers";
 import { UserCheck } from "lucide-react";
+import { UserButtomsActions } from "./UserButtomsActions";
 
 interface UserItemProps {
   user: User;
@@ -39,9 +40,19 @@ export const UserItem = ({ user }: UserItemProps) => {
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {user.lastLogin.toLocaleString()}
+        {user.lastConnection 
+          ? new Date(user.lastConnection).toLocaleDateString('es-ES', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : 'Nunca'
+        }
       </td>
-     
+      <UserButtomsActions />
+
     </tr>
   );
 };

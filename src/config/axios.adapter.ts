@@ -6,6 +6,7 @@ export const CoquitoApi = axios.create({
   baseURL: getEnvsAdapter.API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'ngrok-skip-browser-warning': 'true',
   },
   httpsAgent: false,
   validateStatus: (status) => {

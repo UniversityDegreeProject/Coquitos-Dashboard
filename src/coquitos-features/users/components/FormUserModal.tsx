@@ -19,7 +19,7 @@ export const FormUserModal = () => {
   });
 
   // * Opciones para los selects
-  const roleOptions = [
+  const roleOptions  = [
     { value: "Administrador", label: "Administrador" },
     { value: "Cajero", label: "Cajero" },
   ];

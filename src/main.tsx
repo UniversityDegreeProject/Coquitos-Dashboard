@@ -1,4 +1,3 @@
-// import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
 // components
@@ -10,10 +9,8 @@ import { sonnerAdapter } from '@/config/sonner.adapter'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
-  // <StrictMode>
     <TransStackProvider>
       <Toaster {...sonnerAdapter} />
       <CoquitoApp />
     </TransStackProvider>
-  // </StrictMode>,
 )

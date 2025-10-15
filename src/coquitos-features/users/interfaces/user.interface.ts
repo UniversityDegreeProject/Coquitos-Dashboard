@@ -3,7 +3,7 @@ export type Role = "Administrador" | "Cajero";
 export type Status = "Activo" | "Inactivo" | "Suspendido";
 
 export interface User {
-  id : string;
+  id? : string;
   username : string;
   firstName : string;
   lastName : string;
@@ -11,12 +11,10 @@ export interface User {
   email : string;
   password : string;
   role : Role;
-          
   status : Status;
-  lastLogin : Date;
   createdAt : Date;
   updatedAt : Date;
-
+  lastConnection : Date;
 }
 
 export interface UserResponse extends User {

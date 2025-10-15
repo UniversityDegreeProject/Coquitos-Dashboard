@@ -56,10 +56,10 @@ export const UsersPage = () => {
         </div>
         <button
           onClick={() => setOpenModalCreateUser()}
-          className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.primary} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
+          className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
         >
-          <Plus className="w-5 h-5 mr-2" />
-          Agregar Usuario
+          <Plus className="w-5 h-5 mr-2 text-[#2309095c]" />
+          <span className="text-[#08080865] font-bold">Agregar Usuario</span>
         </button>
       </div>
 

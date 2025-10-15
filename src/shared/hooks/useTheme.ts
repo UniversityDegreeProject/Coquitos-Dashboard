@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/shallow';
 import { useThemeStore } from '../stores/themeStore';
 import { useMemo } from 'react';
 
@@ -6,10 +7,11 @@ import { useMemo } from 'react';
  * Proporciona colores y utilidades según el tema activo
  */
 export const useTheme = () => {
-  // Usar selectores específicos para mejor reactividad
-  const theme = useThemeStore((state) => state.theme);
-  const toggleTheme = useThemeStore((state) => state.toggleTheme);
-  const setTheme = useThemeStore((state) => state.setTheme);
+  // Usar un único selector para evitar múltiples re-renders
+  const theme = useThemeStore(useShallow((state) => state.theme));
+  const toggleTheme = useThemeStore(useShallow((state) => state.toggleTheme));
+  const setTheme = useThemeStore(useShallow((state) => state.setTheme));
+  
   const isDark = theme === 'dark';
   const isLight = theme === 'light';
 

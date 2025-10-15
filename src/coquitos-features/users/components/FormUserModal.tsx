@@ -1,70 +1,93 @@
 // * Library
-import { useForm } from "react-hook-form";
-import { X, User, Mail, Phone, Lock, Shield, UserCheck } from "lucide-react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { X, User, Mail, Phone, Lock, Shield, UserCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 // * Others
 import { LabelInputString, LabelPasswordInput, LabelSelect } from "@/shared/components";
 import { useUserStore } from "../store/user.store";
 import { useTheme } from "@/shared/hooks/useTheme";
-// import { Role, Status } from "../interfaces";
+import { roleOptions, statusOptions } from "../const";
+import { createUserSchema, type RegisterUserSchema } from "../schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useCreateUser } from "../hooks/useCreateUser";
+
+const onlyStatusOptions = statusOptions.filter((option) => option.value !== "");
+const onlyRoleOptions = roleOptions.filter((option) => option.value !== "");
+
+const initialValues: RegisterUserSchema = {
+  username: "",
+  email: "",
+  firstName: "",
+  lastName: "",
+  password: undefined,
+  phone: "",
+  role: "Administrador",
+  status: "Activo",
+};
 
 export const FormUserModal = () => {
+  // * React State
+  const [showPasswordField, setShowPasswordField] = useState(false);
+  
   // * Zustand
   const closeModal = useUserStore((state) => state.closeModal);
+  
   // * Theme
   const { isDark } = useTheme();
+
+  // * TanstackQuery
+  const { useCreateUserMutation } = useCreateUser();
+  
   // * React Hook Form
-  const { control } = useForm({
-    // resolver: zodResolver(loginUserSchema),
+  const { control, setValue, handleSubmit, formState: { errors } } = useForm<RegisterUserSchema>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: initialValues,
   });
 
-  // * Opciones para los selects
-  const roleOptions  = [
-    { value: "Administrador", label: "Administrador" },
-    { value: "Cajero", label: "Cajero" },
-  ];
+  const handleTogglePassword = () => {
+    setShowPasswordField(!showPasswordField);
+    if (showPasswordField) {
+      // Si está cerrando el campo, limpia la contraseña
+      setValue("password", undefined);
+    }
+  };
 
-  const statusOptions = [
-    { value: "Activo", label: "Activo" },
-    { value: "Inactivo", label: "Inactivo" },
-    { value: "Suspendido", label: "Suspendido" },
-  ];
+  const handleSubmitForm : SubmitHandler<RegisterUserSchema> = (data) => {
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implementar lógica de envío
-    console.log("Formulario enviado");
+    useCreateUserMutation.mutate(data);
+
   };
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className={`${isDark ? 'bg-[#1E293B]/95' : 'bg-white/95'} backdrop-blur-md rounded-2xl w-full max-w-4xl mx-auto max-h-[95vh] overflow-y-auto shadow-2xl border ${isDark ? 'border-[#334155]/20' : 'border-white/20'}`}>
+      <div className={`${isDark ? 'bg-[#1E293B]/95' : 'bg-white/95'} backdrop-blur-md rounded-2xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border ${isDark ? 'border-[#334155]/20' : 'border-white/20'}`}>
         {/* Header */}
-        <div className={`sticky top-0 ${isDark ? 'bg-[#1E293B]/80' : 'bg-white/80'} backdrop-blur-md p-4 sm:p-6 border-b ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'} flex items-center justify-between rounded-t-2xl`}>
+        <div className={`sticky top-0 ${isDark ? 'bg-[#1E293B]/80' : 'bg-white/80'} backdrop-blur-md p-4 border-b ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'} flex items-center justify-between rounded-t-2xl`}>
           <div className="flex items-center space-x-3">
             <div className={`p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
-              <User className={`w-5 h-5 sm:w-6 sm:h-6 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+              <User className={`w-5 h-5 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
             </div>
-            <h2 className={`text-lg sm:text-2xl font-bold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>Agregar Usuario</h2>
+            <h2 className={`text-lg font-bold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>Agregar Usuario</h2>
           </div>
           <button
             onClick={() => closeModal()}
             className={`p-2 ${isDark ? 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#334155]/50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'} rounded-lg transition-all duration-200`}
           >
-            <X className="w-5 h-5 sm:w-6 sm:h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Form Content */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Primera fila */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <form onSubmit={handleSubmit(handleSubmitForm)} className="p-4 space-y-4">
+          {/* Primera fila - Usuario y Email */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInputString 
               label="Usuario" 
               name="username" 
               control={control}
               icon={User}
               required
+              error={errors.username?.message}
             />
             <LabelInputString
               label="Correo Electrónico"
@@ -72,17 +95,19 @@ export const FormUserModal = () => {
               control={control}
               icon={Mail}
               required
+              error={errors.email?.message}
             />
           </div>
 
-          {/* Segunda fila */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Segunda fila - Nombres y Apellidos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInputString 
               label="Nombres" 
               name="firstName" 
               control={control}
               icon={User}
               required
+              error={errors.firstName?.message}
             />
             <LabelInputString 
               label="Apellidos" 
@@ -90,61 +115,102 @@ export const FormUserModal = () => {
               control={control}
               icon={User}
               required
+              error={errors.lastName?.message}
             />
           </div>
 
-          {/* Tercera fila */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Tercera fila - Teléfono y Rol */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelInputString 
               label="Teléfono" 
               name="phone" 
               control={control}
               icon={Phone}
               required
+              error={errors.phone?.message}
             />
-            <LabelPasswordInput
-              label="Contraseña"
-              name="password"
-              control={control}
-              icon={Lock}
-              required
-            />
-          </div>
-
-          {/* Cuarta fila */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <LabelSelect
               label="Rol"
               name="role"
               control={control}
-              options={roleOptions}
+              options={onlyRoleOptions}
               icon={Shield}
               placeholder="Selecciona un rol"
               required
+              error={errors.role?.message}
             />
+          </div>
+
+          {/* Cuarta fila - Estado y Contraseña */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <LabelSelect
               label="Estado"
               name="status"
               control={control}
-              options={statusOptions}
+              options={onlyStatusOptions}
               icon={UserCheck}
               placeholder="Selecciona un estado"
               required
+              error={errors.status?.message}
             />
+            
+            {/* Desplegable de Contraseña */}
+            <div className="space-y-2">
+              <label className={`text-sm font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+                Contraseña
+              </label>
+              <div className={`border ${isDark ? 'border-[#334155]' : 'border-gray-200'} rounded-lg overflow-hidden transition-all duration-300`}>
+                <button
+                  type="button"
+                  onClick={handleTogglePassword}
+                  className={`w-full p-3 flex items-center justify-between ${isDark ? 'bg-[#0F172A]/50 hover:bg-[#0F172A]/80' : 'bg-gray-50 hover:bg-gray-100'} transition-all duration-200`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <Lock className={`w-4 h-4 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+                    <span className={`text-sm ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+                      {showPasswordField ? 'Personalizada' : 'Autogenerada'}
+                    </span>
+                  </div>
+                  {showPasswordField ? (
+                    <ChevronUp className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
+                  ) : (
+                    <ChevronDown className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
+                  )}
+                </button>
+                
+                {/* Campo de contraseña colapsable */}
+                <div className={`transition-all duration-300 ease-in-out ${showPasswordField ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  {showPasswordField && (
+                    <div className={`p-3 border-t ${isDark ? 'border-[#334155] bg-[#0F172A]/30' : 'border-gray-200 bg-white'}`}>
+                      <LabelPasswordInput
+                        label=""
+                        name="password"
+                        control={control}
+                        icon={Lock}
+                        required={false}
+                        placeholder="Contraseña personalizada"
+                        error={errors.password?.message}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Botones */}
-          <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'}`}>
+          <div className={`flex flex-col sm:flex-row gap-3 pt-4 border-t ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'}`}>
             <button
               type="button"
               onClick={() => closeModal()}
-              className={`flex-1 px-4 sm:px-6 py-3 border-2 ${isDark ? 'border-[#334155] text-[#E2E8F0] hover:bg-[#334155]/50 hover:border-[#475569]' : 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'} rounded-xl transition-all duration-200 font-medium text-sm sm:text-base`}
+              className={`flex-1 px-4 py-2.5 border ${isDark ? 'border-[#334155] text-[#E2E8F0] hover:bg-[#334155]/50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-lg transition-all duration-200 font-medium text-sm`}
             >
               Cancelar
             </button>
             <button 
               type="submit"
-              className={`flex-1 px-4 sm:px-6 py-3 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-medium text-sm sm:text-base`}
+              className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm`}
+              disabled={useCreateUserMutation.isPending}
             >
               Crear Usuario
             </button>

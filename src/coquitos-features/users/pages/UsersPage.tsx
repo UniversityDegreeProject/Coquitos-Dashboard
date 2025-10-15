@@ -1,5 +1,6 @@
 //* Librerias
 import { Plus, Users, Shield } from "lucide-react";
+import { useCallback } from "react";
 
 //* Others
 import { SearchPage } from "@/shared/pages";
@@ -10,34 +11,40 @@ import { useGetUsers } from "../hooks/useGetUsers";
 import { useUserStore } from "../store/user.store";
 import { FormUserModal } from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
-// import { Role, Status } from "../interfaces";
+import type { User } from "../interfaces";
+import { useShallow } from "zustand/shallow";
+import { roleOptions } from "../const/role-options";
+import { statusOptions } from "../const/status-options";
+
+const initialValue : User[] = [];
 
 export const UsersPage = () => {
-  // *Zustand
-  const modalMode = useUserStore(state => state.modalMode);
-  const setOpenModalCreateUser = useUserStore(state => state.setOpenModalCreateUser);
+
+
+  // *Zustand - Optimizado con selectores específicos
+  const modalMode = useUserStore(useShallow((state) => state.modalMode));
+  const setOpenModalCreateUser = useUserStore(useShallow((state) => state.setOpenModalCreateUser));
+  
   // * HooksTanstack
-  const { data: users = [] } = useGetUsers();
+  const { data : users = initialValue, isPending } = useGetUsers();
+  
   // * Theme
   const { colors, isDark } = useTheme();
+  
   // * React Hook Form
   const { control } = useForm({
-    // resolver: zodResolver(loginUserSchema),
+    defaultValues: {
+      search: "",
+      roleFilter: "",
+      statusFilter: "",
+    },
+    mode: "onChange",
   });
 
-  // * Opciones para los filtros
-  const roleOptions = [
-    { value: "", label: "Todos los roles" },
-    { value: "Administrador", label: "Administrador" },
-    { value: "Cajero", label: "Cajero" },
-  ];
-
-  const statusOptions = [
-    { value: "", label: "Todos los estados" },
-    { value: "Activo", label: "Activo" },
-    { value: "Inactivo", label: "Inactivo" },
-    { value: "Suspendido", label: "Suspendido" },
-  ];
+  // * Memoizar el callback del botón
+  const handleOpenModal = useCallback(() => {
+    setOpenModalCreateUser();
+  }, [setOpenModalCreateUser]);
 
 
 
@@ -55,7 +62,7 @@ export const UsersPage = () => {
           </h3>
         </div>
         <button
-          onClick={() => setOpenModalCreateUser()}
+          onClick={handleOpenModal}
           className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
         >
           <Plus className="w-5 h-5 mr-2 text-[#2309095c]" />
@@ -90,13 +97,12 @@ export const UsersPage = () => {
           label="Buscar usuarios..."
           name="search"
           control={control}
-          // error={errors.search?.message}
           placeholder="Buscar usuarios..."
         />
       </SearchPage>
 
       {/* Users Table */}
-      <UserGrid users={users} />
+      <UserGrid users={users} isPending={isPending} />
 
       {/* Create User Modal */}
       {modalMode === 'create' && (

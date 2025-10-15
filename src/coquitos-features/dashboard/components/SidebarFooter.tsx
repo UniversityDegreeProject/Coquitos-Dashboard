@@ -1,5 +1,4 @@
 import { memo } from "react";
-import { useTheme } from '@/shared/hooks/useTheme';
 import { useIsDark } from '@/shared/hooks/useThemeSelectors';
 
 interface SidebarFooterProps {
@@ -11,7 +10,6 @@ interface SidebarFooterProps {
  * Muestra información de la versión del sistema POS
  */
 export const SidebarFooter = memo(({ isCollapsed = false }: SidebarFooterProps) => {
-  const {  } = useTheme();
   const isDark = useIsDark();
 
   return (

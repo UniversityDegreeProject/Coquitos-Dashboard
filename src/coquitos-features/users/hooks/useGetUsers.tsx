@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { useQuerys } from "../helpers/use-querys"
+import { useQuerys } from "../const/use-querys"
 import { getUsers } from "../services/use.service"
 
 
-export const useGetUsers = () => {
+export const useGetUsers =() => {
 
   const useQueryUsers = useQuery({
     queryKey: useQuerys.allUsers,

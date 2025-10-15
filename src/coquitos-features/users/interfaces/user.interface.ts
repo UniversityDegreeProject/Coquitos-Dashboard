@@ -9,15 +9,15 @@ export interface User {
   lastName : string;
   phone : string;
   email : string;
-  password : string;
+  password? : string;
   role : Role;
   status : Status;
-  createdAt : Date;
-  updatedAt : Date;
-  lastConnection : Date;
+  createdAt? : Date;
+  updatedAt? : Date;
+  lastConnection? : Date;
+  isOptimistic? : boolean;
 }
 
 export interface UserResponse extends User {
   token? : string;
 }
-

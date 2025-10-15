@@ -1,5 +1,7 @@
 export const useQuerys = {
   allUsers: ['users'] as const,
+  lists: () => [useQuerys.allUsers, 'lists'] as const,
+  createUser: () => [useQuerys.allUsers, 'createUser'] as const,
   userById: (id: string) => [useQuerys.allUsers, id] as const,
   userByEmail: (email: string) => [useQuerys.allUsers, email] as const,
   searchUsers: (params: {

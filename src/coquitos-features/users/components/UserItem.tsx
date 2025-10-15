@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { type User } from "../interfaces";
 import { getRoleColor, getStatusColor } from "../helpers";
 import { UserCheck } from "lucide-react";
@@ -7,9 +8,25 @@ interface UserItemProps {
   user: User;
 }
 
-export const UserItem = ({ user }: UserItemProps) => {
+export const UserItem = memo(({ user }: UserItemProps) => {
+
+  const formattedLastConnection = useMemo(() => {
+    if (!user.lastConnection) return 'Nunca';
+    
+    return new Date(user.lastConnection).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }, [user.lastConnection]);
+
+
+
+
   return (
-    <tr key={user.id} className="hover:bg-gray-50">
+    <tr className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
           <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center">
@@ -40,19 +57,9 @@ export const UserItem = ({ user }: UserItemProps) => {
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-        {user.lastConnection 
-          ? new Date(user.lastConnection).toLocaleDateString('es-ES', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })
-          : 'Nunca'
-        }
+        {formattedLastConnection}
       </td>
       <UserButtomsActions />
-
     </tr>
   );
-};
+});

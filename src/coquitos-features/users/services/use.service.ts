@@ -30,3 +30,29 @@ export const createUser = async (user: User): Promise<User> => {
   }
 }
 
+
+export const updateUser = async (userId: string, user: User): Promise<User> => {
+  try {
+    const response = await CoquitoApi.patch(`/users/${userId}`, user);
+    return response.data.user;
+  } catch (error : unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data.error|| 'Error al actualizar usuario');
+    }
+    throw new Error('Error desconocido');
+  }
+}
+
+
+export const deleteUser = async (userId: string): Promise<User> => {
+  try {
+    const response = await CoquitoApi.delete(`/users/${userId}`);
+    return response.data.user;
+  } catch (error : unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data.error|| 'Error al eliminar usuario');
+    }
+    throw new Error('Error desconocido');
+  }
+}
+

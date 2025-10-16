@@ -1,6 +1,38 @@
 import { Edit2, Trash2, MailCheck, Eye, KeyRound } from "lucide-react";
+import { type User } from "../interfaces";
+import { useCallback } from "react";
+import { useUserStore } from "../store/user.store";
+import Swal from "sweetalert2";
+import { useDeleteUser } from "../hooks/useDeleteUser";
 
-export const UserButtomsActions = () => {
+
+interface UserButtomsActionsProps {
+  user: User;
+}
+
+export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
+
+  const { setOpenModalUpdate } = useUserStore();
+  const { deleteUserMutation } = useDeleteUser();
+  const handleDeleteUser = useCallback (() => {
+    Swal.fire({
+      title: '¿Estás seguro de querer eliminar este usuario?',
+      text: `El usuario ${user.username} se eliminará permanentemente`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Si, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteUserMutation.mutate(user.id!);
+      }
+    });
+  }, [user, deleteUserMutation]);
+
+  const handleEditUser = useCallback (() => {
+    setOpenModalUpdate(user);
+  }, [user, setOpenModalUpdate]);
+
   return (
     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative">
       <div className="flex space-x-2">
@@ -9,6 +41,7 @@ export const UserButtomsActions = () => {
           aria-label="Editar usuario"
           title="Editar usuario"
           type="button"
+          onClick={handleEditUser}
         >
           <Edit2 className="w-4 h-4" />
         </button>
@@ -17,6 +50,7 @@ export const UserButtomsActions = () => {
           aria-label="Eliminar usuario"
           title="Eliminar usuario"
           type="button"
+          onClick={handleDeleteUser}
         >
           <Trash2 className="w-4 h-4" />
         </button>

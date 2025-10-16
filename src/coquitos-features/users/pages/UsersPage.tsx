@@ -23,7 +23,7 @@ export const UsersPage = () => {
 
   // *Zustand - Optimizado con selectores específicos
   const modalMode = useUserStore(useShallow((state) => state.modalMode));
-  const setOpenModalCreateUser = useUserStore(useShallow((state) => state.setOpenModalCreateUser));
+  const setOpenModalCreate = useUserStore(useShallow((state) => state.setOpenModalCreate));
   
   // * HooksTanstack
   const { data : users = initialValue, isPending } = useGetUsers();
@@ -43,8 +43,8 @@ export const UsersPage = () => {
 
   // * Memoizar el callback del botón
   const handleOpenModal = useCallback(() => {
-    setOpenModalCreateUser();
-  }, [setOpenModalCreateUser]);
+    setOpenModalCreate();
+  }, [setOpenModalCreate]);
 
 
 
@@ -106,6 +106,10 @@ export const UsersPage = () => {
 
       {/* Create User Modal */}
       {modalMode === 'create' && (
+        <FormUserModal />
+      )}
+      {/* Update User Modal */}
+      {modalMode === 'update' && (
         <FormUserModal />
       )}
     </div>

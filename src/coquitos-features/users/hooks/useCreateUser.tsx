@@ -15,17 +15,15 @@ export const useCreateUser = () => {
   const useCreateUserMutation = useMutation({
 
 
-    onMutate: ( userBeforeMutate : User ) : OptimisticMutationUser => {
+    onMutate: ( userToCreate : User ) : OptimisticMutationUser => {
       const optimisticUser : User = {
-        ...userBeforeMutate,
+        ...userToCreate,
         id: crypto.randomUUID(),
         isOptimistic: true,
       }
 
 
       queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers )=>{
-        console.log('oldUsers', oldUsers);
-        console.log('optimisticUser', optimisticUser);
         if( !oldUsers ) return [optimisticUser];
         return [...oldUsers, optimisticUser];
       });
@@ -35,14 +33,14 @@ export const useCreateUser = () => {
 
     mutationFn: ( newUser : User ) : Promise<User> => createUser( newUser ),
 
-    onSuccess: (newUser: User, _ , { optimisticUser }) => {
+    onSuccess: (createdUser: User, _ , { optimisticUser }) => {
 
       queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers )=>{
-        if( !oldUsers ) return [newUser];
+        if( !oldUsers ) return [createdUser];
 
         const userCreateSuccess = oldUsers.map( user => {
           if (user.id === optimisticUser.id || (user as User & { isOptimistic?: boolean }).isOptimistic) {
-            return newUser;
+            return createdUser;
           }
           return user;
         });
@@ -54,7 +52,7 @@ export const useCreateUser = () => {
 
       Swal.fire({
         title: '¡Registro exitoso!',
-        text: `Usuario ${newUser?.username || optimisticUser?.username} se ha registrado correctamente.`,
+        text: `Usuario ${createdUser?.username || optimisticUser?.username} se ha registrado correctamente.`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',

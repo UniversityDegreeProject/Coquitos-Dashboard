@@ -25,7 +25,7 @@ export const UserItem = memo(({ user }: UserItemProps) => {
   }, [user.lastConnection]);
 
   // Detectar si es una mutación optimista
-  const isOptimistic = (user as any).isOptimistic;
+  const isOptimistic = (user as User).isOptimistic;
 
   return (
     <tr className={`${isDark ? 'hover:bg-[#334155]/20' : 'hover:bg-gray-50'} transition-colors ${isOptimistic ? 'animate-pulse opacity-60' : ''}`}>
@@ -61,7 +61,7 @@ export const UserItem = memo(({ user }: UserItemProps) => {
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {formattedLastConnection}
       </td>
-      <UserButtomsActions />
+      <UserButtomsActions user={user}/>
     </tr>
   );
 });

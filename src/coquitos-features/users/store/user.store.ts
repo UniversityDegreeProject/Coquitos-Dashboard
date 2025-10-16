@@ -7,19 +7,23 @@ import type { User } from "../interfaces";
 
 interface UserState {
   modalMode : 'create' | 'update' | 'delete' | null;
-  setOpenModalCreateUser : () => void;
-  setOpenModalUpdateUser : ( user : User ) => void;
-  deleteUser : () => void;
+  userToUpdate : User | null;
+  userToDelete : User | null;
+  setOpenModalCreate : () => void;
+  setOpenModalUpdate : ( user : User ) => void;
+  setOpenModalDelete : ( user : User ) => void;
   closeModal : () => void;
 }
 
 
 const userApi : StateCreator<UserState, [["zustand/devtools", never]], []> = ( set ) => ({
   modalMode : null,
-  setOpenModalCreateUser : () => set( ( state ) => ({...state, modalMode : 'create' }) , false , "Open create user modal" ),
-  setOpenModalUpdateUser : ( user : User ) => set( ( state ) => ({...state, modalMode : 'update', userToUpdate : user }) , false , "Open update user modal" ),
-  deleteUser : () => set( ( state ) => ({...state, modalMode : 'delete' }) , false , "delete user" ),
-  closeModal : () => set( ( state ) => ({...state, modalMode : null }) , false , "close modal" ),
+  userToUpdate : null,
+  userToDelete : null,
+  setOpenModalCreate : () => set( ( state ) => ({...state, modalMode : 'create' }) , false , "Open create user modal" ),
+  setOpenModalUpdate : ( user : User ) => set( ( state ) => ({...state, modalMode : 'update', userToUpdate : user }) , false , "Open update user modal" ),
+  setOpenModalDelete : ( user : User ) => set( ( state ) => ({...state, modalMode : 'delete', userToDelete : user }) , false , "delete user" ),
+  closeModal : () => set( ( state ) => ({...state, modalMode : null, userToUpdate : null, userToDelete : null }) , false , "close modal" ),
 })
 
 export const useUserStore = create<UserState>()(

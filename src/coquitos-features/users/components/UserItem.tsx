@@ -3,12 +3,14 @@ import { type User } from "../interfaces";
 import { getRoleColor, getStatusColor } from "../helpers";
 import { UserCheck } from "lucide-react";
 import { UserButtomsActions } from "./UserButtomsActions";
+import { useTheme } from "@/shared/hooks/useTheme";
 
 interface UserItemProps {
   user: User;
 }
 
 export const UserItem = memo(({ user }: UserItemProps) => {
+  const { isDark } = useTheme();
 
   const formattedLastConnection = useMemo(() => {
     if (!user.lastConnection) return 'Nunca';
@@ -22,11 +24,11 @@ export const UserItem = memo(({ user }: UserItemProps) => {
     });
   }, [user.lastConnection]);
 
-
-
+  // Detectar si es una mutación optimista
+  const isOptimistic = (user as any).isOptimistic;
 
   return (
-    <tr className="hover:bg-gray-50">
+    <tr className={`${isDark ? 'hover:bg-[#334155]/20' : 'hover:bg-gray-50'} transition-colors ${isOptimistic ? 'animate-pulse opacity-60' : ''}`}>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
           <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center">

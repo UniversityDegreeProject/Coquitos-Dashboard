@@ -1,6 +1,6 @@
 // * Library
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { X, User, Mail, Phone, Lock, Shield, UserCheck, ChevronDown, ChevronUp } from "lucide-react";
+import { X, User, Mail, Phone, Lock, Shield, UserCheck, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 // * Others
@@ -37,26 +37,29 @@ export const FormUserModal = () => {
   const { isDark } = useTheme();
 
   // * TanstackQuery
-  const { useCreateUserMutation } = useCreateUser();
+  const { useCreateUserMutation, isPending: isCreatingUser } = useCreateUser();
   
   // * React Hook Form
-  const { control, setValue, handleSubmit, formState: { errors } } = useForm<RegisterUserSchema>({
+  const { control, setValue, handleSubmit, formState: { errors, isValid } } = useForm<RegisterUserSchema>({
     resolver: zodResolver(createUserSchema),
     defaultValues: initialValues,
+    mode: "onChange",
   });
 
   const handleTogglePassword = () => {
     setShowPasswordField(!showPasswordField);
     if (showPasswordField) {
-      // Si está cerrando el campo, limpia la contraseña
       setValue("password", undefined);
     }
   };
 
   const handleSubmitForm : SubmitHandler<RegisterUserSchema> = (data) => {
+    closeModal();
+    
+   
 
+    // Ejecutar mutación
     useCreateUserMutation.mutate(data);
-
   };
 
   return (
@@ -72,7 +75,7 @@ export const FormUserModal = () => {
           </div>
           <button
             onClick={() => closeModal()}
-            className={`p-2 ${isDark ? 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#334155]/50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'} rounded-lg transition-all duration-200`}
+            className={`p-2 ${isDark ? 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#334155]/50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'} rounded-lg transition-all duration-200 cursor-pointer`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -203,16 +206,17 @@ export const FormUserModal = () => {
             <button
               type="button"
               onClick={() => closeModal()}
-              className={`flex-1 px-4 py-2.5 border ${isDark ? 'border-[#334155] text-[#E2E8F0] hover:bg-[#334155]/50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-lg transition-all duration-200 font-medium text-sm`}
+              className={`flex-1 px-4 py-2.5 border ${isDark ? 'border-[#334155] text-[#E2E8F0] hover:bg-[#334155]/50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-lg transition-all duration-200 font-medium text-sm cursor-pointer`}
             >
               Cancelar
             </button>
             <button 
               type="submit"
-              className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm`}
-              disabled={useCreateUserMutation.isPending}
+              disabled={isCreatingUser || !isValid}
+              className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
             >
-              Crear Usuario
+              {isCreatingUser && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isCreatingUser ? 'Creando...' : 'Crear Usuario'}
             </button>
           </div>
         </form>

@@ -20,7 +20,8 @@ export const getUsers = async (): Promise<User[]> => {
 export const createUser = async (user: User): Promise<User> => {
   try {
   const response = await CoquitoApi.post('/auth/register', user);
-    return response.data;
+    return response.data.user;
+    
   } catch (error : unknown) {
     if (error instanceof AxiosError) {
       throw new Error(error.response?.data.error|| 'Error al crear usuario');

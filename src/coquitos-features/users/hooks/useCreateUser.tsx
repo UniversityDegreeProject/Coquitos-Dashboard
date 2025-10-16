@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createUser } from "../services/use.service";
 import { type User } from "../interfaces"
 import Swal from "sweetalert2";
-import { useUserStore } from "../store/user.store";
 import { useQuerys } from "../const";
 
 interface OptimisticMutationUser{
@@ -12,20 +11,21 @@ interface OptimisticMutationUser{
 export const useCreateUser = () => {
 
   const queryClient = useQueryClient();
-  const { closeModal } = useUserStore();
 
   const useCreateUserMutation = useMutation({
 
 
-    onMutate: ( userSimulated : User ) : OptimisticMutationUser => {
+    onMutate: ( userBeforeMutate : User ) : OptimisticMutationUser => {
       const optimisticUser : User = {
-        ...userSimulated,
+        ...userBeforeMutate,
         id: crypto.randomUUID(),
         isOptimistic: true,
       }
 
 
-      queryClient.setQueryData<User[]>(useQuerys.createUser(), ( oldUsers )=>{
+      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers )=>{
+        console.log('oldUsers', oldUsers);
+        console.log('optimisticUser', optimisticUser);
         if( !oldUsers ) return [optimisticUser];
         return [...oldUsers, optimisticUser];
       });
@@ -37,10 +37,15 @@ export const useCreateUser = () => {
 
     onSuccess: (newUser: User, _ , { optimisticUser }) => {
 
-      queryClient.setQueryData<User[]>(useQuerys.createUser(), ( oldUsers )=>{
+      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers )=>{
         if( !oldUsers ) return [newUser];
 
-        const userCreateSuccess = oldUsers.map( user => user.id === optimisticUser.id ? newUser : user );
+        const userCreateSuccess = oldUsers.map( user => {
+          if (user.id === optimisticUser.id || (user as User & { isOptimistic?: boolean }).isOptimistic) {
+            return newUser;
+          }
+          return user;
+        });
 
         return userCreateSuccess;
 
@@ -49,7 +54,7 @@ export const useCreateUser = () => {
 
       Swal.fire({
         title: '¡Registro exitoso!',
-        text: `Empleado ${optimisticUser?.username} se ha  registrado correctamente.`,
+        text: `Usuario ${newUser?.username || optimisticUser?.username} se ha registrado correctamente.`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -58,16 +63,12 @@ export const useCreateUser = () => {
           title: 'text-xl font-bold text-gray-800',
           htmlContainer: 'text-gray-600',
         },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          closeModal();
-        }
       });
     },
 
     onError: (error : Error, _ , context? : OptimisticMutationUser | undefined ) : void => {
 
-      queryClient.setQueryData<User[]>(useQuerys.createUser(), ( oldData : User[] | undefined) => {
+      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldData : User[] | undefined) => {
 
         if (!oldData) return [];
 
@@ -76,12 +77,22 @@ export const useCreateUser = () => {
         return oldData.filter( ( user : User ) => user.id !== context.optimisticUser.id );
       });
 
+      let errorMessage = "Ha ocurrido un error al crear el usuario.";
+      
+      if (error.message.includes("email") || error.message.includes("correo")) {
+        errorMessage = error.message;
+      } else if (error.message.includes("username") || error.message.includes("usuario")) {
+        errorMessage = error.message;
+      } else if (error.message.includes("network") || error.message.includes("fetch")) {
+        errorMessage = error.message;
+      }
+
       Swal.fire({
-        title: '¡Error!',
-        text: `${error.message}`,
+        title: 'Error al crear usuario',
+        text: errorMessage,
         icon: 'error',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#38bdf8',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#ef4444',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',

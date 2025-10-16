@@ -2,22 +2,24 @@ export type Role = "Administrador" | "Cajero";
 
 export type Status = "Activo" | "Inactivo" | "Suspendido";
 
-export interface User {
+export interface UserResponse {
   id? : string;
   username : string;
+  email : string;
+  emailVerified? : boolean;
   firstName : string;
   lastName : string;
   phone : string;
-  email : string;
-  password? : string;
   role : Role;
   status : Status;
+  password? : string;
   createdAt? : Date;
   updatedAt? : Date;
   lastConnection? : Date;
-  isOptimistic? : boolean;
+  token? : string;
+  
 }
 
-export interface UserResponse extends User {
-  token? : string;
+export interface User extends Omit<UserResponse, 'password' | 'token'> {
+  isOptimistic? : boolean;
 }

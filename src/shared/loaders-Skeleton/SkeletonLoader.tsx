@@ -67,22 +67,22 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
           {cols.map((col, colIndex) => (
             <td 
               key={colIndex} 
-              className={`px-6 py-5 ${col.align === 'right' ? 'text-right' : ''} ${col.align === 'center' ? 'text-center' : ''}`}
+              className={`px-4 py-3 ${col.align === 'right' ? 'text-right' : ''} ${col.align === 'center' ? 'text-center' : ''}`}
             >
               {/* Columna con avatar */}
               {col.avatar && showAvatar ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <div 
-                    className={`w-11 h-11 rounded-full bg-gradient-to-br ${colors.avatar} ${
+                    className={`w-8 h-8 rounded-full bg-gradient-to-br ${colors.avatar} ${
                       animated ? 'animate-pulse' : ''
                     }`}
                   />
-                  <div className="space-y-2 flex-1">
+                  <div className="space-y-1.5 flex-1">
                     {Array.from({ length: col.lines || 1 }).map((_, lineIndex) => (
                       <div 
                         key={lineIndex}
-                        className={`h-3.5 bg-gradient-to-r ${colors.secondary} rounded-md ${
-                          lineIndex === 0 ? col.width || 'w-28' : 'w-36'
+                        className={`h-3 bg-gradient-to-r ${colors.secondary} rounded-md ${
+                          lineIndex === 0 ? col.width || 'w-20' : 'w-28'
                         } ${animated ? 'animate-pulse' : ''}`}
                         style={animated ? {
                           animationDelay: `${(rowIndex * 0.1 + colIndex * 0.05)}s`
@@ -94,7 +94,7 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
               ) : col.type === 'badge' ? (
                 // Badge (Rol, Estado, etc.)
                 <div 
-                  className={`inline-block h-7 ${col.width || 'w-24'} bg-gradient-to-r ${colors.primary} rounded-full ${
+                  className={`inline-block h-6 ${col.width || 'w-16'} bg-gradient-to-r ${colors.primary} rounded-full ${
                     animated ? 'animate-pulse' : ''
                   }`}
                   style={animated ? {
@@ -103,11 +103,11 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                 />
               ) : col.type === 'actions' ? (
                 // Múltiples botones de acción
-                <div className="inline-flex gap-2 justify-end">
-                  {Array.from({ length: col.count || 4 }).map((_, i) => (
+                <div className="inline-flex gap-1.5 justify-end">
+                  {Array.from({ length: col.count || 3 }).map((_, i) => (
                     <div 
                       key={i}
-                      className={`w-8 h-8 bg-gradient-to-br ${colors.primary} rounded-lg ${
+                      className={`w-7 h-7 bg-gradient-to-br ${colors.primary} rounded-md ${
                         animated ? 'animate-pulse' : ''
                       }`}
                       style={animated ? {
@@ -118,12 +118,12 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
                 </div>
               ) : (
                 // Columna simple con líneas de texto
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {Array.from({ length: col.lines || 1 }).map((_, lineIndex) => (
                     <div 
                       key={lineIndex}
-                      className={`h-3.5 bg-gradient-to-r ${colors.secondary} rounded-md ${
-                        col.width || 'w-24'
+                      className={`h-3 bg-gradient-to-r ${colors.secondary} rounded-md ${
+                        col.width || 'w-20'
                       } ${lineIndex > 0 ? 'opacity-70' : ''} ${
                         animated ? 'animate-pulse' : ''
                       } ${col.align === 'center' ? 'mx-auto' : ''}`}

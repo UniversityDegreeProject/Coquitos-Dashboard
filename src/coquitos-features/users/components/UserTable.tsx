@@ -37,7 +37,7 @@ export const UserTable = memo(({ users, isPending }: UserTableProps) => {
       <tbody className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} divide-y ${isDark ? 'divide-[#334155]' : 'divide-gray-200'}`}>
         {isPending ? (
           <SkeletonLoader 
-            rows={5} 
+            rows={3} 
             columns={userTableSkeletonColumns}
             showAvatar={true}
             animated={true}

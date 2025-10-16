@@ -14,6 +14,11 @@
 - [Modelos de Datos](#modelos-de-datos)
 - [Códigos de Estado](#códigos-de-estado)
 - [Manejo de Errores](#manejo-de-errores)
+- [Implementación Frontend](#implementación-frontend---búsqueda-de-usuarios)
+  - [Arquitectura de Features](#arquitectura-de-features-clean-architecture)
+  - [Implementación de Búsqueda](#implementación-de-búsqueda)
+  - [Ventajas de la Arquitectura](#ventajas-de-esta-arquitectura)
+  - [Patrón Recomendado](#patrón-recomendado-para-nuevas-features)
 
 ---
 
@@ -1204,6 +1209,284 @@ DELETE http://localhost:3000/api/users/550e8400-e29b-41d4-a716-446655440000
 ### UUIDs
 - Todos los IDs son UUID v4
 - Ejemplo: `"550e8400-e29b-41d4-a716-446655440000"`
+
+---
+
+## 🎨 Implementación Frontend - Búsqueda de Usuarios
+
+### Arquitectura de Features (Clean Architecture)
+
+El módulo de usuarios sigue el patrón de Clean Architecture organizado por features:
+
+```
+src/coquitos-features/users/
+├── components/         # Componentes visuales
+├── const/             # Constantes y configuraciones
+├── helpers/           # Funciones auxiliares
+├── hooks/             # Custom hooks de TanStack Query
+├── interfaces/        # Tipos e interfaces TypeScript
+├── pages/             # Páginas del módulo
+├── schemas/           # Esquemas de validación Zod
+├── services/          # Servicios de API
+└── store/             # Store de Zustand
+```
+
+---
+
+### 🔍 Implementación de Búsqueda
+
+#### 1. **Interfaces** (`interfaces/user.interface.ts`)
+
+```typescript
+export type Role = "Administrador" | "Cajero";
+export type Status = "Activo" | "Inactivo" | "Suspendido";
+
+export interface User {
+  id?: string;
+  username: string;
+  email: string;
+  emailVerified?: boolean;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role: Role;
+  status: Status;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+```
+
+---
+
+#### 2. **Servicios** (`services/use.service.ts`)
+
+```typescript
+// Servicio de búsqueda de usuarios
+export const searchUsers = async (search: string): Promise<User[]> => {
+  try {
+    const response = await CoquitoApi.get<UsersResponse>(
+      `/users/search?search=${search}`
+    );
+    return response.data.users;
+  } catch (error) {
+    throw new Error(`Error al buscar usuarios: ${error}`);
+  }
+}
+```
+
+**Funcionalidad:**
+- Realiza petición GET al endpoint `/users/search`
+- Recibe un parámetro de búsqueda
+- Retorna array de usuarios filtrados
+- Manejo de errores con mensajes descriptivos
+
+---
+
+#### 3. **Constantes de Query** (`const/use-querys.ts`)
+
+```typescript
+export const useQuerys = {
+  allUsers: ['users'] as const,
+  searchUsers: (params: {
+    search?: string;
+    role?: 'Administrador' | 'Cajero';
+    status?: 'Activo' | 'Inactivo' | 'Suspendido';
+    page?: number;
+    limit?: number;
+  }) => [useQuerys.allUsers, params] as const,
+}
+```
+
+**Funcionalidad:**
+- Define query keys tipadas para TanStack Query
+- Permite cache granular por parámetros de búsqueda
+- Seguimiento de dependencias automático
+
+---
+
+#### 4. **Hook de Búsqueda** (`hooks/useSearchUsers.tsx`)
+
+```typescript
+export const useSearchUsers = ({ 
+  search = "", 
+  role = "", 
+  status = "" 
+}: UseSearchUsersParams) => {
+  // Determinar si hay filtros activos
+  const hasFilters = search.trim() !== "" || role !== "" || status !== "";
+
+  const searchQuery = useQuery({
+    queryKey: useQuerys.searchUsers({
+      search: search || undefined,
+      role: role || undefined,
+      status: status || undefined,
+    }),
+    queryFn: () => searchUsers(search),
+    
+    // Configuración de caché
+    staleTime: 1000 * 60 * 2, // 2 minutos
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    
+    // Solo ejecutar si hay filtros activos
+    enabled: hasFilters,
+  });
+
+  return {
+    ...searchQuery,
+    hasFilters,
+  };
+};
+```
+
+**Características:**
+- **Parámetros tipados**: `search`, `role`, `status`
+- **Caché inteligente**: Solo busca si hay filtros activos
+- **Optimización**: No refetch innecesarios
+- **Query key dinámica**: Cache por parámetros específicos
+- **Estado de filtros**: Retorna `hasFilters` para lógica condicional
+
+---
+
+#### 5. **Integración en Página** (`pages/UsersPage.tsx`)
+
+```typescript
+export const UsersPage = () => {
+  // React Hook Form para los filtros
+  const { control, watch } = useForm({
+    defaultValues: {
+      search: "",
+      roleFilter: "",
+      statusFilter: "",
+    },
+    mode: "onChange",
+  });
+
+  // Observar cambios en tiempo real
+  const searchValue = watch("search");
+  const roleFilterValue = watch("roleFilter") as Role | "";
+  const statusFilterValue = watch("statusFilter") as Status | "";
+
+  // Hook de todos los usuarios
+  const { data: allUsers = [], isPending: isPendingAll } = useGetUsers();
+  
+  // Hook de búsqueda (solo se activa con filtros)
+  const { 
+    data: searchedUsers = [], 
+    isPending: isPendingSearch,
+    hasFilters 
+  } = useSearchUsers({
+    search: searchValue,
+    role: roleFilterValue,
+    status: statusFilterValue,
+  });
+
+  // Determinar qué datos mostrar
+  const { users, isPending } = useMemo(() => {
+    if (hasFilters) {
+      return { users: searchedUsers, isPending: isPendingSearch };
+    }
+    return { users: allUsers, isPending: isPendingAll };
+  }, [hasFilters, searchedUsers, allUsers, isPendingSearch, isPendingAll]);
+
+  return (
+    // UI con filtros y tabla de usuarios
+  );
+};
+```
+
+**Flujo de Datos:**
+1. **Usuario escribe** → React Hook Form captura con `watch()`
+2. **Valores reactivos** → `useSearchUsers` recibe parámetros
+3. **Validación** → Si hay filtros, ejecuta query
+4. **TanStack Query** → Llama al servicio y cachea
+5. **Servicio** → Petición HTTP al backend
+6. **Resultado** → `useMemo` decide qué datos mostrar
+7. **Render** → Componente actualiza la tabla
+
+---
+
+### 🎯 Ventajas de esta Arquitectura
+
+#### 🔹 Separación de Responsabilidades
+- **Services**: Solo comunicación con API
+- **Hooks**: Solo lógica de estado (TanStack Query)
+- **Components**: Solo UI
+- **Interfaces**: Solo tipos compartidos
+
+#### 🔹 Reutilización
+```typescript
+// El hook puede reutilizarse en cualquier componente
+const { data: activeUsers } = useSearchUsers({ 
+  status: "Activo" 
+});
+```
+
+#### 🔹 Testabilidad
+```typescript
+// Servicios puros fáciles de testear
+test('searchUsers debería buscar por término', async () => {
+  const result = await searchUsers("Juan");
+  expect(result).toBeInstanceOf(Array);
+});
+```
+
+#### 🔹 Caché Automático
+- TanStack Query cachea resultados
+- Query keys únicas por parámetros
+- Invalidación selectiva de cache
+
+#### 🔹 TypeScript Estricto
+- Interfaces compartidas
+- Sin `any`
+- Autocompletado completo
+
+---
+
+### 📋 Ejemplo de Uso Completo
+
+```tsx
+// En cualquier componente:
+import { useSearchUsers } from '@/coquitos-features/users/hooks/useSearchUsers';
+
+const MyComponent = () => {
+  const { data: admins, isLoading } = useSearchUsers({
+    role: 'Administrador',
+    status: 'Activo'
+  });
+
+  if (isLoading) return <Spinner />;
+
+  return (
+    <div>
+      {admins?.map(admin => (
+        <UserCard key={admin.id} user={admin} />
+      ))}
+    </div>
+  );
+};
+```
+
+---
+
+### 🛠️ Patrón Recomendado para Nuevas Features
+
+Al crear nuevas funcionalidades (productos, órdenes, etc.), seguir esta estructura:
+
+```
+src/coquitos-features/[feature]/
+├── interfaces/        # 1. Definir tipos
+├── services/          # 2. Crear servicios de API
+├── const/            # 3. Definir query keys
+├── hooks/            # 4. Crear hooks de TanStack Query
+├── schemas/          # 5. Esquemas de validación (Zod)
+├── components/       # 6. Componentes de UI
+├── pages/            # 7. Páginas principales
+└── store/            # 8. Estado local (Zustand, solo UI)
+```
+
+**Orden de implementación:**
+1. Interfaces → 2. Servicios → 3. Hooks → 4. Componentes → 5. Páginas
 
 ---
 

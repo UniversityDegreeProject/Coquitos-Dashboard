@@ -35,7 +35,7 @@ export const UserItem = memo(({ user }: UserItemProps) => {
             <UserCheck className="w-5 h-5 text-white" />
           </div>
           <div className="ml-4">
-            <div className="text-sm font-medium text-gray-900">{user.firstName} {user.lastName}</div>
+            <div className="text-sm font-medium text-gray-900">{user.username}</div>
             <div className="text-sm text-gray-500">{user.email}</div>
           </div>
         </div>

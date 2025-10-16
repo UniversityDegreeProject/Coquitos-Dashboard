@@ -1,45 +1,40 @@
 //* Librerias
-import { Plus, Users, Shield } from "lucide-react";
-import { useCallback } from "react";
+import { Plus, Users } from "lucide-react";
+import { useCallback, useState } from "react";
 
 //* Others
 import { SearchPage } from "@/shared/pages";
-import { LabelInputString, LabelSelect } from "@/shared/components";
-import { useForm } from "react-hook-form";
 import { UserGrid } from "../components";
-import { useGetUsers } from "../hooks/useGetUsers";
+import { useUserSearch } from "../hooks/useSearchUsers";
 import { useUserStore } from "../store/user.store";
 import { FormUserModal } from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { User } from "../interfaces";
+import { useDebounce } from "../hooks/useDebounce";
+import type { Role, Status } from "../interfaces";
 import { useShallow } from "zustand/shallow";
-import { roleOptions } from "../const/role-options";
-import { statusOptions } from "../const/status-options";
-
-const initialValue : User[] = [];
 
 export const UsersPage = () => {
+  // * Estados locales para filtros
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState<Role | "">("");
+  const [statusFilter, setStatusFilter] = useState<Status | "">("");
 
+  // * Debounce para la búsqueda (500ms)
+  const debouncedSearch = useDebounce(searchTerm, 500);
 
   // *Zustand - Optimizado con selectores específicos
   const modalMode = useUserStore(useShallow((state) => state.modalMode));
   const setOpenModalCreate = useUserStore(useShallow((state) => state.setOpenModalCreate));
   
-  // * HooksTanstack
-  const { data : users = initialValue, isPending } = useGetUsers();
+  // * Hook de búsqueda con todos los filtros
+  const { users, isLoading } = useUserSearch({
+    search: debouncedSearch,
+    role: roleFilter,
+    status: statusFilter,
+  });
   
   // * Theme
   const { colors, isDark } = useTheme();
-  
-  // * React Hook Form
-  const { control } = useForm({
-    defaultValues: {
-      search: "",
-      roleFilter: "",
-      statusFilter: "",
-    },
-    mode: "onChange",
-  });
 
   // * Memoizar el callback del botón
   const handleOpenModal = useCallback(() => {
@@ -71,38 +66,17 @@ export const UsersPage = () => {
       </div>
 
       {/* Search and Filters */}
-      <SearchPage
-        roleFilter={
-          <LabelSelect
-            label="Filtrar por Rol"
-            name="roleFilter"
-            control={control}
-            options={roleOptions}
-            icon={Shield}
-            className="mb-0"
-          />
-        }
-        statusFilter={
-          <LabelSelect
-            label="Filtrar por Estado"
-            name="statusFilter"
-            control={control}
-            options={statusOptions}
-            icon={Users}
-            className="mb-0"
-          />
-        }
-      >
-        <LabelInputString
-          label="Buscar usuarios..."
-          name="search"
-          control={control}
-          placeholder="Buscar usuarios..."
-        />
-      </SearchPage>
+      <SearchPage 
+        searchValue={searchTerm}
+        onSearchChange={setSearchTerm}
+        roleFilter={roleFilter}
+        onRoleChange={setRoleFilter}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+      />
 
-      {/* Users Table */}
-      <UserGrid users={users} isPending={isPending} />
+      {/* Users Grid/Table */}
+      <UserGrid users={users} isPending={isLoading} />
 
       {/* Create User Modal */}
       {modalMode === 'create' && (

@@ -6,6 +6,8 @@ interface UsersResponse {
   users: User[];
 }
 
+
+
 export const getUsers = async (): Promise<User[]> => {
   try {
     const response = await CoquitoApi.get<UsersResponse>('/users/');
@@ -13,6 +15,15 @@ export const getUsers = async (): Promise<User[]> => {
     return response.data.users;
   } catch (error) {
     throw new Error(`Error al obtener usuarios: ${error}`);
+  }
+}
+
+export const searchUsers = async (search: string): Promise<User[]> => {
+  try {
+    const response = await CoquitoApi.get<UsersResponse>(`/users/search?search=${search}`);
+    return response.data.users;
+  } catch (error) {
+    throw new Error(`Error al buscar usuarios: ${error}`);
   }
 }
 

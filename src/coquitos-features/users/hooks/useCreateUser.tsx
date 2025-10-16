@@ -49,6 +49,8 @@ export const useCreateUser = () => {
 
       });
       
+      // Invalidar queries paginadas para reflejar el nuevo usuario
+      queryClient.invalidateQueries({ queryKey: ['users', 'paginated'] });
 
       Swal.fire({
         title: '¡Registro exitoso!',
@@ -81,7 +83,7 @@ export const useCreateUser = () => {
         errorMessage = error.message;
       } else if (error.message.includes("username") || error.message.includes("usuario")) {
         errorMessage = error.message;
-      } else if (error.message.includes("network") || error.message.includes("fetch")) {
+      } else {
         errorMessage = error.message;
       }
 

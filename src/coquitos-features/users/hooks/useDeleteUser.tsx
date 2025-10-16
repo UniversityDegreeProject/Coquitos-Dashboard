@@ -46,6 +46,10 @@ export const useDeleteUser = () => {
         if( !oldUsers ) return [];
         return oldUsers.filter( (user : User) => user.id !== userId );
       });
+
+      // Invalidar queries paginadas para reflejar la eliminación
+      queryClient.invalidateQueries({ queryKey: ['users', 'paginated'] });
+
       Swal.fire({
         title: 'Usuario eliminado exitosamente',
         text: `El usuario ${userDeleted.username} se ha eliminado correctamente`,

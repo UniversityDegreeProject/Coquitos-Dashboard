@@ -67,6 +67,9 @@ export const useUpdateUser = () => {
         return dataUpdatedSuccess;
       });
       
+      // Invalidar queries paginadas para reflejar la actualización
+      queryClient.invalidateQueries({ queryKey: ['users', 'paginated'] });
+
       Swal.fire({
         title: 'Usuario actualizado exitosamente',
         text: `El usuario ${updatedUser.username} se ha actualizado correctamente`,

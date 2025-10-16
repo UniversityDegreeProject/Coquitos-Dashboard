@@ -1,10 +1,7 @@
 import { CoquitoApi } from "@/config/axios.adapter"
-import type { User } from "../interfaces"
 import { AxiosError } from "axios";
+import type { User, UsersResponse } from "../interfaces/user.interface";
 
-interface UsersResponse {
-  users: User[];
-}
 
 
 

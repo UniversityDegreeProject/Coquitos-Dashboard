@@ -4,3 +4,4 @@ export * from './UserButtonsActions';
 export * from './UserGrid';
 export * from './UserItem';
 export * from './UserTable';
+export * from './UserPagination';

@@ -1,18 +1,43 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
-import { useUserStore } from '../store/user.store';
 import { deleteUser } from '../services/use.service';
 import { useQuerys } from '../const';
 import type { User } from '../interfaces';
 
-
+interface OptimisticDeleteUser {
+  deletedUser: User;
+}
 
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
 
-  const { closeModal } = useUserStore();
-
   const deleteUserMutation = useMutation({
+
+    onMutate: async (userId: string): Promise<OptimisticDeleteUser> => {
+      const oldUsers = queryClient.getQueryData<User[]>(useQuerys.allUsers);
+      const deletedUser = oldUsers?.find(user => user.id === userId);
+
+      if (!deletedUser) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      const optimisticUser: User = {
+        ...deletedUser,
+        isOptimistic: true,
+      };
+
+      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[] => {
+        if( !oldUsers ) return [];
+        
+        return oldUsers.map(user => 
+          user.id === userId 
+            ? optimisticUser 
+            : user
+        );
+      });
+
+      return { deletedUser };
+    },
 
     mutationFn: (userId: string) => deleteUser(userId),
 
@@ -32,17 +57,21 @@ export const useDeleteUser = () => {
           title: 'text-xl font-bold text-gray-800',
           htmlContainer: 'text-gray-600',
         },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          closeModal();
-        }
       });
     },
-    onError: (error) : void  => {
+    
+    onError: (error, userId: string, context?: OptimisticDeleteUser) : void  => {
 
       queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[] => {
         if( !oldUsers ) return [];
-        return oldUsers;
+        
+        if (!context?.deletedUser) return oldUsers;
+
+        return oldUsers.map(user => 
+          user.id === userId 
+            ? context.deletedUser
+            : user
+        );
       });
 
       Swal.fire({

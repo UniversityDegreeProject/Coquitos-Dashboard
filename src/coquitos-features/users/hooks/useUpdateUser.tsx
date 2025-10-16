@@ -4,7 +4,6 @@ import Swal from 'sweetalert2';
 
 // * Others
 import type { User } from '../interfaces';
-import { useUserStore } from '../store/user.store';
 import { useQuerys } from '../const';
 import { updateUser } from '../services/use.service';
 
@@ -12,42 +11,55 @@ import { updateUser } from '../services/use.service';
 
 interface OptimisticUpdateUser {
   optimisticUser : User;
+  originalUser : User;
 }
 
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
-  const { closeModal } = useUserStore();
 
   const updateUserMutation = useMutation({
 
     onMutate: (usertoUpdate: User) : OptimisticUpdateUser => {
 
-      //* Optimistic update
+      const oldUsers = queryClient.getQueryData<User[]>(useQuerys.allUsers);
+      const originalUser = oldUsers?.find(user => user.id === usertoUpdate.id);
+
+      if (!originalUser) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      // 2. Crear la versión optimista
       const optimisticUser : User = {
         ...usertoUpdate,
-        id: crypto.randomUUID(),
         isOptimistic: true,
       }
 
+      // 3. Aplicar la mutación optimista
       queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[] =>  {
-        if( !oldUsers ) return [optimisticUser];
-        return [...oldUsers, optimisticUser];
+        if( !oldUsers ) return [];
+
+        return oldUsers.map(user => 
+          user.id === usertoUpdate.id 
+            ? optimisticUser 
+            : user
+        );
       });
 
-      return { optimisticUser };
+      // 4. Retornar tanto el usuario optimista como el original
+      return { optimisticUser, originalUser };
     },
 
     mutationFn: ( userUpdated : User) => updateUser(userUpdated.id!, userUpdated),
 
 
-    onSuccess: (updatedUser, _ : User, { optimisticUser } : OptimisticUpdateUser) : void => {
+    onSuccess: (updatedUser, ) : void => {
       
       queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[]  => {
 
         if (!oldUsers) return [updatedUser];
 
         const dataUpdatedSuccess = oldUsers.map(( user : User ) => {
-          if (user.id === optimisticUser.id || (user as User & { isOptimistic?: boolean }).isOptimistic) {
+          if (user.id === updatedUser.id || (user as User & { isOptimistic?: boolean }).isOptimistic) {
             return updatedUser;
           }
           return user;
@@ -57,7 +69,7 @@ export const useUpdateUser = () => {
       
       Swal.fire({
         title: 'Usuario actualizado exitosamente',
-        text: `El usuario ${updatedUser.username || optimisticUser.username} se ha actualizado correctamente`,
+        text: `El usuario ${updatedUser.username} se ha actualizado correctamente`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -66,22 +78,23 @@ export const useUpdateUser = () => {
           title: 'text-xl font-bold text-gray-800',
           htmlContainer: 'text-gray-600',
         },
-      }).then((result) => {
-        if (result.isConfirmed) {
-          closeModal();
-        }
       });
     },
 
-    onError: ( error, _ : User, context? : OptimisticUpdateUser) : void => {
+    onError: ( error, userToUpdate : User, context? : OptimisticUpdateUser) : void => {
 
       queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers  ) : User[] => {
         
         if (!oldUsers) return [];
 
-        if (!context?.optimisticUser) return oldUsers;
+        if (!context?.originalUser) return oldUsers;
 
-        return oldUsers.filter( (user : User) => user.id !== context?.optimisticUser?.id );
+        // Restaurar los datos originales del usuario
+        return oldUsers.map((user : User) => 
+          user.id === userToUpdate.id 
+            ? context.originalUser // Restaurar datos originales
+            : user
+        );
       });
 
       let errorMessage = "Ha ocurrido un error al actualizar el usuario.";

@@ -8,6 +8,7 @@ import { useDeleteUser } from "../hooks/useDeleteUser";
 import { useShallow } from "zustand/shallow";
 import { useSendVerificationEmail } from "../hooks/useSendVerificationEmail";
 import { paths } from "@/router/paths";
+import { useSentChangePassword } from "../hooks/useSentChangePassword";
 
 
 interface UserButtomsActionsProps {
@@ -17,13 +18,15 @@ interface UserButtomsActionsProps {
 export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
   const navigate = useNavigate();
   const setOpenModalUpdate = useUserStore(useShallow((state) => state.setOpenModalUpdate));
-  // Suscribirse directamente a usersInPolling para detectar cambios
-  const usersInPolling = useUserStore(useShallow((state) => state.usersInPolling));
   const { deleteUserMutation } = useDeleteUser();
+
+  // * Email verification polling state
+  const usersInPolling = useUserStore(useShallow((state) => state.usersInPolling));
   const { sendVerificationEmailMutation, isPending: isSendingVerificationEmail } = useSendVerificationEmail();
-  
-  // Verificar si este usuario está en polling (reactivo)
   const isThisUserInPolling = usersInPolling.has(user.id!);
+  
+  // * Password
+  const { useQuerySendChangePassword, isPending } = useSentChangePassword();
   
   const handleDeleteUser = useCallback (() => {
     Swal.fire({
@@ -55,9 +58,10 @@ export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
     navigate(paths.dashboard.userDetail(user.id!));
   }, [user.id, navigate]);
 
-  // const handleChangePassword = useCallback (() => {
-  //   console.log('change password');
-  // }, []);
+  const handleChangePassword = useCallback (() => {
+    useQuerySendChangePassword.mutate(user.email);
+  }, [user.email, useQuerySendChangePassword]);
+
   return (
     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative">
       <div className="flex space-x-2">
@@ -100,8 +104,10 @@ export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
           aria-label="Cambiar contraseña"
           title="Cambiar contraseña"
           type="button"
+          onClick={handleChangePassword}
         >
-          <KeyRound className="w-4 h-4" />
+          {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+          
         </button>
         <button
           className="text-gray-500 hover:text-gray-800"

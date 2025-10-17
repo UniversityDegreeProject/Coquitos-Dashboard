@@ -74,3 +74,16 @@ export const sendVerificationEmail = async (email: string): Promise<User> => {
     throw new Error('Error desconocido');
   }
 }
+
+
+export const changeUserPassword = async ( email : string): Promise<void> => {
+  try {
+    const response = await CoquitoApi.post(`/auth/forgot-password`, { email });
+    return response.data.message
+  } catch (error : unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data.error|| 'Error al cambiar la contraseña');
+    }
+    throw new Error('Error desconocido');
+  }
+}

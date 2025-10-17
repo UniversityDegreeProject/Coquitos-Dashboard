@@ -34,7 +34,7 @@ const userApi : StateCreator<UserState, [["zustand/devtools", never]], []> = ( s
       return {...state, usersInPolling : newSet };
     }, false, "Remove user from polling" ),
   
-  isUserInPolling : (userId: string) => get().usersInPolling.has(userId),
+  isUserInPolling : (userId: string) => get().usersInPolling.size > 0 && get().usersInPolling.has(userId) ? true : false,
   
   modalMode : null,
   userToUpdate : null,

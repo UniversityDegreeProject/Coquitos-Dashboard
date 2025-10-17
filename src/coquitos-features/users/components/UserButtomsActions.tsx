@@ -1,4 +1,4 @@
-import { Edit2, Trash2, MailCheck, Eye, KeyRound } from "lucide-react";
+import { Edit2, Trash2, MailCheck, Eye, KeyRound, Loader2 } from "lucide-react";
 import { type User } from "../interfaces";
 import { useCallback } from "react";
 import { useUserStore } from "../store/user.store";
@@ -15,11 +15,13 @@ interface UserButtomsActionsProps {
 export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
 
   const setOpenModalUpdate = useUserStore(useShallow((state) => state.setOpenModalUpdate));
-  const isUserInPolling = useUserStore(useShallow((state) => state.isUserInPolling));
+  // Suscribirse directamente a usersInPolling para detectar cambios
+  const usersInPolling = useUserStore(useShallow((state) => state.usersInPolling));
   const { deleteUserMutation } = useDeleteUser();
-  const { sendVerificationEmailMutation } = useSendVerificationEmail();
+  const { sendVerificationEmailMutation, isPending: isSendingVerificationEmail } = useSendVerificationEmail();
   
-  const isThisUserInPolling = isUserInPolling(user.id!);
+  // Verificar si este usuario está en polling (reactivo)
+  const isThisUserInPolling = usersInPolling.has(user.id!);
   
   const handleDeleteUser = useCallback (() => {
     Swal.fire({
@@ -75,16 +77,22 @@ export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
         >
           <Trash2 className="w-4 h-4" />
         </button>
-        <button
-          className="text-blue-600 hover:text-blue-800"
-          aria-label="Enviar verificación"
-          title="Enviar verificación"
-          type="button"
-          onClick={handleSendVerification}
-          disabled={isThisUserInPolling}
-        >
-          <MailCheck className={`w-4 h-4 ${isThisUserInPolling ? 'animate-pulse' : ''}`} />
-        </button>
+        {/* Enviar verificación solo si el usuario no ha verificado su email */}
+        {
+          !user.emailVerified && (
+            <button
+            className="text-blue-600 hover:text-blue-800"
+            aria-label="Enviar verificación"
+            title="Enviar verificación"
+            type="button"
+            onClick={handleSendVerification}
+            disabled={isThisUserInPolling}
+          >
+           {isSendingVerificationEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <MailCheck className={`w-4 h-4 ${isThisUserInPolling ? 'animate-pulse'  : ''}`} />}
+          </button>
+          )
+        }
+        
         <button
           className="text-green-600 hover:text-green-900"
           aria-label="Cambiar contraseña"

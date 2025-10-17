@@ -38,7 +38,7 @@ export const UsersPage = () => {
   
   // * Theme
   const { colors, isDark } = useTheme();
-
+  
   // * Memoizar el callback del botón
   const handleOpenModal = useCallback(() => {
     setOpenModalCreate();

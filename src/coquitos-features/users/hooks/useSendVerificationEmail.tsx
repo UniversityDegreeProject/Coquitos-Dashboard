@@ -60,5 +60,6 @@ export const useSendVerificationEmail = () => {
   
   return {
     sendVerificationEmailMutation,
+    isPending: sendVerificationEmailMutation.isPending,
   }
 }

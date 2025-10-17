@@ -26,7 +26,7 @@ export const useGetUsers =() => {
     
     // *Polling inteligente: solo cuando hay usuarios esperando verificación
     refetchIntervalInBackground: hasUsersInPolling,
-    refetchInterval: hasUsersInPolling ? 1000 * 60 : false, // 1 minuto
+    refetchInterval: hasUsersInPolling ? 2000 : false, // 1 minuto
   })
 
   return {

@@ -6,24 +6,41 @@ import type { User } from "../interfaces";
 
 
 interface UserState {
+  usersInPolling : Set<string>;
+  addUserToPolling : (userId: string) => void;
+  removeUserFromPolling : (userId: string) => void;
+  isUserInPolling : (userId: string) => boolean;
   modalMode : 'create' | 'update' | 'delete' | null;
   userToUpdate : User | null;
-  userToDelete : User | null;
   setOpenModalCreate : () => void;
   setOpenModalUpdate : ( user : User ) => void;
-  setOpenModalDelete : ( user : User ) => void;
   closeModal : () => void;
 }
 
 
-const userApi : StateCreator<UserState, [["zustand/devtools", never]], []> = ( set ) => ({
+const userApi : StateCreator<UserState, [["zustand/devtools", never]], []> = ( set, get ) => ({
+  usersInPolling : new Set<string>(),
+  
+  addUserToPolling : (userId: string) => set( ( state ) => {
+      const newSet = new Set(state.usersInPolling);
+      newSet.add(userId);
+      return {...state, usersInPolling : newSet };
+    }, false, "Add user to polling" 
+  ),
+  
+  removeUserFromPolling : (userId: string) => set( ( state ) => {
+      const newSet = new Set(state.usersInPolling);
+      newSet.delete(userId);
+      return {...state, usersInPolling : newSet };
+    }, false, "Remove user from polling" ),
+  
+  isUserInPolling : (userId: string) => get().usersInPolling.has(userId),
+  
   modalMode : null,
   userToUpdate : null,
-  userToDelete : null,
   setOpenModalCreate : () => set( ( state ) => ({...state, modalMode : 'create' }) , false , "Open create user modal" ),
   setOpenModalUpdate : ( user : User ) => set( ( state ) => ({...state, modalMode : 'update', userToUpdate : user }) , false , "Open update user modal" ),
-  setOpenModalDelete : ( user : User ) => set( ( state ) => ({...state, modalMode : 'delete', userToDelete : user }) , false , "delete user" ),
-  closeModal : () => set( ( state ) => ({...state, modalMode : null, userToUpdate : null, userToDelete : null }) , false , "close modal" ),
+  closeModal : () => set( ( state ) => ({...state, modalMode : null, userToUpdate : null }) , false , "close modal" ),
 })
 
 export const useUserStore = create<UserState>()(

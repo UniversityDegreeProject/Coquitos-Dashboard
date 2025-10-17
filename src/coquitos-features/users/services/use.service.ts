@@ -63,4 +63,14 @@ export const deleteUser = async (userId: string): Promise<User> => {
     throw new Error('Error desconocido');
   }
 }
-
+export const sendVerificationEmail = async (email: string): Promise<User> => {
+  try {
+    const response = await CoquitoApi.post(`/auth/retry-verify-email`, { email });
+    return response.data.user;
+  } catch (error : unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data.error|| 'Error al enviar email de verificación');
+    }
+    throw new Error('Error desconocido');
+  }
+}

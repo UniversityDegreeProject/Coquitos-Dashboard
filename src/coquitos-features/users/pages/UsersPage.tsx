@@ -1,6 +1,6 @@
 //* Librerias
 import { Plus, Users } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 
 //* Others
 import { SearchPage } from "@/shared/pages";
@@ -10,6 +10,7 @@ import { useUserStore } from "../store/user.store";
 import { FormUserModal } from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "../hooks/useDebounce";
+import { validateVerifiedUsers } from "../helpers";
 import type { Role, Status } from "../interfaces";
 import { useShallow } from "zustand/shallow";
 
@@ -25,6 +26,8 @@ export const UsersPage = () => {
   // *Zustand - Optimizado con selectores específicos
   const modalMode = useUserStore(useShallow((state) => state.modalMode));
   const setOpenModalCreate = useUserStore(useShallow((state) => state.setOpenModalCreate));
+  const usersInPolling = useUserStore(useShallow((state) => state.usersInPolling));
+  const removeUserFromPolling = useUserStore(useShallow((state) => state.removeUserFromPolling));
   
   // * Hook de búsqueda con todos los filtros
   const { users, isLoading } = useUserSearch({
@@ -40,6 +43,13 @@ export const UsersPage = () => {
   const handleOpenModal = useCallback(() => {
     setOpenModalCreate();
   }, [setOpenModalCreate]);
+
+  // * Validar usuarios verificados en cada re-render
+  useEffect(() => {
+    if (users.length > 0 && usersInPolling.size > 0) {
+      validateVerifiedUsers(users, usersInPolling, removeUserFromPolling);
+    }
+  }, [users, usersInPolling, removeUserFromPolling]);
 
 
 

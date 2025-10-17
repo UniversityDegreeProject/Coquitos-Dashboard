@@ -4,6 +4,8 @@ import { useCallback } from "react";
 import { useUserStore } from "../store/user.store";
 import Swal from "sweetalert2";
 import { useDeleteUser } from "../hooks/useDeleteUser";
+import { useShallow } from "zustand/shallow";
+import { useSendVerificationEmail } from "../hooks/useSendVerificationEmail";
 
 
 interface UserButtomsActionsProps {
@@ -12,8 +14,13 @@ interface UserButtomsActionsProps {
 
 export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
 
-  const { setOpenModalUpdate } = useUserStore();
+  const setOpenModalUpdate = useUserStore(useShallow((state) => state.setOpenModalUpdate));
+  const isUserInPolling = useUserStore(useShallow((state) => state.isUserInPolling));
   const { deleteUserMutation } = useDeleteUser();
+  const { sendVerificationEmailMutation } = useSendVerificationEmail();
+  
+  const isThisUserInPolling = isUserInPolling(user.id!);
+  
   const handleDeleteUser = useCallback (() => {
     Swal.fire({
       title: '¿Estás seguro de querer eliminar este usuario?',
@@ -33,6 +40,20 @@ export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
     setOpenModalUpdate(user);
   }, [user, setOpenModalUpdate]);
 
+  const handleSendVerification = useCallback (() => {
+    sendVerificationEmailMutation.mutate({
+      email: user.email,
+      userId: user.id!
+    });
+  }, [user, sendVerificationEmailMutation]);
+
+  // const handleChangePassword = useCallback (() => {
+  //   console.log('change password');
+  // }, []);
+
+  // const handleSeeMore = useCallback (() => {
+  //   // TODO -> ir a la pagina exclusiva
+  // }, []);
   return (
     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative">
       <div className="flex space-x-2">
@@ -59,8 +80,10 @@ export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
           aria-label="Enviar verificación"
           title="Enviar verificación"
           type="button"
+          onClick={handleSendVerification}
+          disabled={isThisUserInPolling}
         >
-          <MailCheck className="w-4 h-4" />
+          <MailCheck className={`w-4 h-4 ${isThisUserInPolling ? 'animate-pulse' : ''}`} />
         </button>
         <button
           className="text-green-600 hover:text-green-900"

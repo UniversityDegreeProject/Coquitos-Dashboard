@@ -16,6 +16,7 @@ interface UseUserSearchParams {
  * Combina búsqueda del servidor con filtros locales para mejor UX
  */
 export const useUserSearch = ({ search = "", role = "", status = "" }: UseUserSearchParams) => {
+  
   const { data: allUsers = [], isLoading: isLoadingAll } = useGetUsers();
 
   // Query para búsqueda por texto (solo si hay texto)

@@ -14,6 +14,7 @@ import { ProductPage } from "@/coquitos-features/products/pages/ProductPage";
 import { CategoriesPage } from "@/coquitos-features/categories/pages/CategoriesPage";
 import { ClientsPage } from "@/coquitos-features/clients/pages/ClientsPage";
 import { UsersPage } from "@/coquitos-features/users/pages/UsersPage";
+import { UserDetailPage } from "@/coquitos-features/users/pages/UserDetailPage";
 import { ReportPage } from "@/coquitos-features/reports/pages/ReportPage";
 import { CashClosePage } from "@/coquitos-features/cash-closing/pages/CashClosePage";
 import { SettingPage } from "@/coquitos-features/settings/pages/SettingPage";
@@ -79,6 +80,10 @@ export const appRouter = createBrowserRouter([
           {
             path: "users",
             element: <UsersPage />,
+          },
+          {
+            path: "users/:userId",
+            element: <UserDetailPage />,
           },
           {
             path: "reports",

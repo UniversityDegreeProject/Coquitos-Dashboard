@@ -1,11 +1,13 @@
 import { Edit2, Trash2, MailCheck, Eye, KeyRound, Loader2 } from "lucide-react";
 import { type User } from "../interfaces";
 import { useCallback } from "react";
+import { useNavigate } from "react-router";
 import { useUserStore } from "../store/user.store";
 import Swal from "sweetalert2";
 import { useDeleteUser } from "../hooks/useDeleteUser";
 import { useShallow } from "zustand/shallow";
 import { useSendVerificationEmail } from "../hooks/useSendVerificationEmail";
+import { paths } from "@/router/paths";
 
 
 interface UserButtomsActionsProps {
@@ -13,7 +15,7 @@ interface UserButtomsActionsProps {
 }
 
 export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
-
+  const navigate = useNavigate();
   const setOpenModalUpdate = useUserStore(useShallow((state) => state.setOpenModalUpdate));
   // Suscribirse directamente a usersInPolling para detectar cambios
   const usersInPolling = useUserStore(useShallow((state) => state.usersInPolling));
@@ -49,12 +51,12 @@ export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
     });
   }, [user, sendVerificationEmailMutation]);
 
+  const handleSeeMore = useCallback (() => {
+    navigate(paths.dashboard.userDetail(user.id!));
+  }, [user.id, navigate]);
+
   // const handleChangePassword = useCallback (() => {
   //   console.log('change password');
-  // }, []);
-
-  // const handleSeeMore = useCallback (() => {
-  //   // TODO -> ir a la pagina exclusiva
   // }, []);
   return (
     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium relative">
@@ -106,6 +108,7 @@ export const UserButtomsActions = ({ user }: UserButtomsActionsProps) => {
           aria-label="Ver más detalle"
           title="Ver más detalle"
           type="button"
+          onClick={handleSeeMore}
         >
           <Eye className="w-4 h-4" />
         </button>

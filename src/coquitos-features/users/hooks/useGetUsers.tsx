@@ -16,7 +16,7 @@ export const useGetUsers =() => {
     queryKey: useQuerys.allUsers,
     queryFn: () => getUsers(),
 
-    // staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchOnReconnect: false,
@@ -26,7 +26,7 @@ export const useGetUsers =() => {
     
     // *Polling inteligente: solo cuando hay usuarios esperando verificación
     refetchIntervalInBackground: hasUsersInPolling,
-    refetchInterval: hasUsersInPolling ? 2000 : false, // 1 minuto
+    refetchInterval: hasUsersInPolling ? 2000 : false, 
   })
 
   return {

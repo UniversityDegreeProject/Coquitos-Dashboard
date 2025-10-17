@@ -29,15 +29,4 @@ export interface UsersResponse {
   users: User[];
 }
 
-export interface PaginatedUsersResponse {
-  users: User[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
 
-export interface GetUsersParams {
-  page?: number;
-  limit?: number;
-}

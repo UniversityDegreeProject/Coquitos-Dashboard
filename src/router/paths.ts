@@ -20,6 +20,7 @@ export const paths = {
     categories: '/dashboard/categories',
     clients: '/dashboard/clients',
     users: '/dashboard/users',
+    userDetail: (userId: string) => `/dashboard/users/${userId}`,
     reports: '/dashboard/reports',
     cashClosing: '/dashboard/cash-closing',
     settings: '/dashboard/settings',

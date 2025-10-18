@@ -1,23 +1,32 @@
-
+/**
+ * Tipo de estado de una categoría
+ */
 export type CategoryStatus = "Activo" | "Inactivo";
 
+/**
+ * Respuesta del backend para una categoría
+ */
 export interface CategoryResponse {
   id?: string;
   name: string;
-  description?: string;
+  description: string;
   status: CategoryStatus;
-  productCount?: number;
   createdAt?: Date;
   updatedAt?: Date;
-  imageUrl?: string;
-  color?: string; // Para el color del indicador
 }
 
-export interface Category extends Omit<CategoryResponse, 'productCount'> {
-  productCount?: number; // Agregamos el conteo de productos
+/**
+ * Interfaz extendida de categoría con campos opcionales de UI
+ */
+export interface Category extends CategoryResponse {
   isOptimistic?: boolean;
+  productCount?: number;
+  color?: string;
 }
 
+/**
+ * Respuesta del backend con lista de categorías
+ */
 export interface CategoriesResponse {
   categories: Category[];
 }

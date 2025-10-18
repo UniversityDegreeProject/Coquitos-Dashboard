@@ -15,6 +15,18 @@ export const getUsers = async (): Promise<User[]> => {
   }
 }
 
+export const getUserById = async (userId: string): Promise<User> => {
+  try {
+    const response = await CoquitoApi.get<{ user: User }>(`/users/${userId}`);
+    return response.data.user;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data.error || 'Error al obtener usuario');
+    }
+    throw new Error('Error desconocido');
+  }
+}
+
 export const searchUsers = async (search: string): Promise<User[]> => {
   try {
     const response = await CoquitoApi.get<UsersResponse>(`/users/search?search=${search}`);

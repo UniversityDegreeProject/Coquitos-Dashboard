@@ -57,7 +57,7 @@ export const useDeleteProduct = () => {
       });
     },
 
-    onError: (error, productId: string, context?: OptimisticDeleteProduct): void => {
+    onError: (error, _: string, context?: OptimisticDeleteProduct): void => {
       // Restaurar el producto eliminado optimistamente
       queryClient.setQueryData<ProductResponse[]>(useQuerys.allProducts, (oldProducts): ProductResponse[] => {
         if (!oldProducts) return [];

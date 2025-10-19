@@ -1,6 +1,6 @@
-import { Search, Filter, Grid, List, Users, Crown, Building } from "lucide-react";
+import { Search, Grid, List, Users, Crown } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { ClientFilters, ClientStatus, ClientType } from "../interfaces";
+import type { ClientStatus, ClientType } from "../interfaces";
 
 interface ClientSearchPageProps {
   searchValue: string;

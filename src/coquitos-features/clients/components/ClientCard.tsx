@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Edit2, Trash2, Phone, Mail, MapPin, Calendar, Star, Crown, ShoppingBag, DollarSign, Award } from "lucide-react";
+import { Edit2, Trash2, Phone, Mail, MapPin, Star, Crown, ShoppingBag, DollarSign, Award } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import type { Client } from "../interfaces";
 

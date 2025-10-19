@@ -1,5 +1,5 @@
 //* Librerias
-import { Plus, Users, TrendingUp, Crown, Building } from "lucide-react";
+import { Plus, Users, TrendingUp, Crown } from "lucide-react";
 import { useCallback, useState } from "react";
 
 //* Others

@@ -60,6 +60,8 @@ export const CoquitoLayout = () => {
   }
 
   return (
+
+    
     <div className={`flex h-screen ${css.content.background} ${css.content.text} relative`}>
       {/* Overlay en móvil cuando el sidebar está abierto */}
       {isMobile && isSidebarOpen && (

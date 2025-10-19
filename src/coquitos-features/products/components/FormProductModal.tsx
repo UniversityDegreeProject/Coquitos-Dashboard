@@ -1,7 +1,7 @@
 // * Library
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { X, Package, FileText, DollarSign, Hash, Box, AlertTriangle, Layers, Tag, CheckCircle, Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { X, Package, FileText, Coins, Hash, Box, AlertTriangle, Layers, Tag, CheckCircle, Loader2, Image as ImageIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // * Others
 import { LabelInputString, LabelSelect, LabelTextarea, LabelInputNumber } from "@/shared/components";
@@ -42,6 +42,9 @@ export const FormProductModal = () => {
   
   // * Theme
   const { isDark } = useTheme();
+
+  // * Estado local para preview de imagen
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   // * TanstackQuery
   const { useCreateProductMutation, isPending: isCreatingProduct } = useCreateProduct();
@@ -85,8 +88,25 @@ export const FormProductModal = () => {
       setValue('ingredients', productToUpdate.ingredients || '');
       setValue('categoryId', productToUpdate.categoryId || '');
       setValue('status', productToUpdate.status || 'Disponible');
+      setImagePreview(productToUpdate.image || '');
+    } else if (modalMode === 'create') {
+      setImagePreview('');
     }
   }, [modalMode, setValue, productToUpdate]);
+
+  // Handler para cambio de imagen
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        setValue('image', result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Preparar opciones de categorías para el select
   const categoryOptions = categories.map((category) => ({
@@ -137,7 +157,7 @@ export const FormProductModal = () => {
               label="Precio (Bs.)"
               name="price"
               control={control}
-              icon={DollarSign}
+              icon={Coins}
               required
               placeholder="0.00"
               error={errors.price?.message}
@@ -223,16 +243,58 @@ export const FormProductModal = () => {
             />
           </div>
 
-          {/* Sexta fila - Imagen URL */}
+          {/* Sexta fila - Subir Imagen */}
           <div className="grid grid-cols-1 gap-3">
-            <LabelInputString
-              label="URL de Imagen"
-              name="image"
-              control={control}
-              icon={Package}
-              placeholder="https://ejemplo.com/imagen.jpg"
-              error={errors.image?.message}
-            />
+            <label className={`block text-sm font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+              Imagen del Producto
+            </label>
+            <div className="flex gap-4 items-start">
+              {/* Input File (pequeño) */}
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 ${
+                      isDark 
+                        ? 'border-[#334155] bg-[#1E293B] hover:bg-[#334155]/50 text-[#F8FAFC]' 
+                        : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
+                    } cursor-pointer transition-all duration-200`}
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                    <span className="text-sm font-medium">Subir Imagen</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Preview de la imagen (grande) */}
+              <div className="flex-1">
+                <div className={`relative w-full h-40 rounded-xl border-2 ${
+                  isDark ? 'border-[#334155] bg-[#1E293B]' : 'border-gray-200 bg-gray-50'
+                } overflow-hidden flex items-center justify-center`}>
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-center p-4">
+                      <ImageIcon className={`w-12 h-12 mx-auto mb-2 ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`} />
+                      <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>
+                        Sin imagen seleccionada
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Botones */}

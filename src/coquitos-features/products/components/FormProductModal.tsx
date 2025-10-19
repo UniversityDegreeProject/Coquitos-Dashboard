@@ -110,7 +110,12 @@ export const FormProductModal = () => {
       reader.onloadend = () => {
         const result = reader.result as string;
         setImagePreview(result);
-        setValue('image', result);
+        // Marcar el campo como tocado y ejecutar validación
+        setValue('image', result, { 
+          shouldValidate: true, 
+          shouldDirty: true, 
+          shouldTouch: true 
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -178,6 +183,7 @@ export const FormProductModal = () => {
               name="sku"
               control={control}
               icon={Hash}
+              required
               placeholder="CHO-CLA-500"
               error={errors.sku?.message}
             />
@@ -202,6 +208,7 @@ export const FormProductModal = () => {
               name="stock"
               control={control}
               icon={Box}
+              required
               placeholder="10"
               error={errors.stock?.message}
               type="text"
@@ -213,6 +220,7 @@ export const FormProductModal = () => {
               name="minStock"
               control={control}
               icon={AlertTriangle}
+              required
               placeholder="5"
               error={errors.minStock?.message}
               type="text"
@@ -259,9 +267,15 @@ export const FormProductModal = () => {
 
           {/* Sexta fila - Subir Imagen */}
           <div className="grid grid-cols-1 gap-3">
-            <label className={`block text-sm font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+            <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
               Imagen del Producto
+              <span className="text-red-500 ml-1">*</span>
             </label>
+            {errors.image && (
+              <p className="text-red-600 text-xs font-medium" role="alert">
+                {errors.image.message}
+              </p>
+            )}
             <div className="flex gap-4 items-start">
               {/* Input File (pequeño) */}
               <div className="flex-shrink-0">

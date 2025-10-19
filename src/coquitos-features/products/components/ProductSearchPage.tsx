@@ -176,7 +176,9 @@ export const ProductSearchPage = ({
               )}
               {categoryFilter && (
                 <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Categoría: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>{categoryFilter}</span>
+                  Categoría: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
+                    {categories.find(cat => cat.id === categoryFilter)?.name || categoryFilter}
+                  </span>
                 </span>
               )}
               {statusFilter && (

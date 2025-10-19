@@ -23,28 +23,31 @@ export const createProductSchema = z.object({
   
   sku: z
     .string()
-    .max(50, 'El código no puede exceder 50 caracteres')
-    .optional(),
+    .min(1, 'El código del producto es requerido')
+    .max(50, 'El código no puede exceder 50 caracteres'),
   
   stock: z
     .string()
-    .optional()
-    .refine((val) => !val || !isNaN(parseInt(val)), 'El stock debe ser un número válido')
-    .refine((val) => !val || parseInt(val) >= 0, 'El stock no puede ser negativo')
-    .refine((val) => !val || Number.isInteger(parseFloat(val)), 'El stock debe ser un número entero'),
+    .min(1, 'El stock actual es requerido')
+    .refine((val) => !isNaN(parseInt(val)), 'El stock debe ser un número válido')
+    .refine((val) => parseInt(val) >= 0, 'El stock no puede ser negativo')
+    .refine((val) => Number.isInteger(parseFloat(val)), 'El stock debe ser un número entero'),
   
   minStock: z
     .string()
-    .optional()
-    .refine((val) => !val || !isNaN(parseInt(val)), 'El stock mínimo debe ser un número válido')
-    .refine((val) => !val || parseInt(val) >= 0, 'El stock mínimo no puede ser negativo')
-    .refine((val) => !val || Number.isInteger(parseFloat(val)), 'El stock mínimo debe ser un número entero'),
+    .min(1, 'El stock mínimo es requerido')
+    .refine((val) => !isNaN(parseInt(val)), 'El stock mínimo debe ser un número válido')
+    .refine((val) => parseInt(val) >= 0, 'El stock mínimo no puede ser negativo')
+    .refine((val) => Number.isInteger(parseFloat(val)), 'El stock mínimo debe ser un número entero'),
   
   image: z
     .string()
-    .optional()
-    .refine((val) => !val || z.string().url().safeParse(val).success, {
-      message: 'Debe ser una URL válida'
+    .min(1, 'La imagen es requerida')
+    .refine((val) => {
+      // Acepta URLs o imágenes en Base64
+      return z.string().url().safeParse(val).success || val.startsWith('data:image/');
+    }, {
+      message: 'Debe ser una URL válida o una imagen'
     }),
   
   ingredients: z

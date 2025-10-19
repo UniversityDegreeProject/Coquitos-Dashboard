@@ -1,13 +1,12 @@
 import { memo } from "react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { ProductCard } from "./ProductCard";
-import type { Product } from "../interfaces";
+import { ProductItemActions } from "./ProductItemActions";
+import type { ProductResponse } from "../interfaces";
 
 interface ProductGridProps {
-  products: Product[];
+  products: ProductResponse[];
   isLoading?: boolean;
-  onEdit?: (product: Product) => void;
-  onDelete?: (product: Product) => void;
   viewMode?: 'grid' | 'list';
 }
 
@@ -18,8 +17,6 @@ interface ProductGridProps {
 export const ProductGrid = memo(({ 
   products, 
   isLoading = false, 
-  onEdit, 
-  onDelete,
   viewMode = 'grid'
 }: ProductGridProps) => {
   const { isDark } = useTheme();
@@ -103,15 +100,23 @@ export const ProductGrid = memo(({
           >
             <div className="flex items-center space-x-4">
               {/* Imagen */}
-              <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                {product.imageUrl ? (
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
+              <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
+                style={{
+                  backgroundImage: isDark 
+                    ? 'linear-gradient(45deg, #1E293B 25%, #0F172A 25%, #0F172A 50%, #1E293B 50%, #1E293B 75%, #0F172A 75%, #0F172A)'
+                    : 'linear-gradient(45deg, #f3f4f6 25%, #e5e7eb 25%, #e5e7eb 50%, #f3f4f6 50%, #f3f4f6 75%, #e5e7eb 75%, #e5e7eb)',
+                  backgroundSize: '10px 10px'
+                }}>
+                {product.image ? (
+                  <div className="w-full h-full flex items-center justify-center p-1">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
                 ) : (
-                  <div className={`w-full h-full ${isDark ? 'bg-[#0F172A]' : 'bg-gray-100'} flex items-center justify-center`}>
+                  <div className={`w-full h-full flex items-center justify-center`}>
                     <svg className={`w-6 h-6 ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
@@ -125,7 +130,7 @@ export const ProductGrid = memo(({
                   {product.name}
                 </h3>
                 <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'} truncate`}>
-                  {product.category}
+                  {product.category?.name || 'Sin categoría'}
                 </p>
                 {product.description && (
                   <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'} line-clamp-1`}>
@@ -149,30 +154,7 @@ export const ProductGrid = memo(({
               </div>
 
               {/* Acciones */}
-              <div className="flex space-x-2">
-                {onEdit && (
-                  <button
-                    onClick={() => onEdit(product)}
-                    className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 transition-colors"
-                    aria-label="Editar producto"
-                  >
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    onClick={() => onDelete(product)}
-                    className="p-2 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 transition-colors"
-                    aria-label="Eliminar producto"
-                  >
-                    <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                )}
-              </div>
+              <ProductItemActions product={product} />
             </div>
           </div>
         ))}
@@ -186,8 +168,6 @@ export const ProductGrid = memo(({
         <ProductCard
           key={product.id}
           product={product}
-          onEdit={onEdit}
-          onDelete={onDelete}
         />
       ))}
     </div>

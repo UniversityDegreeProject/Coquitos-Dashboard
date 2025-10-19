@@ -13,6 +13,7 @@ interface LabelInputStringProps<T extends FieldValues> {
   icon?: LucideIcon;
   required?: boolean;
   autoComplete?: string;
+  inputMode?: 'text' | 'numeric' | 'decimal' | 'tel' | 'search' | 'email' | 'url';
   className?: string;
 }
 
@@ -27,6 +28,7 @@ export const LabelInputString = <T extends FieldValues>({
   icon: Icon,
   required = false,
   autoComplete,
+  inputMode,
   className = '',
 }: LabelInputStringProps<T>) => {
   const { isDark } = useTheme();
@@ -49,6 +51,7 @@ export const LabelInputString = <T extends FieldValues>({
               {...field}
               id={name}
               type={type}
+              inputMode={inputMode}
               className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B]' : 'bg-white'} backdrop-blur-sm shadow-sm ${
                 error
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 focus:shadow-red-100'

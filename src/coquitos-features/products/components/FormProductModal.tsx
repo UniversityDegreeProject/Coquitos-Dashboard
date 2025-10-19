@@ -1,10 +1,10 @@
 // * Library
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { X, Package, FileText, DollarSign, Hash, Box, AlertTriangle, Layers, Tag, CheckCircle, Loader2 } from "lucide-react";
-import { useEffect } from "react";
+import { X, Package, FileText, Coins, Hash, Box, AlertTriangle, Layers, Tag, CheckCircle, Loader2, Image as ImageIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
 // * Others
-import { LabelInputString, LabelSelect, LabelTextarea, LabelInputNumber } from "@/shared/components";
+import { LabelInputString, LabelSelect, LabelTextarea } from "@/shared/components";
 import { useProductStore } from "../store/product.store";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { statusOptions } from "../const";
@@ -15,15 +15,15 @@ import { useShallow } from "zustand/shallow";
 import { useUpdateProduct } from "../hooks/useUpdateProduct";
 import { useGetCategories } from "@/coquitos-features/categories/hooks/useGetCategories";
 
-const onlyStatusOptions = statusOptions.filter((option) => option.value !== "");
+const onlyStatusOptions = statusOptions;
 
 const initialValues: CreateProductSchema = {
   name: "",
   description: "",
-  price: 0,
+  price: "",
   sku: "",
-  stock: 0,
-  minStock: 5,
+  stock: "",
+  minStock: "",
   image: "",
   ingredients: "",
   categoryId: "",
@@ -43,6 +43,9 @@ export const FormProductModal = () => {
   // * Theme
   const { isDark } = useTheme();
 
+  // * Estado local para preview de imagen
+  const [imagePreview, setImagePreview] = useState<string>("");
+
   // * TanstackQuery
   const { useCreateProductMutation, isPending: isCreatingProduct } = useCreateProduct();
   const { updateProductMutation, isPending: isUpdatingProduct } = useUpdateProduct();
@@ -59,17 +62,25 @@ export const FormProductModal = () => {
   });
 
   const onSubmit: SubmitHandler<CreateProductSchema> = (data) => {
+    // Convertir strings a números para el backend
+    const productData = {
+      ...data,
+      price: parseFloat(data.price),
+      stock: data.stock ? parseInt(data.stock) : 0,
+      minStock: data.minStock ? parseInt(data.minStock) : 5,
+    };
+    
     closeModal();
     
     if (isEditMode && productToUpdate?.id) {
       updateProductMutation.mutate({
         productId: productToUpdate.id,
-        productData: data
+        productData
       });
       return; 
     }
 
-    useCreateProductMutation.mutate(data);
+    useCreateProductMutation.mutate(productData);
   };
 
   // Effect para actualizar el modal en modo edición
@@ -77,16 +88,33 @@ export const FormProductModal = () => {
     if (modalMode === 'update' && productToUpdate) {
       setValue('name', productToUpdate.name || '');
       setValue('description', productToUpdate.description || '');
-      setValue('price', productToUpdate.price || 0);
+      setValue('price', productToUpdate.price?.toString() || '');
       setValue('sku', productToUpdate.sku || '');
-      setValue('stock', productToUpdate.stock || 0);
-      setValue('minStock', productToUpdate.minStock || 5);
+      setValue('stock', productToUpdate.stock?.toString() || '');
+      setValue('minStock', productToUpdate.minStock?.toString() || '');
       setValue('image', productToUpdate.image || '');
       setValue('ingredients', productToUpdate.ingredients || '');
       setValue('categoryId', productToUpdate.categoryId || '');
       setValue('status', productToUpdate.status || 'Disponible');
+      setImagePreview(productToUpdate.image || '');
+    } else if (modalMode === 'create') {
+      setImagePreview('');
     }
   }, [modalMode, setValue, productToUpdate]);
+
+  // Handler para cambio de imagen
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreview(result);
+        setValue('image', result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Preparar opciones de categorías para el select
   const categoryOptions = categories.map((category) => ({
@@ -133,18 +161,20 @@ export const FormProductModal = () => {
 
           {/* Segunda fila - Precio, SKU, Categoría */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <LabelInputNumber
+            <LabelInputString
               label="Precio (Bs.)"
               name="price"
               control={control}
-              icon={DollarSign}
+              icon={Coins}
               required
-              placeholder="0.00"
+              placeholder="18.50"
               error={errors.price?.message}
+              type="text"
+              inputMode="decimal"
             />
 
             <LabelInputString
-              label="SKU"
+              label="Código del Producto"
               name="sku"
               control={control}
               icon={Hash}
@@ -167,22 +197,26 @@ export const FormProductModal = () => {
 
           {/* Tercera fila - Stock y Stock Mínimo */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <LabelInputNumber
+            <LabelInputString
               label="Stock Actual"
               name="stock"
               control={control}
               icon={Box}
-              placeholder="0"
+              placeholder="10"
               error={errors.stock?.message}
+              type="text"
+              inputMode="numeric"
             />
 
-            <LabelInputNumber
+            <LabelInputString
               label="Stock Mínimo"
               name="minStock"
               control={control}
               icon={AlertTriangle}
               placeholder="5"
               error={errors.minStock?.message}
+              type="text"
+              inputMode="numeric"
             />
 
             <LabelSelect
@@ -223,16 +257,68 @@ export const FormProductModal = () => {
             />
           </div>
 
-          {/* Sexta fila - Imagen URL */}
+          {/* Sexta fila - Subir Imagen */}
           <div className="grid grid-cols-1 gap-3">
-            <LabelInputString
-              label="URL de Imagen"
-              name="image"
-              control={control}
-              icon={Package}
-              placeholder="https://ejemplo.com/imagen.jpg"
-              error={errors.image?.message}
-            />
+            <label className={`block text-sm font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+              Imagen del Producto
+            </label>
+            <div className="flex gap-4 items-start">
+              {/* Input File (pequeño) */}
+              <div className="flex-shrink-0">
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 ${
+                      isDark 
+                        ? 'border-[#334155] bg-[#1E293B] hover:bg-[#334155]/50 text-[#F8FAFC]' 
+                        : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
+                    } cursor-pointer transition-all duration-200`}
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                    <span className="text-sm font-medium">Subir Imagen</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Preview de la imagen (grande) */}
+              <div className="flex-1">
+                <div className={`relative w-full h-48 rounded-xl border-2 ${
+                  isDark ? 'border-[#334155]' : 'border-gray-200'
+                } overflow-hidden flex items-center justify-center`}
+                style={{
+                  backgroundImage: isDark 
+                    ? 'linear-gradient(45deg, #1E293B 25%, #0F172A 25%, #0F172A 50%, #1E293B 50%, #1E293B 75%, #0F172A 75%, #0F172A)'
+                    : 'linear-gradient(45deg, #f3f4f6 25%, #e5e7eb 25%, #e5e7eb 50%, #f3f4f6 50%, #f3f4f6 75%, #e5e7eb 75%, #e5e7eb)',
+                  backgroundSize: '20px 20px'
+                }}>
+                  {imagePreview ? (
+                    <div className="relative w-full h-full flex items-center justify-center p-2">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center p-4 z-10 relative">
+                      <div className={`${isDark ? 'bg-[#1E293B]/80' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4`}>
+                        <ImageIcon className={`w-12 h-12 mx-auto mb-2 ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`} />
+                        <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>
+                          Sin imagen seleccionada
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Botones */}

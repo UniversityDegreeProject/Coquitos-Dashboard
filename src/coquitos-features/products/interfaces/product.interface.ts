@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // Interfaces basadas en la documentación del backend
 
 export type ProductStatus = "Disponible" | "SinStock" | "Descontinuado";
@@ -71,5 +70,4 @@ export interface SearchProductsResponse {
 export interface ProductMutationResponse {
   message: string;
   product: ProductResponse;
->>>>>>> categories
 }

@@ -10,6 +10,7 @@ import { useCategorySearch } from "../hooks/useSearchCategories";
 import { useCategoryStore } from "../store/category.store";
 import type { CategoryStatus } from "../interfaces";
 import { useShallow } from "zustand/shallow";
+import TextCursor from "@/components/TextCursor";
 
 /**
  * Página principal de gestión de categorías
@@ -81,6 +82,9 @@ export const CategoriesPage = () => {
       {modalMode === 'update' && (
         <FormCategoryModal />
       )}
+
+    <TextCursor text="⚛️" />
+
     </div>
   );
 };

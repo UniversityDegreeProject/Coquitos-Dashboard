@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 export type {
   ProductStatus,
   CategoryRelation,
@@ -9,4 +8,3 @@ export type {
   SearchProductsResponse,
   ProductMutationResponse
 } from './product.interface';
->>>>>>> categories

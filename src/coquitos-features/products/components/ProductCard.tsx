@@ -27,20 +27,20 @@ export const ProductCard = memo(({ product }: ProductCardProps) => {
   // Obtener color del estado
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Activo':
+      case 'Disponible':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'Inactivo':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
-      case 'Agotado':
+      case 'SinStock':
         return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case 'Descontinuado':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400';
     }
   };
 
   // Verificar si está agotado
-  const isOutOfStock = product.stock === 0 || product.status === 'Agotado';
-
+  const isOutOfStock = product.stock === 0 || product.status === 'SinStock';
+ 
   return (
     <div className={`group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
       

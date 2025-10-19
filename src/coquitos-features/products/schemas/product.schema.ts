@@ -42,8 +42,10 @@ export const createProductSchema = z.object({
   
   image: z
     .string()
-    .url('Debe ser una URL válida')
-    .optional(),
+    .optional()
+    .refine((val) => !val || z.string().url().safeParse(val).success, {
+      message: 'Debe ser una URL válida'
+    }),
   
   ingredients: z
     .string()
@@ -74,9 +76,7 @@ export const updateProductSchema = z.object({
     .optional(),
   
   price: z
-    .number({
-      invalid_type_error: 'El precio debe ser un número válido'
-    })
+    .number()
     .positive('El precio debe ser mayor a 0')
     .refine((val) => val === undefined || /^\d+(\.\d{1,2})?$/.test(val.toString()), {
       message: 'El precio solo puede tener máximo 2 decimales'
@@ -89,17 +89,17 @@ export const updateProductSchema = z.object({
     .optional(),
   
   minStock: z
-    .number({
-      invalid_type_error: 'El stock mínimo debe ser un número válido'
-    })
+    .number()
     .int('El stock mínimo debe ser un número entero')
     .min(0, 'El stock mínimo no puede ser negativo')
     .optional(),
   
   image: z
     .string()
-    .url('Debe ser una URL válida')
-    .optional(),
+    .optional()
+    .refine((val) => !val || z.string().url().safeParse(val).success, {
+      message: 'Debe ser una URL válida'
+    }),
   
   ingredients: z
     .string()

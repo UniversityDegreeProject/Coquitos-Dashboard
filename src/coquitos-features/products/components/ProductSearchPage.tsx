@@ -1,6 +1,9 @@
 import { Search, Filter, Grid, List } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
+<<<<<<< HEAD
+import { useGetCategories } from "@/coquitos-features/categories/hooks/useGetCategories";
 import type { ProductFilters, ProductStatus } from "../interfaces";
+>>>>>>> categories
 
 interface ProductSearchPageProps {
   searchValue: string;
@@ -11,7 +14,8 @@ interface ProductSearchPageProps {
   onStatusChange: (value: ProductStatus | "") => void;
   viewMode: 'grid' | 'list';
   onViewModeChange: (mode: 'grid' | 'list') => void;
-  categories?: string[];
+<<<<<<< HEAD
+>>>>>>> categories
 }
 
 /**
@@ -27,15 +31,17 @@ export const ProductSearchPage = ({
   onStatusChange,
   viewMode,
   onViewModeChange,
-  categories = ['Combos', 'Pollo', 'Alitas', 'Infantil', 'Bebidas', 'Acompañantes']
+<<<<<<< HEAD
 }: ProductSearchPageProps) => {
   const { isDark } = useTheme();
+  const { data: categories = [], isLoading: isLoadingCategories } = useGetCategories();
 
   const statusOptions = [
     { value: "", label: "Todos los estados" },
-    { value: "Activo", label: "Activo" },
-    { value: "Inactivo", label: "Inactivo" },
-    { value: "Agotado", label: "Agotado" },
+    { value: "Disponible", label: "Disponible" },
+    { value: "SinStock", label: "Sin Stock" },
+    { value: "Descontinuado", label: "Descontinuado" },
+>>>>>>> categories
   ];
 
   return (
@@ -82,12 +88,15 @@ export const ProductSearchPage = ({
                 <select
                   value={categoryFilter}
                   onChange={(e) => onCategoryChange(e.target.value)}
-                  className={`w-full pl-12 pr-10 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm ${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'} focus:ring-4 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
+<<<<<<< HEAD
+                  disabled={isLoadingCategories}
+                  className={`w-full pl-12 pr-10 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm ${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'} focus:ring-4 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
-                  <option value="">Todas las categorías</option>
+                  <option value="">{isLoadingCategories ? 'Cargando...' : 'Todas las categorías'}</option>
                   {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+>>>>>>> categories
                     </option>
                   ))}
                 </select>

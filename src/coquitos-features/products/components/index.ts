@@ -1,3 +1,7 @@
-export * from './ProductCard';
-export * from './ProductGrid';
-export * from './ProductSearchPage';
+<<<<<<< HEAD
+export { ProductCard } from './ProductCard';
+export { ProductGrid } from './ProductGrid';
+export { ProductSearchPage } from './ProductSearchPage';
+export { FormProductModal } from './FormProductModal';
+export { ProductButtonsActions } from './ProductButtonsActions';
+>>>>>>> categories

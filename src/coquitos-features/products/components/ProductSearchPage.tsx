@@ -164,40 +164,7 @@ export const ProductSearchPage = ({
         </div>
       </div>
 
-      {/* Indicador de resultados (opcional) */}
-      {(searchValue || categoryFilter || statusFilter) && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-[#334155]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 text-sm">
-              {searchValue && (
-                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Buscando: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>"{searchValue}"</span>
-                </span>
-              )}
-              {categoryFilter && (
-                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Categoría: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>{categoryFilter}</span>
-                </span>
-              )}
-              {statusFilter && (
-                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Estado: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>{statusFilter}</span>
-                </span>
-              )}
-            </div>
-            <button
-              onClick={() => {
-                onSearchChange('');
-                onCategoryChange('');
-                onStatusChange('');
-              }}
-              className={`text-sm ${isDark ? 'text-[#94A3B8] hover:text-[#F8FAFC]' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
-            >
-              Limpiar filtros
-            </button>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };

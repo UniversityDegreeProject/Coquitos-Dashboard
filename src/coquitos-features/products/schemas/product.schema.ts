@@ -13,33 +13,32 @@ export const createProductSchema = z.object({
     .optional(),
   
   price: z
-    .number({
-      required_error: 'El precio es requerido',
-      invalid_type_error: 'El precio debe ser un número'
-    })
-    .positive('El precio debe ser mayor a 0')
-    .refine((val) => /^\d+(\.\d{1,2})?$/.test(val.toString()), {
+    .string()
+    .min(1, 'El precio es requerido')
+    .refine((val) => !isNaN(parseFloat(val)), 'El precio debe ser un número válido')
+    .refine((val) => parseFloat(val) > 0, 'El precio debe ser mayor a 0')
+    .refine((val) => /^\d+(\.\d{1,2})?$/.test(val), {
       message: 'El precio solo puede tener máximo 2 decimales'
     }),
   
   sku: z
     .string()
-    .max(50, 'El SKU no puede exceder 50 caracteres')
+    .max(50, 'El código no puede exceder 50 caracteres')
     .optional(),
   
   stock: z
-    .number()
-    .int('El stock debe ser un número entero')
-    .min(0, 'El stock no puede ser negativo')
+    .string()
     .optional()
-    .default(0),
+    .refine((val) => !val || !isNaN(parseInt(val)), 'El stock debe ser un número válido')
+    .refine((val) => !val || parseInt(val) >= 0, 'El stock no puede ser negativo')
+    .refine((val) => !val || Number.isInteger(parseFloat(val)), 'El stock debe ser un número entero'),
   
   minStock: z
-    .number()
-    .int('El stock mínimo debe ser un número entero')
-    .min(0, 'El stock mínimo no puede ser negativo')
+    .string()
     .optional()
-    .default(5),
+    .refine((val) => !val || !isNaN(parseInt(val)), 'El stock mínimo debe ser un número válido')
+    .refine((val) => !val || parseInt(val) >= 0, 'El stock mínimo no puede ser negativo')
+    .refine((val) => !val || Number.isInteger(parseFloat(val)), 'El stock mínimo debe ser un número entero'),
   
   image: z
     .string()
@@ -58,7 +57,6 @@ export const createProductSchema = z.object({
   
   status: z
     .enum(['Disponible', 'SinStock', 'Descontinuado'])
-    .optional()
     .default('Disponible')
 });
 
@@ -76,9 +74,11 @@ export const updateProductSchema = z.object({
     .optional(),
   
   price: z
-    .number()
+    .number({
+      invalid_type_error: 'El precio debe ser un número válido'
+    })
     .positive('El precio debe ser mayor a 0')
-    .refine((val) => /^\d+(\.\d{1,2})?$/.test(val.toString()), {
+    .refine((val) => val === undefined || /^\d+(\.\d{1,2})?$/.test(val.toString()), {
       message: 'El precio solo puede tener máximo 2 decimales'
     })
     .optional(),
@@ -89,7 +89,9 @@ export const updateProductSchema = z.object({
     .optional(),
   
   minStock: z
-    .number()
+    .number({
+      invalid_type_error: 'El stock mínimo debe ser un número válido'
+    })
     .int('El stock mínimo debe ser un número entero')
     .min(0, 'El stock mínimo no puede ser negativo')
     .optional(),
@@ -125,7 +127,7 @@ export const searchProductsSchema = z.object({
 });
 
 // * Tipos inferidos
-export type CreateProductSchema = z.infer<typeof createProductSchema>;
+export type CreateProductSchema = z.input<typeof createProductSchema>;
 export type UpdateProductSchema = z.infer<typeof updateProductSchema>;
 export type SearchProductsSchema = z.infer<typeof searchProductsSchema>;
 

@@ -1,19 +1,18 @@
 import { memo } from "react";
-import { Edit2, Trash2, Package, DollarSign, Tag, Star, AlertTriangle } from "lucide-react";
+import { Package, DollarSign, Tag, AlertTriangle } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { Product } from "../interfaces";
+import { ProductItemActions } from "./ProductItemActions";
+import type { ProductResponse } from "../interfaces";
 
 interface ProductCardProps {
-  product: Product;
-  onEdit?: (product: Product) => void;
-  onDelete?: (product: Product) => void;
+  product: ProductResponse;
 }
 
 /**
  * Componente de tarjeta para mostrar información de un producto
  * Diseño elegante con imagen, precio y estado destacado
  */
-export const ProductCard = memo(({ product, onEdit, onDelete }: ProductCardProps) => {
+export const ProductCard = memo(({ product }: ProductCardProps) => {
   const { isDark } = useTheme();
 
   // Formatear precio
@@ -46,52 +45,29 @@ export const ProductCard = memo(({ product, onEdit, onDelete }: ProductCardProps
     <div className={`group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
       
       {/* Imagen del producto */}
-      <div className="relative h-48 overflow-hidden">
-        {product.imageUrl ? (
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
+      <div className="relative h-48 overflow-hidden"
+        style={{
+          backgroundImage: isDark 
+            ? 'linear-gradient(45deg, #1E293B 25%, #0F172A 25%, #0F172A 50%, #1E293B 50%, #1E293B 75%, #0F172A 75%, #0F172A)'
+            : 'linear-gradient(45deg, #f3f4f6 25%, #e5e7eb 25%, #e5e7eb 50%, #f3f4f6 50%, #f3f4f6 75%, #e5e7eb 75%, #e5e7eb)',
+          backgroundSize: '20px 20px'
+        }}>
+        {product.image ? (
+          <div className="w-full h-full flex items-center justify-center p-2">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+            />
+          </div>
         ) : (
-          <div className={`w-full h-full ${isDark ? 'bg-[#0F172A]' : 'bg-gray-100'} flex items-center justify-center`}>
-            <Package className={`w-12 h-12 ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`} />
-          </div>
-        )}
-        
-        {/* Overlay con acciones */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-end justify-end p-3">
-          <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            {onEdit && (
-              <button
-                onClick={() => onEdit(product)}
-                className="p-2 rounded-lg bg-white/90 hover:bg-white transition-colors shadow-lg"
-                aria-label="Editar producto"
-              >
-                <Edit2 className="w-4 h-4 text-blue-600" />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={() => onDelete(product)}
-                className="p-2 rounded-lg bg-white/90 hover:bg-white transition-colors shadow-lg"
-                aria-label="Eliminar producto"
-              >
-                <Trash2 className="w-4 h-4 text-red-600" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Badge de destacado */}
-        {product.isFeatured && (
-          <div className="absolute top-3 left-3">
-            <div className="flex items-center space-x-1 px-2 py-1 bg-yellow-400 text-yellow-900 rounded-full text-xs font-semibold shadow-lg">
-              <Star className="w-3 h-3 fill-current" />
-              <span>Destacado</span>
+          <div className={`w-full h-full flex items-center justify-center`}>
+            <div className={`${isDark ? 'bg-[#1E293B]/80' : 'bg-white/80'} backdrop-blur-sm rounded-xl p-4`}>
+              <Package className={`w-12 h-12 ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`} />
             </div>
           </div>
         )}
+        
 
         {/* Badge de agotado */}
         {isOutOfStock && (
@@ -124,7 +100,7 @@ export const ProductCard = memo(({ product, onEdit, onDelete }: ProductCardProps
         <div className="flex items-center space-x-2 mb-3">
           <Tag className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
           <span className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-            {product.category}
+            {product.category?.name || 'Sin categoría'}
           </span>
         </div>
 
@@ -135,38 +111,38 @@ export const ProductCard = memo(({ product, onEdit, onDelete }: ProductCardProps
           </p>
         )}
 
-        {/* Footer con precio y stock */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-[#334155]">
-          <div className="flex items-center space-x-2">
-            <DollarSign className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
-            <span className={`text-lg font-bold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
-              {formatPrice(product.price)}
-            </span>
+        {/* Footer con precio, stock y acciones */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-[#334155]">
+            <div className="flex items-center space-x-2">
+              <DollarSign className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
+              <span className={`text-lg font-bold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
+                {formatPrice(product.price)}
+              </span>
+            </div>
+            
+            {/* Stock */}
+            <div className="flex items-center space-x-2">
+              <Package className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
+              <span className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>
+                {product.stock || 0}
+              </span>
+            </div>
           </div>
-          
-          {/* Stock */}
-          <div className="flex items-center space-x-2">
-            <Package className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
-            <span className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>
-              {product.stock || 0}
-            </span>
+
+          {/* Acciones */}
+          <div className="flex justify-end">
+            <ProductItemActions product={product} />
           </div>
         </div>
 
         {/* Información adicional si está disponible */}
-        {(product.sku || product.barcode) && (
+        {product.sku && (
           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-[#334155]">
             <div className="flex items-center justify-between text-xs">
-              {product.sku && (
-                <span className={`${isDark ? 'text-[#64748B]' : 'text-gray-500'}`}>
-                  SKU: {product.sku}
-                </span>
-              )}
-              {product.barcode && (
-                <span className={`${isDark ? 'text-[#64748B]' : 'text-gray-500'}`}>
-                  Código: {product.barcode}
-                </span>
-              )}
+              <span className={`${isDark ? 'text-[#64748B]' : 'text-gray-500'}`}>
+                Código: {product.sku}
+              </span>
             </div>
           </div>
         )}

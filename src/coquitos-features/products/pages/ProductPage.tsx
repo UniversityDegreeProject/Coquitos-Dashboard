@@ -1,14 +1,17 @@
 import { useState, useCallback } from 'react';
-import { Package, TrendingUp, AlertTriangle, DollarSign } from 'lucide-react';
-import { ProductSearchPage, ProductGrid, ProductButtonsActions, FormProductModal } from "../components";
+import { Package, Plus } from 'lucide-react';
+import { ProductSearchPage, ProductGrid, ProductStats, FormProductModal } from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "@/coquitos-features/users/hooks/useDebounce";
-import { useGetProducts, useDeleteProduct } from "../hooks";
+import { useGetProducts } from "../hooks";
 import { useProductStore } from "../store/product.store";
 import { useShallow } from "zustand/shallow";
-import type { ProductStatus, ProductResponse } from "../interfaces";
-import Swal from 'sweetalert2';
+import type { ProductStatus } from "../interfaces";
 
+/**
+ * Página principal de gestión de productos
+ * Implementa búsqueda, filtros y CRUD completo siguiendo el patrón de users
+ */
 export const ProductPage = () => {
   // * Estados locales para filtros
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,18 +21,17 @@ export const ProductPage = () => {
   // * Debounce para la búsqueda (500ms)
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-  // * Theme
-  const { colors, isDark } = useTheme();
-
-  // * Zustand Store
+  // * Zustand - Optimizado con selectores específicos
   const modalMode = useProductStore(useShallow((state) => state.modalMode));
   const viewMode = useProductStore(useShallow((state) => state.viewMode));
   const setViewMode = useProductStore(useShallow((state) => state.setViewMode));
-  const setOpenModalUpdate = useProductStore(useShallow((state) => state.setOpenModalUpdate));
+  const setOpenModalCreate = useProductStore(useShallow((state) => state.setOpenModalCreate));
 
   // * TanStack Query
   const { data: products = [], isLoading } = useGetProducts();
-  const { deleteProductMutation } = useDeleteProduct();
+
+  // * Theme
+  const { colors, isDark } = useTheme();
 
   // * Filtrar productos basado en los filtros
   const filteredProducts = products.filter(product => {
@@ -43,38 +45,10 @@ export const ProductPage = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  // * Handlers para acciones
-  const handleEditProduct = useCallback((product: ProductResponse) => {
-    setOpenModalUpdate(product);
-  }, [setOpenModalUpdate]);
-
-  const handleDeleteProduct = useCallback((product: ProductResponse) => {
-    Swal.fire({
-      title: '¿Estás seguro?',
-      text: `¿Deseas eliminar el producto "${product.name}"? Esta acción no se puede deshacer.`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#6b7280',
-      customClass: {
-        popup: 'rounded-xl',
-        title: 'text-xl font-bold text-gray-800',
-        htmlContainer: 'text-gray-600',
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        deleteProductMutation.mutate(product.id);
-      }
-    });
-  }, [deleteProductMutation]);
-
-  // * Estadísticas rápidas
-  const totalProducts = products.length;
-  const availableProducts = products.filter(p => p.status === 'Disponible').length;
-  const lowStockProducts = products.filter(p => p.stock <= p.minStock).length;
-  const totalValue = products.reduce((sum, product) => sum + (product.price * product.stock), 0);
+  // * Memoizar el callback del botón
+  const handleOpenModal = useCallback(() => {
+    setOpenModalCreate();
+  }, [setOpenModalCreate]);
 
   return (
     <div className="space-y-6">
@@ -88,70 +62,17 @@ export const ProductPage = () => {
             Gestión de Productos
           </h3>
         </div>
-        <ProductButtonsActions 
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
+        <button
+          onClick={handleOpenModal}
+          className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
+        >
+          <Plus className="w-5 h-5 mr-2 text-[#2309095c]" />
+          <span className="text-[#08080865] font-bold">Agregar Producto</span>
+        </button>
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                Total Productos
-              </p>
-              <p className={`text-2xl font-bold ${colors.text.primary}`}>
-                {totalProducts}
-              </p>
-            </div>
-            <Package className={`w-8 h-8 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
-          </div>
-        </div>
-
-        <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                Disponibles
-              </p>
-              <p className={`text-2xl font-bold text-green-600`}>
-                {availableProducts}
-              </p>
-            </div>
-            <TrendingUp className={`w-8 h-8 text-green-600`} />
-          </div>
-        </div>
-
-        <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                Stock Bajo
-              </p>
-              <p className={`text-2xl font-bold text-red-600`}>
-                {lowStockProducts}
-              </p>
-            </div>
-            <AlertTriangle className={`w-8 h-8 text-red-600`} />
-          </div>
-        </div>
-
-        <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                Valor Total
-              </p>
-              <p className={`text-lg font-bold ${colors.text.primary}`}>
-                Bs. {new Intl.NumberFormat('es-BO', { minimumFractionDigits: 0 }).format(totalValue)}
-              </p>
-            </div>
-            <DollarSign className={`w-8 h-8 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
-          </div>
-        </div>
-      </div>
+      <ProductStats products={products} />
 
       {/* Search and Filters */}
       <ProductSearchPage
@@ -170,12 +91,14 @@ export const ProductPage = () => {
         products={filteredProducts}
         viewMode={viewMode}
         isLoading={isLoading}
-        onEdit={handleEditProduct}
-        onDelete={handleDeleteProduct}
       />
 
-      {/* Modal */}
-      {modalMode && (
+      {/* Create Product Modal */}
+      {modalMode === 'create' && (
+        <FormProductModal />
+      )}
+      {/* Update Product Modal */}
+      {modalMode === 'update' && (
         <FormProductModal />
       )}
     </div>

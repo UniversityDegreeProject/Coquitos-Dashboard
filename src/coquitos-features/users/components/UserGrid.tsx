@@ -1,28 +1,35 @@
 import { memo } from "react";
 import { type User } from "../interfaces";
-import { UserTable } from "./UserTable";
-import { useTheme } from "@/shared/hooks/useTheme";
+import { UserTableSkeleton } from "./UserTableSkeleton";
+import { UserEmptyState } from "./UserEmptyState";
+import { UserListItem } from "./UserListItem";
 
 interface UserGridProps {
   users: User[];
   isPending: boolean;
 }
 
+/**
+ * Componente que muestra los usuarios en formato de lista moderna
+ * Refactorizado con componentes reutilizables para mejor mantenibilidad
+ */
 export const UserGrid = memo(({ users, isPending }: UserGridProps) => {
-  const { isDark } = useTheme();
+  // Mostrar skeleton loader durante la carga
+  if (isPending) {
+    return <UserTableSkeleton />;
+  }
 
-  console.log('re-render UserGrid');
+  // Mostrar estado vacío cuando no hay usuarios
+  if (users.length === 0) {
+    return <UserEmptyState />;
+  }
 
+  // Renderizar lista de usuarios
   return (
-    <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-lg shadow-sm border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
-      <div className={`p-6 border-b ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
-        <h2 className={`text-lg font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
-          Lista de Usuarios
-        </h2>
-      </div>
-      <div className="overflow-x-auto">
-        <UserTable users={users} isPending={isPending} />
-      </div>
+    <div className="space-y-4">
+      {users.map((user) => (
+        <UserListItem key={user.id} user={user} />
+      ))}
     </div>
   );
 });

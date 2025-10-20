@@ -1,19 +1,22 @@
 //* Librerias
 import { Plus, Users } from "lucide-react";
 import { useCallback, useState, useEffect } from "react";
+import { useShallow } from "zustand/shallow";
 
 //* Others
-import { SearchPage } from "@/shared/pages";
-import { UserGrid } from "../components";
+import { UserGrid, UserSearchPage, FormUserModal, UserStats } from "../components";
 import { useUserSearch } from "../hooks/useSearchUsers";
 import { useUserStore } from "../store/user.store";
-import { FormUserModal } from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "../hooks/useDebounce";
 import { validateVerifiedUsers } from "../helpers";
 import type { Role, Status } from "../interfaces";
-import { useShallow } from "zustand/shallow";
 
+/**
+ * Página principal de gestión de usuarios
+ * Implementa búsqueda, filtros, estadísticas y CRUD completo
+ * Optimizado con memoización (useCallback, useMemo, memo) para máxima performance
+ */
 export const UsersPage = () => {
   // * Estados locales para filtros
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,10 +42,22 @@ export const UsersPage = () => {
   // * Theme
   const { colors, isDark } = useTheme();
   
-  // * Memoizar el callback del botón
+  // * Memoizar callbacks para evitar re-renders innecesarios
   const handleOpenModal = useCallback(() => {
     setOpenModalCreate();
   }, [setOpenModalCreate]);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+  }, []);
+
+  const handleRoleChange = useCallback((value: Role | "") => {
+    setRoleFilter(value);
+  }, []);
+
+  const handleStatusChange = useCallback((value: Status | "") => {
+    setStatusFilter(value);
+  }, []);
 
   // * Validar usuarios verificados en cada re-render
   useEffect(() => {
@@ -75,14 +90,17 @@ export const UsersPage = () => {
         </button>
       </div>
 
+      {/* Statistics */}
+      <UserStats users={users} />
+
       {/* Search and Filters */}
-      <SearchPage 
+      <UserSearchPage 
         searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         roleFilter={roleFilter}
-        onRoleChange={setRoleFilter}
+        onRoleChange={handleRoleChange}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
+        onStatusChange={handleStatusChange}
       />
 
       {/* Users Grid/Table */}

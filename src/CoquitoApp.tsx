@@ -1,6 +1,7 @@
 import { RouterProvider } from "react-router"
 import { appRouter } from "@/router/app.route"
 import { useTokenRefresh } from "@/hooks"
+import { TokenDebugger } from "@/components/TokenDebugger"
 
 export const CoquitoApp = () => {
   // Sistema de renovación automática de tokens y detección de inactividad
@@ -13,6 +14,11 @@ export const CoquitoApp = () => {
   });
 
   return (
-    <RouterProvider router={appRouter} />
+    <>
+      <RouterProvider router={appRouter} />
+      
+      {/* Componente de debugging - Remover en producción */}
+      {import.meta.env.DEV && <TokenDebugger />}
+    </>
   )
 }

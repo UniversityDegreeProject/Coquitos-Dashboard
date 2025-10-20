@@ -1,13 +1,19 @@
 import { CoquitoApi } from "@/config/axios.adapter"
 import { AxiosError } from "axios";
-import type { Category, CategoriesResponse } from "../interfaces";
+import type { 
+  Category, 
+  GetCategoriesResponse, 
+  SearchCategoriesResponse,
+  CategoryMutationResponse,
+  CategoryFormData
+} from "../interfaces";
 
 /**
  * Obtiene todas las categorías
  */
 export const getCategories = async (): Promise<Category[]> => {
   try {
-    const response = await CoquitoApi.get<CategoriesResponse>('/categories/');
+    const response = await CoquitoApi.get<GetCategoriesResponse>('/categories/');
     return response.data.categories;
   } catch (error) {
     throw new Error(`Error al obtener categorías: ${error}`);
@@ -19,7 +25,7 @@ export const getCategories = async (): Promise<Category[]> => {
  */
 export const getCategoryById = async (categoryId: string): Promise<Category> => {
   try {
-    const response = await CoquitoApi.get<{ category: Category }>(`/categories/${categoryId}`);
+    const response = await CoquitoApi.get<CategoryMutationResponse>(`/categories/${categoryId}`);
     return response.data.category;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -34,7 +40,7 @@ export const getCategoryById = async (categoryId: string): Promise<Category> => 
  */
 export const searchCategories = async (search: string): Promise<Category[]> => {
   try {
-    const response = await CoquitoApi.get<CategoriesResponse>(`/categories/search?search=${search}`);
+    const response = await CoquitoApi.get<SearchCategoriesResponse>(`/categories/search?search=${search}`);
     return response.data.categories;
   } catch (error) {
     throw new Error(`Error al buscar categorías: ${error}`);
@@ -44,9 +50,9 @@ export const searchCategories = async (search: string): Promise<Category[]> => {
 /**
  * Crea una nueva categoría
  */
-export const createCategory = async (category: Category): Promise<Category> => {
+export const createCategory = async (categoryData: CategoryFormData): Promise<Category> => {
   try {
-    const response = await CoquitoApi.post('/categories/', category);
+    const response = await CoquitoApi.post<CategoryMutationResponse>('/categories/', categoryData);
     return response.data.category;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -59,9 +65,9 @@ export const createCategory = async (category: Category): Promise<Category> => {
 /**
  * Actualiza una categoría existente
  */
-export const updateCategory = async (categoryId: string, category: Category): Promise<Category> => {
+export const updateCategory = async (categoryId: string, categoryData: CategoryFormData): Promise<Category> => {
   try {
-    const response = await CoquitoApi.patch(`/categories/${categoryId}`, category);
+    const response = await CoquitoApi.patch<CategoryMutationResponse>(`/categories/${categoryId}`, categoryData);
     return response.data.category;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -76,7 +82,7 @@ export const updateCategory = async (categoryId: string, category: Category): Pr
  */
 export const deleteCategory = async (categoryId: string): Promise<Category> => {
   try {
-    const response = await CoquitoApi.delete(`/categories/${categoryId}`);
+    const response = await CoquitoApi.delete<CategoryMutationResponse>(`/categories/${categoryId}`);
     return response.data.category;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {

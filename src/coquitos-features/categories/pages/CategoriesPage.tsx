@@ -3,7 +3,7 @@ import { Plus, Layers } from "lucide-react";
 import { useCallback, useState } from "react";
 
 //* Others
-import { CategorySearchPage, CategoryGridTable, FormCategoryModal } from "../components";
+import { CategorySearchPage, CategoryGridTable, FormCategoryModal, CategoryStats } from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "@/coquitos-features/users/hooks/useDebounce";
 import { useCategorySearch } from "../hooks/useSearchCategories";
@@ -14,7 +14,8 @@ import TextCursor from "@/components/TextCursor";
 
 /**
  * Página principal de gestión de categorías
- * Implementa búsqueda, filtros y CRUD completo siguiendo el patrón de users
+ * Implementa búsqueda, filtros, estadísticas y CRUD completo
+ * Optimizado con memoización (useCallback, useMemo, memo) para máxima performance
  */
 export const CategoriesPage = () => {
   // * Estados locales para filtros
@@ -37,10 +38,18 @@ export const CategoriesPage = () => {
   // * Theme
   const { colors, isDark } = useTheme();
   
-  // * Memoizar el callback del botón
+  // * Memoizar callbacks para evitar re-renders innecesarios
   const handleOpenModal = useCallback(() => {
     setOpenModalCreate();
   }, [setOpenModalCreate]);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+  }, []);
+
+  const handleStatusChange = useCallback((value: CategoryStatus | "") => {
+    setStatusFilter(value);
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -63,12 +72,15 @@ export const CategoriesPage = () => {
         </button>
       </div>
 
+      {/* Statistics */}
+      <CategoryStats categories={categories} />
+
       {/* Search and Filters */}
       <CategorySearchPage
         searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={handleSearchChange}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
+        onStatusChange={handleStatusChange}
       />
 
       {/* Categories Grid/Table */}

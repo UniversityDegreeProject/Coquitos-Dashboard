@@ -1,8 +1,10 @@
+import { memo, useCallback } from "react";
 import { Edit2, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { useCategoryStore } from "../store/category.store";
 import { useDeleteCategory } from "../hooks/useDeleteCategory";
 import { useShallow } from "zustand/shallow";
+import { useTheme } from "@/shared/hooks/useTheme";
 import type { Category } from "../interfaces";
 
 interface CategoryButtonsActionsProps {
@@ -11,17 +13,20 @@ interface CategoryButtonsActionsProps {
 
 /**
  * Componente de botones de acción para cada categoría
- * Incluye editar y eliminar con confirmación
+ * Incluye editar y eliminar con confirmación, optimizado con memoización
  */
-export const CategoryButtonsActions = ({ category }: CategoryButtonsActionsProps) => {
+export const CategoryButtonsActions = memo(({ category }: CategoryButtonsActionsProps) => {
+  const { isDark } = useTheme();
   const setOpenModalUpdate = useCategoryStore(useShallow((state) => state.setOpenModalUpdate));
   const { deleteCategoryMutation } = useDeleteCategory();
 
-  const handleEdit = () => {
+  // Memoizar el handler de edición
+  const handleEdit = useCallback(() => {
     setOpenModalUpdate(category);
-  };
+  }, [setOpenModalUpdate, category]);
 
-  const handleDelete = async () => {
+  // Memoizar el handler de eliminación
+  const handleDelete = useCallback(async () => {
     const result = await Swal.fire({
       title: '¿Estás seguro?',
       text: `¿Deseas eliminar la categoría "${category.name}"? Esta acción no se puede deshacer.`,
@@ -41,27 +46,35 @@ export const CategoryButtonsActions = ({ category }: CategoryButtonsActionsProps
     if (result.isConfirmed && category.id) {
       deleteCategoryMutation.mutate(category.id);
     }
-  };
+  }, [category.name, category.id, deleteCategoryMutation]);
 
   return (
-    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-      <div className="flex space-x-2">
-        <button 
-          onClick={handleEdit}
-          className="text-blue-600 hover:text-blue-900 transition-colors"
-          aria-label="Editar categoría"
-        >
-          <Edit2 className="w-4 h-4" />
-        </button>
-        <button 
-          onClick={handleDelete}
-          className="text-red-600 hover:text-red-900 transition-colors"
-          aria-label="Eliminar categoría"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-    </td>
+    <div className="flex space-x-2 flex-shrink-0">
+      <button
+        onClick={handleEdit}
+        className={`p-2 rounded-lg transition-all duration-200 ${
+          isDark
+            ? 'text-blue-400 hover:bg-blue-500/10 hover:text-blue-300'
+            : 'text-blue-600 hover:bg-blue-50 hover:text-blue-700'
+        }`}
+        aria-label="Editar categoría"
+        title="Editar categoría"
+      >
+        <Edit2 className="w-4 h-4" />
+      </button>
+      <button
+        onClick={handleDelete}
+        className={`p-2 rounded-lg transition-all duration-200 ${
+          isDark
+            ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
+            : 'text-red-600 hover:bg-red-50 hover:text-red-700'
+        }`}
+        aria-label="Eliminar categoría"
+        title="Eliminar categoría"
+      >
+        <Trash2 className="w-4 h-4" />
+      </button>
+    </div>
   );
-};
+});
 

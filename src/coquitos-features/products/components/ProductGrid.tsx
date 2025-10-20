@@ -1,7 +1,9 @@
 import { memo } from "react";
-import { useTheme } from "@/shared/hooks/useTheme";
 import { ProductCard } from "./ProductCard";
-import { ProductItemActions } from "./ProductItemActions";
+import { ProductGridSkeleton } from "./ProductGridSkeleton";
+import { ProductListSkeleton } from "./ProductListSkeleton";
+import { ProductEmptyState } from "./ProductEmptyState";
+import { ProductListItem } from "./ProductListItem";
 import type { ProductResponse } from "../interfaces";
 
 interface ProductGridProps {
@@ -12,151 +14,30 @@ interface ProductGridProps {
 
 /**
  * Grid responsivo para mostrar productos
- * Soporta vista de grid y lista con estado de carga
+ * Soporta vista de grid y lista, refactorizado con componentes reutilizables
  */
 export const ProductGrid = memo(({ 
   products, 
   isLoading = false, 
   viewMode = 'grid'
 }: ProductGridProps) => {
-  const { isDark } = useTheme();
 
+  // Mostrar skeleton según el modo de vista
   if (isLoading) {
-    return (
-      <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" : "space-y-4"}>
-        {[...Array(8)].map((_, index) => (
-          viewMode === 'grid' ? (
-            <div
-              key={index}
-              className={`animate-pulse rounded-xl shadow-lg ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}
-            >
-              {/* Imagen */}
-              <div className="h-48 bg-gray-300 dark:bg-gray-600 rounded-t-xl" />
-              
-              {/* Contenido */}
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded mb-2" />
-                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16" />
-                  </div>
-                </div>
-                
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded mb-3" />
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4" />
-                
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-[#334155]">
-                  <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-20" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-12" />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div
-              key={index}
-              className={`animate-pulse rounded-xl shadow-lg ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'} p-4`}
-            >
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gray-300 dark:bg-gray-600 rounded-lg" />
-                <div className="flex-1">
-                  <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded mb-2 w-1/3" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
-                </div>
-                <div className="h-5 bg-gray-300 dark:bg-gray-600 rounded w-20" />
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-16" />
-              </div>
-            </div>
-          )
-        ))}
-      </div>
-    );
+    return viewMode === 'grid' ? <ProductGridSkeleton /> : <ProductListSkeleton />;
   }
 
+  // Mostrar estado vacío
   if (products.length === 0) {
-    return (
-      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'} p-12 text-center`}>
-        <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${isDark ? 'bg-[#0F172A]' : 'bg-gray-100'} flex items-center justify-center`}>
-          <svg className={`w-12 h-12 ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-        </div>
-        <h3 className={`text-xl font-semibold mb-2 ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
-          No hay productos
-        </h3>
-        <p className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-          Comienza agregando tu primer producto
-        </p>
-      </div>
-    );
+    return <ProductEmptyState />;
   }
 
+  // Vista de lista
   if (viewMode === 'list') {
     return (
       <div className="space-y-4">
         {products.map((product) => (
-          <div
-            key={product.id}
-            className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'} p-4 hover:shadow-xl transition-all duration-200`}
-          >
-            <div className="flex items-center space-x-4">
-              {/* Imagen */}
-              <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
-                style={{
-                  backgroundImage: isDark 
-                    ? 'linear-gradient(45deg, #1E293B 25%, #0F172A 25%, #0F172A 50%, #1E293B 50%, #1E293B 75%, #0F172A 75%, #0F172A)'
-                    : 'linear-gradient(45deg, #f3f4f6 25%, #e5e7eb 25%, #e5e7eb 50%, #f3f4f6 50%, #f3f4f6 75%, #e5e7eb 75%, #e5e7eb)',
-                  backgroundSize: '10px 10px'
-                }}>
-                {product.image ? (
-                  <div className="w-full h-full flex items-center justify-center p-1">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div className={`w-full h-full flex items-center justify-center`}>
-                    <svg className={`w-6 h-6 ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-
-              {/* Información */}
-              <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-semibold mb-1 ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
-                  {product.name}
-                </h3>
-                <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'} truncate`}>
-                  {product.category?.name || 'Sin categoría'}
-                </p>
-                {product.description && (
-                  <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'} line-clamp-1`}>
-                    {product.description}
-                  </p>
-                )}
-              </div>
-
-              {/* Precio */}
-              <div className="text-right">
-                <div className={`text-lg font-bold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
-                  {new Intl.NumberFormat('es-CO', {
-                    style: 'currency',
-                    currency: 'COP',
-                    minimumFractionDigits: 0,
-                  }).format(product.price)}
-                </div>
-                <div className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>
-                  Stock: {product.stock || 0}
-                </div>
-              </div>
-
-              {/* Acciones */}
-              <ProductItemActions product={product} />
-            </div>
-          </div>
+          <ProductListItem key={product.id} product={product} />
         ))}
       </div>
     );

@@ -1,7 +1,8 @@
 import { memo } from "react";
 import { type Category } from "../interfaces";
-import { CategoryTable } from "./CategoryTable";
-import { useTheme } from "@/shared/hooks/useTheme";
+import { CategoryTableSkeleton } from "./CategoryTableSkeleton";
+import { CategoryEmptyState } from "./CategoryEmptyState";
+import { CategoryListItem } from "./CategoryListItem";
 
 interface CategoryGridTableProps {
   categories: Category[];
@@ -9,22 +10,26 @@ interface CategoryGridTableProps {
 }
 
 /**
- * Contenedor de la tabla de categorías
- * Wrapper que proporciona estilos y estructura consistente
+ * Componente que muestra las categorías en formato de lista moderna
+ * Refactorizado con componentes reutilizables para mejor mantenibilidad
  */
 export const CategoryGridTable = memo(({ categories, isPending }: CategoryGridTableProps) => {
-  const { isDark } = useTheme();
+  // Mostrar skeleton loader durante la carga
+  if (isPending) {
+    return <CategoryTableSkeleton />;
+  }
 
+  // Mostrar estado vacío cuando no hay categorías
+  if (categories.length === 0) {
+    return <CategoryEmptyState />;
+  }
+
+  // Renderizar lista de categorías
   return (
-    <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-lg shadow-sm border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
-      <div className={`p-6 border-b ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
-        <h2 className={`text-lg font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
-          Lista de Categorías
-        </h2>
-      </div>
-      <div className="overflow-x-auto">
-        <CategoryTable categories={categories} isPending={isPending} />
-      </div>
+    <div className="space-y-4">
+      {categories.map((category) => (
+        <CategoryListItem key={category.id} category={category} />
+      ))}
     </div>
   );
 });

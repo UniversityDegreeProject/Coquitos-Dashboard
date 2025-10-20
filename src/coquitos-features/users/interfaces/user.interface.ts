@@ -36,6 +36,10 @@ export interface UserResponse {
   createdAt: string;
   updatedAt: string;
   lastConnection?: string;
+  /** Token de acceso (solo en respuestas de login/register) */
+  accessToken?: string;
+  /** Token de refresco (solo en respuestas de login/register) */
+  refreshToken?: string;
 }
 
 /**

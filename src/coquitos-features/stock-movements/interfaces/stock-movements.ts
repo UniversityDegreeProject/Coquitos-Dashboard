@@ -12,6 +12,15 @@ export interface StockMovementResponse {
   reference : string;
   notes : string | null;
   createdAt : Date;
+  user?: {
+    username: string;
+    firstName?: string;
+    lastName?: string;
+  };
+  product?: {
+    name: string;
+    stock: number;
+  };
 }
 
 

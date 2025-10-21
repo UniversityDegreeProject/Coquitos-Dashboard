@@ -47,15 +47,15 @@ export const StockMovementsPage = () => {
     navigate(paths.dashboard.products);
   }, [navigate]);
 
-  // * Helper para obtener el color del tipo de movimiento
+  // * Helper para obtener el color del tipo de movimiento con mejor contraste
   const getTypeColor = (type: StockMovementType): string => {
     const colors = {
-      Reabastecimiento: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-      Compra: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-      Venta: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-      Ajuste: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-      Devolucion: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-      Dañado: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+      Reabastecimiento: 'bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50',
+      Compra: 'bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50',
+      Venta: 'bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50',
+      Ajuste: 'bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50',
+      Devolucion: 'bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50',
+      Dañado: 'bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50',
     };
     return colors[type];
   };
@@ -173,63 +173,109 @@ export const StockMovementsPage = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className={`${isDark ? 'bg-gray-800' : 'bg-gray-50'} border-b ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
+              <thead className={`${isDark ? 'bg-gradient-to-r from-gray-800 to-gray-700' : 'bg-gradient-to-r from-gray-100 to-gray-50'}`}>
                 <tr>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${colors.text.muted} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-center text-xs font-bold ${colors.text.primary} uppercase tracking-wider border-b-2 ${isDark ? 'border-blue-500' : 'border-blue-600'}`}>
                     Referencia
                   </th>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${colors.text.muted} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-center text-xs font-bold ${colors.text.primary} uppercase tracking-wider border-b-2 ${isDark ? 'border-blue-500' : 'border-blue-600'}`}>
+                    Usuario
+                  </th>
+                  <th className={`px-6 py-4 text-center text-xs font-bold ${colors.text.primary} uppercase tracking-wider border-b-2 ${isDark ? 'border-blue-500' : 'border-blue-600'}`}>
                     Tipo
                   </th>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${colors.text.muted} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-center text-xs font-bold ${colors.text.primary} uppercase tracking-wider border-b-2 ${isDark ? 'border-blue-500' : 'border-blue-600'}`}>
                     Cantidad
                   </th>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${colors.text.muted} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-center text-xs font-bold ${colors.text.primary} uppercase tracking-wider border-b-2 ${isDark ? 'border-blue-500' : 'border-blue-600'}`}>
                     Stock Anterior
                   </th>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${colors.text.muted} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-center text-xs font-bold ${colors.text.primary} uppercase tracking-wider border-b-2 ${isDark ? 'border-blue-500' : 'border-blue-600'}`}>
                     Stock Nuevo
                   </th>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${colors.text.muted} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-center text-xs font-bold ${colors.text.primary} uppercase tracking-wider border-b-2 ${isDark ? 'border-blue-500' : 'border-blue-600'}`}>
                     Razón
                   </th>
-                  <th className={`px-6 py-3 text-left text-xs font-medium ${colors.text.muted} uppercase tracking-wider`}>
+                  <th className={`px-6 py-4 text-center text-xs font-bold ${colors.text.primary} uppercase tracking-wider border-b-2 ${isDark ? 'border-blue-500' : 'border-blue-600'}`}>
                     Fecha
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredMovements.map((movement) => (
+              <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                {filteredMovements.map((movement, index) => (
                   <tr 
                     key={movement.id} 
-                    className={`hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors`}
+                    className={`
+                      ${index % 2 === 0 
+                        ? isDark ? 'bg-gray-800/30' : 'bg-white' 
+                        : isDark ? 'bg-gray-800/50' : 'bg-gray-50/50'
+                      }
+                      hover:${isDark ? 'bg-gray-700/50' : 'bg-blue-50'} 
+                      transition-all duration-200 ease-in-out
+                      hover:shadow-md
+                    `}
                   >
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${colors.text.primary}`}>
-                      {movement.reference}
+                    {/* Referencia */}
+                    <td className={`px-6 py-4 text-center whitespace-nowrap`}>
+                      <span className={`text-sm font-bold ${isDark ? 'text-blue-400' : 'text-blue-500'}`}>
+                        {movement.reference}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getTypeColor(movement.type)}`}>
+
+                    {/* Usuario */}
+                    <td className={`px-6 py-4 text-center whitespace-nowrap`}>
+                      <div className="flex flex-col items-center">
+                        <span className={`text-sm font-semibold ${colors.text.primary}`}>
+                          {movement.user?.username || 'N/A'}
+                        </span>
+                        {movement.user?.firstName && (
+                          <span className={`text-xs ${colors.text.muted}`}>
+                            {movement.user.firstName}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Tipo */}
+                    <td className="px-6 py-4 text-center whitespace-nowrap">
+                      <span className={`px-3 py-1.5 inline-flex text-xs font-bold rounded-lg ${getTypeColor(movement.type)}`}>
                         {movement.type}
                       </span>
                     </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${colors.text.primary}`}>
-                      <span className={movement.quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+
+                    {/* Cantidad */}
+                    <td className={`px-6 py-4 text-center whitespace-nowrap`}>
+                      <span className={`text-sm font-bold ${movement.quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                         {movement.quantity > 0 ? '+' : ''}{movement.quantity}
                       </span>
                     </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${colors.text.muted}`}>
+
+                    {/* Stock Anterior */}
+                    <td className={`px-6 py-4 text-center whitespace-nowrap text-sm font-medium ${colors.text.muted}`}>
                       {movement.previousStock}
                     </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${colors.text.primary}`}>
-                      {movement.newStock}
+
+                    {/* Stock Nuevo */}
+                    <td className={`px-6 py-4 text-center whitespace-nowrap`}>
+                      <span className={`text-sm font-bold ${colors.text.primary}`}>
+                        {movement.newStock}
+                      </span>
                     </td>
-                    <td className={`px-6 py-4 text-sm ${colors.text.muted} max-w-xs truncate`}>
-                      {movement.reason}
-                      {movement.notes && (
-                        <span className="block text-xs italic mt-1">{movement.notes}</span>
-                      )}
+
+                    {/* Razón */}
+                    <td className={`px-6 py-4 text-center text-sm ${colors.text.muted} max-w-xs`}>
+                      <div className="flex flex-col items-center">
+                        <span className="line-clamp-1">{movement.reason}</span>
+                        {movement.notes && (
+                          <span className="text-xs italic mt-1 line-clamp-1 text-gray-500 dark:text-gray-400">
+                            {movement.notes}
+                          </span>
+                        )}
+                      </div>
                     </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${colors.text.muted}`}>
+
+                    {/* Fecha */}
+                    <td className={`px-6 py-4 text-center whitespace-nowrap text-sm ${colors.text.muted}`}>
                       {formatDate(movement.createdAt)}
                     </td>
                   </tr>

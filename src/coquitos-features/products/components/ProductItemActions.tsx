@@ -51,7 +51,7 @@ export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
   }, [product, deleteProductMutation]);
 
   return (
-    <div className="flex space-x-2">
+    <div className="flex justify-center space-x-2">
       <button
         onClick={handleAdjustStock}
         className="p-2 rounded-lg bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 transition-colors"
@@ -59,7 +59,7 @@ export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
         title="Ajustar stock"
         type="button"
       >
-        <TrendingUp className="w-4 h-4 text-green-600" />
+        <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
       </button>
       <button
         onClick={handleEditProduct}
@@ -68,7 +68,7 @@ export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
         title="Editar producto"
         type="button"
       >
-        <Edit2 className="w-4 h-4 text-blue-600" />
+        <Edit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
       </button>
       <button
         onClick={handleDeleteProduct}
@@ -77,7 +77,7 @@ export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
         title="Eliminar producto"
         type="button"
       >
-        <Trash2 className="w-4 h-4 text-red-600" />
+        <Trash2 className="w-4 h-4 text-red-600 dark:text-red-400" />
       </button>
     </div>
   );

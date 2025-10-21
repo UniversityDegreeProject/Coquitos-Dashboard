@@ -2,10 +2,15 @@ import { create, type StateCreator } from "zustand";
 import { persist, devtools } from "zustand/middleware";
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
+import { jwtDecode } from "jwt-decode";
 
 import type { AuthState, UserLoginFormData } from "@/auth/interface";
 import { login } from "../services/auth.service";
 import { useThemeStore } from "@/shared/stores/themeStore";
+
+interface JWTPayload {
+  exp: number;
+}
 
 const authApi : StateCreator<AuthState, [["zustand/devtools", never], ["zustand/persist", unknown]], []> = (set) => ({
   status: "not-authenticated",
@@ -76,7 +81,33 @@ export const useAuthStore = create<AuthState>()(
         //? Cuando se recupera del localStorage, actualizar el estado de autenticación
         if (state) {
           if (state.user && state.accessToken && state.refreshToken) {
-            state.status = "authenticated";
+            // Verificar si el token está expirado
+            try {
+              const decoded = jwtDecode<JWTPayload>(state.accessToken);
+              const now = Date.now();
+              const expirationTime = decoded.exp * 1000; // Convertir a milisegundos
+              
+              if (now >= expirationTime) {
+                // Token expirado - limpiar todo y cerrar sesión
+                console.log('[AuthStore] ⚠️ Token expirado detectado al iniciar - Limpiando sesión');
+                state.user = null;
+                state.accessToken = null;
+                state.refreshToken = null;
+                state.status = "not-authenticated";
+                toast.info('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+              } else {
+                // Token válido - restaurar sesión
+                state.status = "authenticated";
+                console.log('[AuthStore] ✅ Sesión restaurada exitosamente');
+              }
+            } catch (error) {
+              // Error al decodificar token - limpiar todo
+              console.error('[AuthStore] ❌ Error al verificar token:', error);
+              state.user = null;
+              state.accessToken = null;
+              state.refreshToken = null;
+              state.status = "not-authenticated";
+            }
           } else {
             state.status = "not-authenticated";
           }

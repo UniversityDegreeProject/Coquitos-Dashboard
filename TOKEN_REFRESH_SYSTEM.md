@@ -8,9 +8,33 @@ Sistema completo de gestión de tokens JWT con detección de inactividad del usu
 
 - ✅ **Renovación Automática**: Renueva el token antes de que expire si el usuario está activo
 - ✅ **Detección de Inactividad**: Detecta cuando el usuario no interactúa con la aplicación
-- ✅ **Cierre Automático**: Cierra sesión si el usuario está inactivo y el token expira
+- ✅ **Cierre Automático Inteligente**: Cierra sesión si el usuario está inactivo y el token expira
+- ✅ **Verificación al Iniciar**: Verifica si el token está expirado al recargar la página
+- ✅ **Cierre Programado**: Programa el cierre de sesión exacto cuando el token expira durante inactividad
+- ✅ **Cancelación de Cierre**: Cancela el cierre programado si el usuario se reactiva
 - ✅ **Logging Detallado**: Logs en consola para debugging y monitoring
 - ✅ **UI Debugger**: Componente visual para ver el estado del sistema en desarrollo
+
+### ✨ Mejoras Recientes (Octubre 2025)
+
+1. **Verificación de Token Expirado al Rehidratar**
+   - Ahora al recargar la página, el sistema verifica inmediatamente si el token en localStorage está expirado
+   - Si está expirado, cierra sesión automáticamente ANTES de que el usuario vea la aplicación
+   - Implementado en `auth.store.ts` en la función `onRehydrateStorage`
+
+2. **Cierre de Sesión Programado con Precisión**
+   - Cuando el usuario se vuelve inactivo, el sistema programa un timer para cerrar sesión EXACTAMENTE cuando el token expire
+   - Ya no depende solo de la verificación periódica (cada 1 minuto)
+   - El cierre ocurre en el momento exacto de expiración, no hasta 1 minuto después
+
+3. **Cancelación Inteligente de Cierre Programado**
+   - Si el usuario se reactiva antes de que expire el token, el sistema cancela el cierre programado automáticamente
+   - El usuario puede continuar trabajando normalmente y el token se renovará cuando esté por expirar
+
+4. **Cierre Inmediato con Token Expirado**
+   - Si la verificación periódica detecta un token expirado, cierra sesión INMEDIATAMENTE
+   - Ya no espera a que el usuario esté inactivo para cerrar sesión
+   - Comportamiento más estricto y seguro
 
 ---
 
@@ -75,26 +99,24 @@ useTokenRefresh({
 2. Usuario se va (deja la ventana abierta, pero va a VS Code / otra app)
    → Pasan 10 minutos sin detectar actividad EN LA VENTANA
    → [UserActivity] ❌ Usuario INACTIVO (10 minutos sin actividad)
+   → Sistema programa cierre de sesión automático para cuando el token expire
 
 3. Token expira (después de 1 hora desde el login)
-   → Sistema detecta: Token expirado + Usuario INACTIVO
+   → El timer programado ejecuta el cierre de sesión automáticamente
    → 🚪 Cierra sesión automáticamente
    → Limpia localStorage
-   → Muestra toast: "Sesión cerrada por inactividad"
+   → Muestra toast: "Sesión cerrada por inactividad y expiración del token"
 ```
 
 **Log esperado:**
 ```
 [UserActivity] ❌ Usuario INACTIVO (10 minutos sin actividad)
-[TokenRefresh] Usuario inactivo detectado
+[TokenRefresh] ⚠️ Usuario inactivo detectado
+[TokenRefresh] ⏰ Usuario inactivo - Programando cierre de sesión en 50m 30s
 
-[TokenRefresh] 🔍 Verificación periódica:
-  ⏰ Tiempo restante del token: Expirado
-  👤 Usuario ❌ INACTIVO
-  📊 Estado: authenticated
+... (tiempo pasa) ...
 
-[TokenRefresh] ⚠️ Token expirado
-[TokenRefresh] 🚪 Usuario inactivo - Cerrando sesión
+[TokenRefresh] 🚪 Token expirado durante inactividad - Cerrando sesión
 ```
 
 ---
@@ -115,7 +137,72 @@ useTokenRefresh({
 
 ---
 
-### Escenario 4: Refresh Token Inválido o Expirado ❌
+### Escenario 4: Usuario Recarga la Página con Token Expirado 🔄
+
+```
+1. Usuario hace login y deja la aplicación abierta
+2. Pasan varios días sin que el usuario use la aplicación
+3. Usuario recarga la página (F5)
+4. Sistema rehidrata el estado desde localStorage
+5. Sistema detecta que el token está expirado
+   → 🚪 Cierra sesión automáticamente
+   → Limpia localStorage
+   → Redirige a /login
+   → Muestra toast: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+```
+
+**Log esperado:**
+```
+[AuthStore] ⚠️ Token expirado detectado al iniciar - Limpiando sesión
+```
+
+**✨ Nuevo comportamiento mejorado**: Ahora al recargar la página, el sistema verifica inmediatamente si el token está expirado y cierra la sesión antes de que el usuario pueda ver la aplicación.
+
+---
+
+### Escenario 5: Usuario Inactivo se Reactiva Antes de que Expire el Token ✅
+
+```
+1. Usuario hace login y trabaja por 5 minutos
+   → Sistema detecta actividad
+
+2. Usuario se va (deja la ventana abierta, pero va a VS Code / otra app)
+   → Pasan 10 minutos sin detectar actividad EN LA VENTANA
+   → [UserActivity] ❌ Usuario INACTIVO (10 minutos sin actividad)
+   → Sistema programa cierre de sesión para cuando el token expire (en 45 minutos)
+
+3. Usuario regresa a la aplicación después de 20 minutos
+   → Usuario mueve el mouse en la ventana de la aplicación
+   → [UserActivity] ✅ Usuario ACTIVO nuevamente
+   → Sistema cancela el cierre de sesión programado
+   → Sistema detecta que el token está por expirar (faltan 25 minutos)
+   
+4. A los 55 minutos (5 min antes de expirar el token)
+   → Sistema detecta: Token por expirar + Usuario ACTIVO
+   → 🔄 Renueva automáticamente el token en segundo plano
+   
+5. Usuario sigue trabajando sin interrupciones
+```
+
+**Log esperado:**
+```
+[UserActivity] ❌ Usuario INACTIVO (10 minutos sin actividad)
+[TokenRefresh] ⚠️ Usuario inactivo detectado
+[TokenRefresh] ⏰ Usuario inactivo - Programando cierre de sesión en 45m 30s
+
+... (usuario mueve el mouse 20 minutos después) ...
+
+[TokenRefresh] ✅ Usuario activo nuevamente
+[TokenRefresh] ❌ Cancelando cierre de sesión programado
+
+... (pasa el tiempo) ...
+
+[TokenRefresh] 🔄 Token por expirar con usuario activo - Renovando proactivamente
+```
+
+---
+
+### Escenario 6: Refresh Token Inválido o Expirado ❌
 
 ```
 1. Token expira (después de 1 hora)
@@ -227,15 +314,36 @@ El componente `<TokenDebugger />` se muestra automáticamente en la esquina infe
 [TokenRefresh] 🔄 Renovando token proactivamente...
 [TokenRefresh] 🔄 Token renovado exitosamente
 
-// Token por expirar con usuario inactivo
-[TokenRefresh] ⏳ Token por expirar (3m 30s) pero usuario INACTIVO - No se renovará
+// Usuario se vuelve inactivo
+[TokenRefresh] ⚠️ Usuario inactivo detectado
+[TokenRefresh] ⏰ Usuario inactivo - Programando cierre de sesión en 45m 30s
 
-// Token expirado
+// Usuario se reactiva antes de que expire el token
+[TokenRefresh] ✅ Usuario activo nuevamente
+[TokenRefresh] ❌ Cancelando cierre de sesión programado
+
+// Token expira durante inactividad
+[TokenRefresh] 🚪 Token expirado durante inactividad - Cerrando sesión
+
+// Token expirado detectado en verificación periódica
 [TokenRefresh] ⚠️ Token expirado
-[TokenRefresh] 🚪 Usuario inactivo - Cerrando sesión
+[TokenRefresh] 🚪 Token expirado - Cerrando sesión automáticamente
 
 // No autenticado
 [TokenRefresh] ⏸️ No autenticado - Sistema en espera
+```
+
+### Logs del Auth Store
+
+```typescript
+// Token expirado al recargar la página
+[AuthStore] ⚠️ Token expirado detectado al iniciar - Limpiando sesión
+
+// Sesión restaurada exitosamente
+[AuthStore] ✅ Sesión restaurada exitosamente
+
+// Error al verificar token
+[AuthStore] ❌ Error al verificar token: [error details]
 ```
 
 ---
@@ -303,11 +411,18 @@ useTokenRefresh({
 
 ## 📝 Resumen de Archivos Modificados
 
-1. **`src/hooks/useUserActivity.ts`** - Detecta actividad del usuario
-2. **`src/hooks/useTokenRefresh.ts`** - Coordina renovación de tokens
+### Archivos Principales del Sistema
+
+1. **`src/hooks/useUserActivity.ts`** - Detecta actividad del usuario (mouse, teclado, touch, etc.)
+2. **`src/hooks/useTokenRefresh.ts`** - Coordina renovación de tokens y cierre automático
+   - ✨ **Mejorado**: Ahora programa cierre de sesión preciso durante inactividad
+   - ✨ **Mejorado**: Cancela cierre programado si el usuario se reactiva
+   - ✨ **Mejorado**: Cierra sesión inmediatamente si detecta token expirado
 3. **`src/hooks/index.ts`** - Exporta los hooks
 4. **`src/auth/interface/auth-store.interface.ts`** - Interfaces actualizadas
 5. **`src/auth/store/auth.store.ts`** - Store con accessToken y refreshToken
+   - ✨ **Mejorado**: Verifica token expirado al rehidratar desde localStorage
+   - ✨ **Mejorado**: Cierra sesión automáticamente al recargar si el token expiró
 6. **`src/auth/services/auth.service.ts`** - Servicio de refresh token
 7. **`src/config/axios.adapter.ts`** - Interceptor de renovación automática
 8. **`src/components/TokenDebugger.tsx`** - Debugger visual (desarrollo)
@@ -319,12 +434,34 @@ useTokenRefresh({
 
 Tu aplicación ahora:
 
-- ✅ Renueva tokens automáticamente cuando el usuario está activo
-- ✅ Cierra sesión cuando el usuario está inactivo y el token expira
-- ✅ Maneja múltiples peticiones simultáneas correctamente
-- ✅ Proporciona logs detallados para debugging
-- ✅ Incluye debugger visual para desarrollo
-- ✅ Cumple con las mejores prácticas de seguridad
+- ✅ **Renueva tokens automáticamente** cuando el usuario está activo
+- ✅ **Cierra sesión inmediatamente** al detectar token expirado
+- ✅ **Verifica token al iniciar** - Si recargas la página con token expirado, cierra sesión automáticamente
+- ✅ **Programa cierre preciso** - Cuando estás inactivo, programa el cierre exacto cuando el token expire
+- ✅ **Cancela cierre inteligentemente** - Si te reactivas, cancela el cierre programado
+- ✅ **Maneja múltiples peticiones** simultáneas correctamente con el interceptor de Axios
+- ✅ **Proporciona logs detallados** para debugging y monitoring
+- ✅ **Incluye debugger visual** para desarrollo
+- ✅ **Cumple con mejores prácticas** de seguridad
 
-El usuario puede trabajar durante horas sin interrupciones, pero si se va y deja la aplicación abierta, se cerrará sesión automáticamente por seguridad. 🔒
+### 💡 Comportamiento Final
+
+**Escenario típico de uso:**
+1. Inicias sesión → Token válido por 1 hora
+2. Trabajas activamente → Token se renueva automáticamente cada ~55 minutos
+3. **Puedes trabajar durante HORAS sin interrupciones** ✅
+
+**Escenario de inactividad:**
+1. Dejas la aplicación abierta y te vas
+2. A los 10 minutos → Sistema detecta inactividad y programa cierre para cuando expire el token
+3. Cuando el token expira → Cierra sesión automáticamente 🔒
+4. Si regresas antes de que expire → Sistema cancela el cierre y continúas trabajando ✅
+
+**Escenario de recarga con token expirado:**
+1. Dejas la aplicación abierta por varios días
+2. Recargas la página (F5)
+3. Sistema detecta token expirado → Cierra sesión INMEDIATAMENTE antes de mostrar la app 🔒
+4. Redirige a login → Debes iniciar sesión nuevamente
+
+**Resultado**: Sistema robusto, seguro e inteligente que protege las sesiones pero no interrumpe el trabajo activo. 🚀
 

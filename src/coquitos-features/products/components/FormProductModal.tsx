@@ -14,6 +14,8 @@ import { useCreateProduct } from "../hooks/useCreateProduct";
 import { useShallow } from "zustand/shallow";
 import { useUpdateProduct } from "../hooks/useUpdateProduct";
 import { useGetCategories } from "@/coquitos-features/categories/hooks/useGetCategories";
+import { compressImage, validateImageSize, getImageInfo, generateSKUWithCategory } from "../helpers";
+import { toast } from "sonner";
 
 const onlyStatusOptions = statusOptions;
 
@@ -55,11 +57,15 @@ export const FormProductModal = () => {
   const isEditMode = modalMode === 'update';
   
   // * React Hook Form
-  const { control, setValue, handleSubmit, formState: { errors, isValid } } = useForm<CreateProductSchema>({
+  const { control, setValue, handleSubmit, watch, formState: { errors, isValid } } = useForm<CreateProductSchema>({
     resolver: zodResolver(createProductSchema),
     defaultValues: initialValues,
     mode: "onChange",
   });
+
+  // Observar nombre y categoría para generar SKU automático
+  const watchedName = watch("name");
+  const watchedCategoryId = watch("categoryId");
 
   const onSubmit: SubmitHandler<CreateProductSchema> = (data) => {
     // Convertir strings a números para el backend
@@ -102,22 +108,70 @@ export const FormProductModal = () => {
     }
   }, [modalMode, setValue, productToUpdate]);
 
-  // Handler para cambio de imagen
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setImagePreview(result);
-        // Marcar el campo como tocado y ejecutar validación
-        setValue('image', result, { 
-          shouldValidate: true, 
-          shouldDirty: true, 
-          shouldTouch: true 
+  // Effect para generar SKU automáticamente en modo creación
+  useEffect(() => {
+    // Solo generar SKU automático en modo creación
+    if (modalMode === 'create' && watchedName && watchedCategoryId) {
+      const selectedCategory = categories.find(cat => cat.id === watchedCategoryId);
+      
+      if (selectedCategory) {
+        // Generar SKU con categoría y nombre
+        const autoSKU = generateSKUWithCategory(watchedName, selectedCategory.name);
+        setValue('sku', autoSKU, {
+          shouldValidate: true,
+          shouldDirty: true,
         });
-      };
-      reader.readAsDataURL(file);
+      } 
+    }
+  }, [watchedName, watchedCategoryId, modalMode, categories, setValue]);
+
+  // Handler para cambio de imagen con compresión automática
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    
+    if (!file) return;
+
+    try {
+      // Obtener información del archivo
+      const imageInfo = getImageInfo(file);
+      
+      console.log('[ProductForm] 📸 Procesando imagen:', imageInfo);
+
+      // Validar tamaño máximo (5 MB)
+      if (!validateImageSize(file, 5)) {
+        toast.error('Imagen demasiado grande', {
+          description: `El tamaño máximo permitido es 5 MB. Tu imagen pesa ${imageInfo.sizeInMB} MB.`,
+        });
+        e.target.value = ''; // Limpiar input
+        return;
+      }
+
+      // Mostrar loading toast
+      const toastId = toast.loading('Comprimiendo imagen...');
+
+      // Comprimir imagen
+      const compressedBase64 = await compressImage(file);
+      
+      // Actualizar preview y formulario
+      setImagePreview(compressedBase64);
+      setValue('image', compressedBase64, { 
+        shouldValidate: true, 
+        shouldDirty: true, 
+        shouldTouch: true 
+      });
+
+      // Mostrar éxito
+      toast.success('Imagen procesada correctamente', {
+        id: toastId,
+        description: 'La imagen ha sido optimizada y está lista para usar.',
+      });
+
+    } catch (error) {
+      console.error('[ProductForm] ❌ Error al procesar imagen:', error);
+      toast.error('Error al procesar imagen', {
+        description: error instanceof Error ? error.message : 'No se pudo procesar la imagen',
+      });
+      e.target.value = ''; // Limpiar input
     }
   };
 

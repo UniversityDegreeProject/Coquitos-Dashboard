@@ -18,15 +18,15 @@ interface ProductItemActionsProps {
 export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
   const setOpenModalUpdate = useProductStore(useShallow((state) => state.setOpenModalUpdate));
   const { deleteProductMutation } = useDeleteProduct();
-  const openStockModal = useStockMovementStore(useShallow((state) => state.openModal));
+  const openStockMovementModal = useStockMovementStore(useShallow((state) => state.openStockMovementModal));
 
   const handleEditProduct = useCallback(() => {
     setOpenModalUpdate(product);
   }, [product, setOpenModalUpdate]);
 
   const handleAdjustStock = useCallback(() => {
-    openStockModal(product);
-  }, [product, openStockModal]);
+    openStockMovementModal(product);
+  }, [product, openStockMovementModal]);
 
   const handleDeleteProduct = useCallback(() => {
     Swal.fire({

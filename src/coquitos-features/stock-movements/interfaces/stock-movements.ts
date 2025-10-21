@@ -33,6 +33,7 @@ export interface StockMovementMutationResponse {
 
 export interface StockMovementFormData {
   productId: string;
+  userId: string;
   type: StockMovementType;
   quantity: number;
   reason: string;

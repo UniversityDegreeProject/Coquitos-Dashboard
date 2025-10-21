@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { createStockMovement } from "../services/stock-movement.service";
 import { useQuerys as stockMovementQuerys } from "../const";
 import type { StockMovementFormData } from "../interfaces";
 import { useQuerys as productQuerys } from "@/coquitos-features/products/const";
+import Swal from "sweetalert2";
 
 /**
  * Hook para crear un nuevo movimiento de stock
@@ -20,14 +20,33 @@ export const useCreateStockMovement = () => {
       queryClient.invalidateQueries({ queryKey: stockMovementQuerys.allStockMovements });
       queryClient.invalidateQueries({ queryKey: productQuerys.allProducts });
       
-      toast.success(`Movimiento de stock registrado exitosamente`, {
-        description: `Nuevo stock: ${data.newStock} unidades`,
+      Swal.fire({
+        title: '¡Movimiento de stock registrado exitosamente!',
+        text: `Nuevo stock: ${data.newStock} unidades`,
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#38bdf8',
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-xl font-bold text-gray-800',
+          htmlContainer: 'text-gray-600',
+        },
       });
     },
     
     onError: (error: Error) => {
-      toast.error('Error al registrar movimiento de stock', {
-        description: error.message,
+      
+      Swal.fire({
+        title: 'Error al registrar movimiento de stock',
+        text: error.message,
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ef4444',
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-xl font-bold text-gray-800',
+          htmlContainer: 'text-gray-600',
+        },
       });
     },
   });

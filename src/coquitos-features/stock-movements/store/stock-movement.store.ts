@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create, type StateCreator } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { ProductResponse } from "@/coquitos-features/products/interfaces";
 
@@ -12,29 +12,27 @@ interface StockMovementState {
   selectedProduct: ProductResponse | null;
   
   /** Abre el modal con el producto seleccionado */
-  openModal: (product: ProductResponse) => void;
+  openStockMovementModal: (product: ProductResponse) => void;
   /** Cierra el modal */
   closeModal: () => void;
 }
 
-/**
- * Store de Zustand para gestionar el estado UI de movimientos de stock
- * Maneja la apertura/cierre del modal y el producto seleccionado
- */
+
+const useStockMovementApi: StateCreator<StockMovementState, [["zustand/devtools", never]], []> = (set) => ({
+  isModalOpen: false,
+  selectedProduct: null,
+  openStockMovementModal: (product: ProductResponse) => {
+    set({ isModalOpen: true, selectedProduct: product }, false, "Open stock movement modal");
+  },
+  closeModal: () => {
+    set({ isModalOpen: false, selectedProduct: null }, false, "Close stock movement modal");
+  },
+});
+
+
 export const useStockMovementStore = create<StockMovementState>()(
   devtools(
-    (set) => ({
-      isModalOpen: false,
-      selectedProduct: null,
-
-      openModal: (product: ProductResponse) => {
-        set({ isModalOpen: true, selectedProduct: product }, false, "Open stock movement modal");
-      },
-
-      closeModal: () => {
-        set({ isModalOpen: false, selectedProduct: null }, false, "Close stock movement modal");
-      },
-    }),
+    useStockMovementApi, 
     { name: "stock-movement-store" }
   )
 );

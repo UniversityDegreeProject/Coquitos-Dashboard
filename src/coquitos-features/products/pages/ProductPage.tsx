@@ -28,10 +28,9 @@ export const ProductPage = () => {
   const viewMode = useProductStore(useShallow((state) => state.viewMode));
   const setViewMode = useProductStore(useShallow((state) => state.setViewMode));
   const setOpenModalCreate = useProductStore(useShallow((state) => state.setOpenModalCreate));
-  
+
   // * Stock Movement Modal
   const isStockModalOpen = useStockMovementStore(useShallow((state) => state.isModalOpen));
-
   // * TanStack Query
   const { data: products = [], isLoading } = useGetProducts();
 
@@ -54,6 +53,9 @@ export const ProductPage = () => {
   const handleOpenModal = useCallback(() => {
     setOpenModalCreate();
   }, [setOpenModalCreate]);
+
+
+
 
   return (
     <div className="space-y-6">

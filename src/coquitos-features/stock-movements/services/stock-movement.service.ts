@@ -58,8 +58,10 @@ export const searchStockMovements = async (params: SearchStockMovementsParams): 
  */
 export const createStockMovement = async (stockMovementData: StockMovementFormData): Promise<StockMovementResponse> => {
   try {
-    const response = await CoquitoApi.post<StockMovementMutationResponse>('/stock-movements/', stockMovementData);
-    return response.data.stockMovement;
+    const response = await CoquitoApi.post<{message: string, movement: StockMovementResponse}>('/stock-movements/', stockMovementData);
+
+    return response.data?.movement as StockMovementResponse;
+
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       throw new Error(error.response?.data.error || 'Error al crear movimiento de stock');

@@ -12,6 +12,9 @@ import { createStockMovementSchema, type StockMovementSchema } from "../schemas"
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateStockMovement } from "../hooks";
 import { useShallow } from "zustand/shallow";
+import { useAuthStore } from "@/auth/store/auth.store";
+import type { User } from "@/coquitos-features/users/interfaces";
+import { generateReferenceByType } from "../helpers";
 
 const onlyMovementTypeOptions = movementTypeOptions.filter((option) => option.value !== "");
 
@@ -19,11 +22,22 @@ const onlyMovementTypeOptions = movementTypeOptions.filter((option) => option.va
  * Modal de formulario para registrar movimientos de stock
  * Permite ajustar el inventario de un producto específico
  */
+const initialValues: StockMovementSchema = {
+  productId: "",
+  type: "Reabastecimiento",
+  quantity: 1,
+  reason: "",
+  reference: "",
+  notes: "",
+};
+
 export const FormStockMovementModal = () => {
   // * Zustand
   const closeModal = useStockMovementStore(useShallow((state) => state.closeModal));
   const selectedProduct = useStockMovementStore(useShallow((state) => state.selectedProduct));
-  
+  const user = useAuthStore(useShallow((state) => state.user));
+  const { id: userId } = user as User;
+
   // * Theme
   const { isDark } = useTheme();
 
@@ -33,14 +47,7 @@ export const FormStockMovementModal = () => {
   // * React Hook Form
   const { control, setValue, handleSubmit, watch, formState: { errors, isValid } } = useForm<StockMovementSchema>({
     resolver: zodResolver(createStockMovementSchema),
-    defaultValues: {
-      productId: selectedProduct?.id || "",
-      type: "Reabastecimiento",
-      quantity: 1,
-      reason: "",
-      reference: "",
-      notes: "",
-    },
+    defaultValues: initialValues,
     mode: "onChange",
   });
 
@@ -50,7 +57,10 @@ export const FormStockMovementModal = () => {
 
   const onSubmitForm: SubmitHandler<StockMovementSchema> = (data) => {
     closeModal();
-    useCreateStockMovementMutation.mutate(data);
+    useCreateStockMovementMutation.mutate({
+      ...data,
+      userId,
+    });
   };
 
   // Effect para establecer el productId cuando se abre el modal
@@ -59,6 +69,17 @@ export const FormStockMovementModal = () => {
       setValue('productId', selectedProduct.id);
     }
   }, [selectedProduct, setValue]);
+
+  // Effect para generar referencia automáticamente cuando cambia el tipo
+  useEffect(() => {
+    if (watchedType) {
+      const autoReference = generateReferenceByType(watchedType);
+      setValue('reference', autoReference, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  }, [watchedType, setValue]);
 
   // Calcular nuevo stock estimado
   const calculateNewStock = () => {

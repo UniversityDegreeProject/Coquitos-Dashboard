@@ -74,14 +74,14 @@ export const searchProducts = async (
  * Crea un nuevo producto
  * POST /api/products
  */
-export const createProduct = async (
-  productData: ProductFormData
-): Promise<ProductResponse> => {
+export const createProduct = async ( productData: ProductFormData ): Promise<ProductResponse> => {
   try {
     const response = await CoquitoApi.post<ProductMutationResponse>('/products', productData);
     return response.data.product;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
+      console.log(error.response?.data);
+
       throw new Error(error.response?.data.error || 'Error al crear producto');
     }
     throw new Error('Error desconocido al crear producto');
@@ -92,15 +92,9 @@ export const createProduct = async (
  * Actualiza un producto existente
  * PATCH /api/products/:id
  */
-export const updateProduct = async (
-  productId: string,
-  productData: Partial<ProductFormData>
-): Promise<ProductResponse> => {
+export const updateProduct = async ( productId: string, productData: Partial<ProductFormData> ): Promise<ProductResponse> => {
   try {
-    const response = await CoquitoApi.patch<ProductMutationResponse>(
-      `/products/${productId}`,
-      productData
-    );
+    const response = await CoquitoApi.patch<ProductMutationResponse>(`/products/${productId}`, productData);
     return response.data.product;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {

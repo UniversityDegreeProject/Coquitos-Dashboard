@@ -4,7 +4,7 @@ import { z as zod } from "zod";
  * Schema de validación para crear/actualizar categoría
  */
 export const createCategorySchema = zod.object({
-  id: zod.string().uuid().optional(),
+  id: zod.uuid().optional(),
   name: zod
     .string({ message: "Nombre es requerido" })
     .min(3, { message: "El nombre debe tener al menos 3 caracteres" })

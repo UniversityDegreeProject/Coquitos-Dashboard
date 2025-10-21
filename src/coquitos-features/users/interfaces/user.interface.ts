@@ -14,15 +14,11 @@ export type Role = "Administrador" | "Cajero";
  */
 export type Status = "Activo" | "Inactivo" | "Suspendido";
 
-/**
- * ========================================
- * INTERFACES DE RESPUESTA DEL BACKEND
- * ========================================
- */
-
-/**
- * Respuesta del backend para un usuario individual
- */
+export interface UserLoginResponse {
+  user: UserResponse;
+  accessToken: string;
+  refreshToken: string;
+}
 export interface UserResponse {
   id: string;
   username: string;

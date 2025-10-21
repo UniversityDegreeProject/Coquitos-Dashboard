@@ -22,8 +22,6 @@ export const useCreateCategory = () => {
         ...categoryToCreate,
         id: crypto.randomUUID(),
         isOptimistic: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       }
 
       queryClient.setQueryData<Category[]>(useQuerys.allCategories, (oldCategories) => {

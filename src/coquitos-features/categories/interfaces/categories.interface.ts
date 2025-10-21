@@ -1,31 +1,31 @@
-/**
- * ========================================
- * TIPOS Y ENUMS
- * ========================================
- */
+
 
 /**
  * Tipo de estado de una categoría
  */
 export type CategoryStatus = "Activo" | "Inactivo";
 
-/**
- * ========================================
- * INTERFACES DE RESPUESTA DEL BACKEND
- * ========================================
- */
 
 /**
  * Respuesta del backend para una categoría individual
  */
 export interface CategoryResponse {
-  id: string;
+  id?: string;
   name: string;
   description: string;
   status: CategoryStatus;
   createdAt: string;
   updatedAt: string;
 }
+
+
+
+export interface Category extends Omit<CategoryResponse, 'createdAt' | 'updatedAt'> {
+  isOptimistic?: boolean;
+  productCount?: number;
+  color?: string;
+}
+
 
 /**
  * Respuesta del backend con lista de categorías
@@ -49,12 +49,6 @@ export interface CategoryMutationResponse {
 }
 
 /**
- * ========================================
- * INTERFACES PARA FORMULARIOS Y DATOS
- * ========================================
- */
-
-/**
  * Datos del formulario para crear/actualizar categoría
  */
 export interface CategoryFormData {
@@ -71,18 +65,4 @@ export interface SearchCategoriesParams {
   status?: CategoryStatus | "";
 }
 
-/**
- * ========================================
- * INTERFACES EXTENDIDAS PARA UI
- * ========================================
- */
-
-/**
- * Interfaz extendida de categoría con campos opcionales de UI
- */
-export interface Category extends CategoryResponse {
-  isOptimistic?: boolean;
-  productCount?: number;
-  color?: string;
-}
 

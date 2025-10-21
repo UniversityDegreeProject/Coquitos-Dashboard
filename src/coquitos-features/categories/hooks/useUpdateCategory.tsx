@@ -32,7 +32,6 @@ export const useUpdateCategory = () => {
       const optimisticCategory: Category = {
         ...categoryToUpdate,
         isOptimistic: true,
-        updatedAt: new Date(),
       }
 
       // Aplicar la mutación optimista

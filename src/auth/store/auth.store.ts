@@ -29,8 +29,7 @@ const authApi : StateCreator<AuthState, [["zustand/devtools", never], ["zustand/
       
  
       useThemeStore.getState().setTheme('light');
-      
-      toast.success(`¡Bienvenido, ${user.firstName}!`);
+
 
     } catch (error) {
       let errorMessage = "Error al iniciar sesión";
@@ -48,8 +47,14 @@ const authApi : StateCreator<AuthState, [["zustand/devtools", never], ["zustand/
     }
   },
   logout: () => {
-    set({ user: null, accessToken: null, refreshToken: null, status: "not-authenticated", error: null }, false , "Logout success");
-    toast.info("Sesión cerrada");
+    // Primero establecer el estado de "logging-out"
+    set({ status: "logging-out" }, false, "Logging out");
+    
+    // Pequeño delay para mostrar el loader
+    setTimeout(() => {
+      set({ user: null, accessToken: null, refreshToken: null, status: "not-authenticated", error: null }, false , "Logout success");
+      toast.info("Sesión cerrada");
+    }, 500);
   },
   clearError: () => set({ error: null }),
   updateTokens: (accessToken: string, refreshToken: string) => {

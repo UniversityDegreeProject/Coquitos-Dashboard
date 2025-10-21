@@ -1,14 +1,14 @@
-import type { User } from "@/coquitos-features/users/interfaces/user.interface";
+import type { UserLoginResponse } from "@/coquitos-features/users/interfaces/user.interface";
 import type { UserLoginFormData } from "./user-login-form-data";
 
 
-export type AuthStatus = "authenticated" | "not-authenticated" | "authenticating";
+export type AuthStatus = "authenticated" | "not-authenticated" | "authenticating" | "logging-out";
 /**
  * Estado del store de autenticación (Zustand)
  */
 export interface AuthState extends AuthActions {
   status: AuthStatus;
-  user: User | null;
+  user: UserLoginResponse | null;
   /** Token de acceso (válido por 1 hora) */
   accessToken: string | null;
   /** Token de refresco (válido por 7 días) */

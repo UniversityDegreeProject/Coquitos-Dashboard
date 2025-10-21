@@ -10,7 +10,7 @@ import type { UserLoginFormData } from "../interface";
  * Inicia sesión con username y password
  * @returns Usuario y tokens (accessToken y refreshToken)
  */
-export const login = async ({ username, password }: UserLoginFormData): Promise<UserResponse> => {
+export const login = async ({ username, password }: UserLoginFormData) => {
     const response = await CoquitoApi.post(`/auth/login`, { username, password });
     
     if (!response.data) {

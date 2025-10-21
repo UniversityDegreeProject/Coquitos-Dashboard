@@ -1,12 +1,11 @@
+import { paths } from '@/router/paths';
 import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router';
+import type { User as UserType } from '@/coquitos-features/users/interfaces/user.interface';
 
 interface UserDropdownProps {
-  user: {
-    name: string;
-    role: string;
-    initials: string;
-  };
+  user: UserType;
   onLogout: () => void;
 }
 
@@ -17,6 +16,8 @@ interface UserDropdownProps {
 export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const navigate = useNavigate();
 
   // Cerrar dropdown cuando se hace click fuera
   useEffect(() => {
@@ -33,7 +34,8 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
   const handleLogout = useCallback(() => {
     onLogout();
     setIsOpen(false);
-  }, [onLogout]);
+    navigate(paths.auth.login);
+  }, [onLogout, navigate]);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -44,7 +46,7 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
       >
         <div className="relative">
           <div className="flex h-8 w-8 sm:h-10 sm:w-10 lg:h-11 lg:w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#F9E44E] to-[#F5F7E7] font-bold text-[#275081] shadow-lg group-hover:shadow-xl text-xs sm:text-sm">
-            {user.initials}
+            {user.firstName?.charAt(0)} {user.lastName?.charAt(0)}
           </div>
           {/* Indicador de estado online */}
           <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 sm:h-3 sm:w-3 bg-[#F9E44E] border-2 border-[#275081] rounded-full animate-pulse"></div>
@@ -52,7 +54,7 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
         {/* Información del usuario - Oculta en pantallas muy pequeñas */}
         <div className="text-left hidden xs:block">
           <p className="text-xs sm:text-sm font-semibold text-white group-hover:text-[#F9E44E]">
-            {user.name}
+            {user.firstName} {user.lastName}
           </p>
           <p className="text-xs text-[#F5F7E7] font-medium hidden sm:block">
             {user.role}
@@ -68,7 +70,7 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
         <div className="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-gradient-to-br from-[#2d2d2d] to-[#1a1a1a] rounded-lg shadow-xl border border-gray-700 py-2 z-50">
           {/* Header del dropdown */}
           <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-700">
-            <p className="text-xs sm:text-sm font-semibold text-white truncate">{user.name}</p>
+            <p className="text-xs sm:text-sm font-semibold text-white truncate">{user.firstName} {user.lastName}</p>
             <p className="text-xs text-[#F5F7E7] truncate">{user.role}</p>
           </div>
 

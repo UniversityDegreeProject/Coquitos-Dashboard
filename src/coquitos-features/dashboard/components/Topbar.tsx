@@ -2,7 +2,9 @@ import { Sun, Moon, PanelLeft } from 'lucide-react';
 import { UserDropdown } from './UserDropdown';
 import { useTheme } from '@/shared/hooks/useTheme';
 import { useIsDark, useToggleTheme } from '@/shared/hooks/useThemeSelectors';
-
+import { useAuthStore } from '@/auth/store/auth.store';
+import { useMemo } from 'react';
+import type { User } from '@/coquitos-features/users/interfaces/user.interface';
 
 interface TopbarProps {
   title: string;
@@ -14,18 +16,23 @@ export const Topbar = ({  title, subtitle, onToggleSidebar, isSidebarCollapsed }
   const { css } = useTheme();
   const isDark = useIsDark();
   const toggleTheme = useToggleTheme();
+  
+  // Obtener información del usuario autenticado y función de logout
+  const authUser = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
-  // NOTA: La información del usuario debería provenir de un estado global o un hook de autenticación.
-  // Por ahora, usamos datos estáticos como ejemplo.
-  const user = {
-    name: 'Jesús Cokitos',
-    role: 'Administrador',
-    initials: 'JC',
-  };
+  // Formatear datos del usuario para el dropdown
+  const user : User | null = useMemo(() => {
+    if (!authUser) {
+      return null;
+    }
+
+    return authUser;
+  }, [authUser]);
 
   const handleLogout = () => {
-    // Lógica para cerrar sesión (ej. limpiar tokens, redirigir al login)
-    console.log('Cerrando sesión...');
+    // Cerrar sesión usando el store de autenticación
+    logout();
   };
 
   return (
@@ -74,7 +81,7 @@ export const Topbar = ({  title, subtitle, onToggleSidebar, isSidebarCollapsed }
         <div className={`hidden sm:block h-6 sm:h-8 border-l ${isDark ? 'border-[#334155]' : 'border-gray-300'}`} aria-hidden="true"></div>
 
         {/* Menú desplegable del usuario */}
-        <UserDropdown user={user} onLogout={handleLogout} />
+        {user && <UserDropdown user={user} onLogout={handleLogout} />}
       </div>
     </header>
   );

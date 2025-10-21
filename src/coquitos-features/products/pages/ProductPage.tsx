@@ -7,6 +7,8 @@ import { useGetProducts } from "../hooks";
 import { useProductStore } from "../store/product.store";
 import { useShallow } from "zustand/shallow";
 import type { ProductStatus } from "../interfaces";
+import { FormStockMovementModal } from "@/coquitos-features/stock-movements/components";
+import { useStockMovementStore } from "@/coquitos-features/stock-movements/store/stock-movement.store";
 
 /**
  * Página principal de gestión de productos
@@ -26,6 +28,9 @@ export const ProductPage = () => {
   const viewMode = useProductStore(useShallow((state) => state.viewMode));
   const setViewMode = useProductStore(useShallow((state) => state.setViewMode));
   const setOpenModalCreate = useProductStore(useShallow((state) => state.setOpenModalCreate));
+  
+  // * Stock Movement Modal
+  const isStockModalOpen = useStockMovementStore(useShallow((state) => state.isModalOpen));
 
   // * TanStack Query
   const { data: products = [], isLoading } = useGetProducts();
@@ -100,6 +105,11 @@ export const ProductPage = () => {
       {/* Update Product Modal */}
       {modalMode === 'update' && (
         <FormProductModal />
+      )}
+      
+      {/* Stock Movement Modal */}
+      {isStockModalOpen && (
+        <FormStockMovementModal />
       )}
     </div>
   );

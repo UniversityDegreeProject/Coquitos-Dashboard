@@ -1,10 +1,11 @@
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, TrendingUp } from "lucide-react";
 import { useCallback } from "react";
 import { useProductStore } from "../store/product.store";
 import { useDeleteProduct } from "../hooks/useDeleteProduct";
 import { useShallow } from "zustand/shallow";
 import Swal from "sweetalert2";
 import type { ProductResponse } from "../interfaces";
+import { useStockMovementStore } from "@/coquitos-features/stock-movements/store/stock-movement.store";
 
 interface ProductItemActionsProps {
   product: ProductResponse;
@@ -17,10 +18,15 @@ interface ProductItemActionsProps {
 export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
   const setOpenModalUpdate = useProductStore(useShallow((state) => state.setOpenModalUpdate));
   const { deleteProductMutation } = useDeleteProduct();
+  const openStockModal = useStockMovementStore(useShallow((state) => state.openModal));
 
   const handleEditProduct = useCallback(() => {
     setOpenModalUpdate(product);
   }, [product, setOpenModalUpdate]);
+
+  const handleAdjustStock = useCallback(() => {
+    openStockModal(product);
+  }, [product, openStockModal]);
 
   const handleDeleteProduct = useCallback(() => {
     Swal.fire({
@@ -46,6 +52,15 @@ export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
 
   return (
     <div className="flex space-x-2">
+      <button
+        onClick={handleAdjustStock}
+        className="p-2 rounded-lg bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 transition-colors"
+        aria-label="Ajustar stock"
+        title="Ajustar stock"
+        type="button"
+      >
+        <TrendingUp className="w-4 h-4 text-green-600" />
+      </button>
       <button
         onClick={handleEditProduct}
         className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 transition-colors"

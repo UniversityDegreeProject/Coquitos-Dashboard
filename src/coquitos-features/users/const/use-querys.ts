@@ -5,7 +5,7 @@ export const useQuerys = {
   usersPaginated: (params: {
     page?: number;
     limit?: number;
-  }) => ['users', 'paginated', params] as const,
+  }) => [useQuerys.allUsers, 'paginated', params] as const,
   searchUsers: (params: {
     search?: string;
     role?: 'Administrador' | 'Cajero';

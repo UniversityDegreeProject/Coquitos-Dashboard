@@ -1,0 +1,2 @@
+export { FormStockMovementModal } from './FormStockMovementModal';
+

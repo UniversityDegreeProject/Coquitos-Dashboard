@@ -14,8 +14,6 @@ export interface StockMovementResponse {
   createdAt : Date;
 }
 
-// TODO Aun faltltan cosas que hacer
-
 
 export interface GetStockMovementsResponse {
   stockMovements : StockMovementResponse[];
@@ -34,6 +32,10 @@ export interface StockMovementMutationResponse {
 }
 
 export interface StockMovementFormData {
-  type : StockMovementType;
-
+  productId: string;
+  type: StockMovementType;
+  quantity: number;
+  reason: string;
+  reference: string;
+  notes?: string;
 }

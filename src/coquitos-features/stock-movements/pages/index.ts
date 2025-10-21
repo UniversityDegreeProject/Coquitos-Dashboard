@@ -1,0 +1,2 @@
+export { StockMovementsPage } from './StockMovementsPage';
+

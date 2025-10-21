@@ -20,7 +20,11 @@ export interface GetStockMovementsResponse {
 }
 
 export interface SearchStockMovementsResponse {
-  stockMovements : StockMovementResponse[];
+  movements : StockMovementResponse[];
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
 }
 
 export interface SearchStockMovementsParams {

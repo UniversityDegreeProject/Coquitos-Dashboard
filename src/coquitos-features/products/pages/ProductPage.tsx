@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { Package, Plus } from 'lucide-react';
+import { Package, Plus, ClipboardList } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { ProductSearchPage, ProductGrid, ProductStats, FormProductModal } from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "@/coquitos-features/users/hooks/useDebounce";
@@ -9,6 +10,7 @@ import { useShallow } from "zustand/shallow";
 import type { ProductStatus } from "../interfaces";
 import { FormStockMovementModal } from "@/coquitos-features/stock-movements/components";
 import { useStockMovementStore } from "@/coquitos-features/stock-movements/store/stock-movement.store";
+import { paths } from "@/router/paths";
 
 /**
  * Página principal de gestión de productos
@@ -31,6 +33,10 @@ export const ProductPage = () => {
 
   // * Stock Movement Modal
   const isStockModalOpen = useStockMovementStore(useShallow((state) => state.isModalOpen));
+  
+  // * Navigation
+  const navigate = useNavigate();
+
   // * TanStack Query
   const { data: products = [], isLoading } = useGetProducts();
 
@@ -49,10 +55,14 @@ export const ProductPage = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  // * Memoizar el callback del botón
+  // * Memoizar callbacks
   const handleOpenModal = useCallback(() => {
     setOpenModalCreate();
   }, [setOpenModalCreate]);
+
+  const handleNavigateToStockMovements = useCallback(() => {
+    navigate(paths.dashboard.stockMovements);
+  }, [navigate]);
 
 
 
@@ -69,13 +79,25 @@ export const ProductPage = () => {
             Gestión de Productos
           </h3>
         </div>
-        <button
-          onClick={handleOpenModal}
-          className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
-        >
-          <Plus className="w-5 h-5 mr-2 text-[#2309095c]" />
-          <span className="text-[#08080865] font-bold">Agregar Producto</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Botón para ver historial de movimientos */}
+          <button
+            onClick={handleNavigateToStockMovements}
+            className={`flex items-center px-4 py-3 ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'} rounded-xl hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5`}
+          >
+            <ClipboardList className={`w-5 h-5 mr-2 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+            <span className={`${colors.text.primary} font-medium`}>Ver Movimientos</span>
+          </button>
+          
+          {/* Botón para agregar producto */}
+          <button
+            onClick={handleOpenModal}
+            className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
+          >
+            <Plus className="w-5 h-5 mr-2 text-[#2309095c]" />
+            <span className="text-[#08080865] font-bold">Agregar Producto</span>
+          </button>
+        </div>
       </div>
 
       {/* Estadísticas rápidas */}

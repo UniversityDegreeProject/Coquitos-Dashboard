@@ -18,6 +18,7 @@ import { UserDetailPage } from "@/coquitos-features/users/pages/UserDetailPage";
 import { ReportPage } from "@/coquitos-features/reports/pages/ReportPage";
 import { CashClosePage } from "@/coquitos-features/cash-closing/pages/CashClosePage";
 import { SettingPage } from "@/coquitos-features/settings/pages/SettingPage";
+import { StockMovementsPage } from "@/coquitos-features/stock-movements/pages/StockMovementsPage";
 import LoginPage from "@/auth/pages/LoginPage";
 
 export const appRouter = createBrowserRouter([
@@ -96,6 +97,10 @@ export const appRouter = createBrowserRouter([
           {
             path: "settings",
             element: <SettingPage />,
+          },
+          {
+            path: "stock-movements",
+            element: <StockMovementsPage />,
           },
         ],
       },

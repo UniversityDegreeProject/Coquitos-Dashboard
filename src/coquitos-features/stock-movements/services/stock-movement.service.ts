@@ -2,7 +2,6 @@ import { CoquitoApi } from "@/config/axios.adapter";
 import { AxiosError } from "axios";
 import type {
   StockMovementResponse,
-  GetStockMovementsResponse,
   SearchStockMovementsResponse,
   StockMovementMutationResponse,
   StockMovementFormData,
@@ -10,12 +9,12 @@ import type {
 } from "../interfaces";
 
 /**
- * Obtiene todos los movimientos de stock
+ * Obtiene todos los movimientos de stock usando el endpoint de búsqueda
  */
 export const getStockMovements = async (): Promise<StockMovementResponse[]> => {
   try {
-    const response = await CoquitoApi.get<GetStockMovementsResponse>('/stock-movements/');
-    return response.data.stockMovements;
+    const response = await CoquitoApi.get('/stock-movements/search');
+    return response.data.movements;
   } catch (error) {
     throw new Error(`Error al obtener movimientos de stock: ${error}`);
   }
@@ -47,7 +46,7 @@ export const searchStockMovements = async (params: SearchStockMovementsParams): 
     const response = await CoquitoApi.get<SearchStockMovementsResponse>(
       `/stock-movements/search?${queryParams.toString()}`
     );
-    return response.data.stockMovements;
+    return response.data.movements;
   } catch (error) {
     throw new Error(`Error al buscar movimientos de stock: ${error}`);
   }

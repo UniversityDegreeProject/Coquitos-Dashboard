@@ -1,6 +1,7 @@
 import { CoquitoApi } from "@/config";
 import type { UserResponse } from "@/coquitos-features/users/interfaces/user.interface";
 import type { UserLoginFormData } from "../interface";
+import type { UserLoginResponse } from "@/coquitos-features/users/interfaces/user.interface";
 
 /**
  * Servicio de autenticación con el backend
@@ -10,7 +11,7 @@ import type { UserLoginFormData } from "../interface";
  * Inicia sesión con username y password
  * @returns Usuario y tokens (accessToken y refreshToken)
  */
-export const login = async ({ username, password }: UserLoginFormData) => {
+export const login = async ({ username, password }: UserLoginFormData): Promise<UserLoginResponse> => {
     const response = await CoquitoApi.post(`/auth/login`, { username, password });
     
     if (!response.data) {

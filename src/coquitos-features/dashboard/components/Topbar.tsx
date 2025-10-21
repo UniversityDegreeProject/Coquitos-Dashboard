@@ -12,7 +12,7 @@ interface TopbarProps {
   onToggleSidebar?: () => void;
   isSidebarCollapsed?: boolean;
 }
-export const Topbar = ({  title, subtitle, onToggleSidebar, isSidebarCollapsed } : TopbarProps) => {
+export const Topbar = ({  /* title, */ subtitle, onToggleSidebar, isSidebarCollapsed } : TopbarProps) => {
   const { css } = useTheme();
   const isDark = useIsDark();
   const toggleTheme = useToggleTheme();
@@ -52,9 +52,9 @@ export const Topbar = ({  title, subtitle, onToggleSidebar, isSidebarCollapsed }
         </button>
         
         <div className="min-w-0 flex-1">
-          <h1 className={`text-lg sm:text-xl lg:text-2xl font-bold ${css.topbar.text} tracking-tight truncate`}> 
+          {/* <h1 className={`text-lg sm:text-xl lg:text-2xl font-bold ${css.topbar.text} tracking-tight truncate`}> 
             {title } 
-          </h1>
+          </h1> */}
           <p className={`text-xs sm:text-sm ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} font-medium truncate hidden sm:block`}> 
             {subtitle || 'Panel de administración'} 
           </p>

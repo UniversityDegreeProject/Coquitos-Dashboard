@@ -7,8 +7,6 @@ import { Topbar } from "../components/Topbar";
 import { paths } from "@/router/paths";
 import { useMobileDetection } from "../hooks/useMobileDetection";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { useAuthStore } from "@/auth/store/auth.store";
-import { toast } from "sonner";
 
 const urlRoutes = {
   [paths.dashboard.home]: { title : "Dashboard", subtitle : "Panel de Control"} ,
@@ -30,8 +28,6 @@ export const CoquitoLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMobileDetection();
   const { css } = useTheme();
-  const currentUser = useAuthStore((state) => state.user);
-  const { firstName } = currentUser?.user || {};
 
   //? movil mode toggle|
   const handleToggleSidebar = useCallback(() => {
@@ -62,14 +58,7 @@ export const CoquitoLayout = () => {
   }
 
   return (
-
-    
     <div className={`flex h-screen ${css.content.background} ${css.content.text} relative`}>
-      {
-      
-              toast.success(`¡Bienvenido, ${firstName}!`)
-      }
-
       {/* Overlay en móvil cuando el sidebar está abierto */}
       {isMobile && isSidebarOpen && (
         <div 

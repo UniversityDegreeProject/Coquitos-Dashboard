@@ -17,20 +17,20 @@ const authApi : StateCreator<AuthState, [["zustand/devtools", never], ["zustand/
   login: async ( credentials : UserLoginFormData ) => {
     set({ user: null, accessToken: null, refreshToken: null, status: "authenticating", error: null }, false , "Authenticating");
     try {
-      const { accessToken, refreshToken, ...user } = await login(credentials);
-      if (!accessToken || !refreshToken || !user) {
+      const { accessToken, refreshToken, ...rest } = await login(credentials);
+      if (!accessToken || !refreshToken || !rest) {
         const errorMessage = "Error al iniciar sesión";
         set({ error: errorMessage, status: "not-authenticated" }, false , "Login error");
         toast.error(errorMessage);
         throw new Error("No se pudo iniciar sesión");
       }
 
-      set({ user, accessToken, refreshToken, status: "authenticated", error: null }, false , "Login success");
+      const user = rest.user;
+      set({ user: user, accessToken, refreshToken, status: "authenticated", error: null }, false , "Login success");
       
- 
       useThemeStore.getState().setTheme('light');
-
-
+      toast.success(`¡Bienvenido, ${user.firstName}!`);
+  
     } catch (error) {
       let errorMessage = "Error al iniciar sesión";
       

@@ -1,7 +1,8 @@
 import { RouterProvider } from "react-router"
 import { appRouter } from "@/router/app.route"
 import { useTokenRefresh, useAuthInitialization, useAuthLogout } from "@/hooks"
-import { TokenDebugger, GlobalLoader } from "@/components"
+import { TokenDebugger } from "@/components"
+import { GlobalLoader } from "@/shared/loaders-Skeleton"
 
 export const CoquitoApp = () => {
   // Detectar si el estado de autenticación se está inicializando

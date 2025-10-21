@@ -20,6 +20,20 @@ export const ProductCard = memo(({ product }: ProductCardProps) => {
     return `Bs ${price.toLocaleString('es-BO')}`;
   };
 
+  // Obtener gradiente dinámico basado en el estado
+  const getStatusGradient = (status: string) => {
+    switch (status) {
+      case 'Disponible':
+        return 'from-emerald-500 via-gray-500 to-teal-500';
+      case 'SinStock':
+        return 'from-red-500 via-gray-500 to-pink-500';
+      case 'Descontinuado':
+        return 'from-gray-500 via-gray-500 to-zinc-500';
+      default:
+        return 'from-blue-500 via-gray-500 to-purple-500';
+    }
+  };
+
 
   // Obtener color del estado para badges
   const getStatusColor = (status: string) => {
@@ -38,14 +52,16 @@ export const ProductCard = memo(({ product }: ProductCardProps) => {
  
   return (
     <div className={`
-      group relative overflow-hidden rounded-xl 
+      group relative overflow-hidden rounded-2xl 
       ${isDark 
-        ? 'bg-white/5 backdrop-blur-sm border border-white/10' 
-        : 'bg-white/80 backdrop-blur-sm border border-gray-200/30'
+        ? 'bg-gradient-to-br from-gray-800/90 via-gray-900/80 to-black/90 backdrop-blur-xl border border-white/20' 
+        : 'bg-gradient-to-br from-white/95 via-gray-50/90 to-white/95 backdrop-blur-xl border border-gray-200/50'
       }
-      shadow-lg hover:shadow-xl 
-      transition-all duration-300 ease-out 
-      transform hover:-translate-y-1
+      shadow-2xl hover:shadow-3xl 
+      transition-all duration-500 ease-out 
+      transform hover:-translate-y-2 hover:scale-[1.02]
+      hover:border-white/30
+      before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent before:-translate-x-full before:group-hover:translate-x-full before:transition-transform before:duration-1000 before:ease-out
     `}>
       
       {/* Imagen del producto - más pequeña y alejada */}
@@ -127,6 +143,13 @@ export const ProductCard = memo(({ product }: ProductCardProps) => {
           </div>
         )}
       </div>
+
+      {/* Efecto de borde con gradiente dinámico */}
+      <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${getStatusGradient(product.status)} opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none`} />
+      
+      {/* Efecto de brillo en las esquinas */}
+      <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-white/20 to-transparent rounded-br-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-white/15 to-transparent rounded-tl-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
     </div>
   );
 });

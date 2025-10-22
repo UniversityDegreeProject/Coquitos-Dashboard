@@ -10,7 +10,9 @@ import { useUserStore } from "../store/user.store";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "../hooks/useDebounce";
 import { validateVerifiedUsers } from "../helpers";
-import type { Role, Status } from "../interfaces";
+import type { Role, Status, UserResponse } from "../interfaces";
+import { useAuthStore } from "@/auth/store/auth.store";
+import { UnauthorizedUser } from "@/shared/pages";
 
 /**
  * Página principal de gestión de usuarios
@@ -26,7 +28,13 @@ export const UsersPage = () => {
   // * Debounce para la búsqueda (500ms)
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-  // *Zustand - Optimizado con selectores específicos
+  // *Zustand Auth
+  const user = useAuthStore(useShallow((state) => state.user))  ;
+
+  const {emailVerified, role, status } = user as UserResponse;
+
+
+  // *Zustand User - Optimizado con selectores específicos
   const modalMode = useUserStore(useShallow((state) => state.modalMode));
   const setOpenModalCreate = useUserStore(useShallow((state) => state.setOpenModalCreate));
   const usersInPolling = useUserStore(useShallow((state) => state.usersInPolling));
@@ -66,6 +74,10 @@ export const UsersPage = () => {
     }
   }, [users, usersInPolling, removeUserFromPolling]);
 
+
+  if(!emailVerified || role === "Cajero" || status === "Inactivo" || status === "Suspendido") {
+    return <UnauthorizedUser />;
+  }
 
 
 

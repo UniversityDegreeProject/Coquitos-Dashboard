@@ -1,203 +1,157 @@
-import { Search, Grid, List, Users, Crown } from "lucide-react";
+import { useState, useMemo } from 'react';
+import { Search, Filter, UserPlus } from 'lucide-react';
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { ClientStatus, ClientType } from "../interfaces";
+import { useDebounce } from "@/coquitos-features/users/hooks/useDebounce";
+import { ClientGrid } from './ClientGrid';
+import { documentTypeOptions, statusOptions } from '../const';
+import type { ClientResponse } from '../interfaces';
 
 interface ClientSearchPageProps {
-  searchValue: string;
-  onSearchChange: (value: string) => void;
-  statusFilter: ClientStatus | "";
-  onStatusChange: (value: ClientStatus | "") => void;
-  clientTypeFilter: ClientType | "";
-  onClientTypeChange: (value: ClientType | "") => void;
-  viewMode: 'grid' | 'list';
-  onViewModeChange: (mode: 'grid' | 'list') => void;
+  clients: ClientResponse[];
+  isLoading: boolean;
+  onEdit?: (client: ClientResponse) => void;
+  onDelete?: (client: ClientResponse) => void;
+  onAdd?: () => void;
 }
 
 /**
- * Componente de búsqueda y filtros específico para clientes
- * Incluye filtros por estado, tipo de cliente y selector de vista
+ * Página de búsqueda y filtrado de clientes
  */
 export const ClientSearchPage = ({
-  searchValue,
-  onSearchChange,
-  statusFilter,
-  onStatusChange,
-  clientTypeFilter,
-  onClientTypeChange,
-  viewMode,
-  onViewModeChange,
+  clients,
+  isLoading,
+  onEdit,
+  onDelete,
+  onAdd,
 }: ClientSearchPageProps) => {
-  const { isDark } = useTheme();
-
-  const statusOptions = [
-    { value: "", label: "Todos los estados" },
-    { value: "Activo", label: "Activo" },
-    { value: "Inactivo", label: "Inactivo" },
-    { value: "Bloqueado", label: "Bloqueado" },
-  ];
-
-  const clientTypeOptions = [
-    { value: "", label: "Todos los tipos" },
-    { value: "Persona Natural", label: "Persona Natural" },
-    { value: "Empresa", label: "Empresa" },
-    { value: "Cliente VIP", label: "Cliente VIP" },
-  ];
+  const { colors, isDark } = useTheme();
+  
+  // Estados de filtros
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'Activo' | 'Inactivo' | ''>('');
+  const [documentTypeFilter, setDocumentTypeFilter] = useState<'CI' | 'NIT' | 'PASSPORT' | ''>('');
+  
+  // Debounce para la búsqueda
+  const debouncedSearch = useDebounce(searchTerm, 500);
+  
+  // Filtrar clientes
+  const filteredClients = useMemo(() => {
+    return clients.filter(client => {
+      const matchesSearch = 
+        client.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        client.email.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        client.phone.includes(debouncedSearch) ||
+        client.documentNumber.includes(debouncedSearch) ||
+        (client.address && client.address.toLowerCase().includes(debouncedSearch.toLowerCase()));
+      
+      const matchesStatus = !statusFilter || client.status === statusFilter;
+      const matchesDocumentType = !documentTypeFilter || client.documentType === documentTypeFilter;
+      
+      return matchesSearch && matchesStatus && matchesDocumentType;
+    });
+  }, [clients, debouncedSearch, statusFilter, documentTypeFilter]);
 
   return (
-    <div
-      className={`${
-        isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-[#E5E7EB]"
-      } rounded-xl p-6 shadow-lg border backdrop-blur-sm transition-all duration-300 hover:shadow-xl`}
-    >
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Campo de búsqueda principal */}
-        <div className="flex-1">
-          <div className="space-y-2">
-            <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
-              Buscar clientes...
-            </label>
-            <div className="relative group">
-              <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} group-focus-within:${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'} transition-colors duration-200 z-10`} />
-              <input
-                type="text"
-                value={searchValue}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Buscar por nombre, documento, teléfono..."
-                className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm ${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'} focus:ring-4 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} placeholder:${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
-              />
-              
-              {/* Efecto de brillo al focus */}
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none" />
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Header con botón de agregar */}
+      <div className="flex items-center justify-between">
+        <h2 className={`text-2xl font-bold ${colors.text.primary}`}>
+          Gestión de Clientes
+        </h2>
+        {onAdd && (
+          <button
+            onClick={onAdd}
+            className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            <UserPlus className="w-5 h-5 mr-2" />
+            Agregar Cliente
+          </button>
+        )}
+      </div>
 
-        {/* Filtros */}
-        <div className="flex flex-col sm:flex-row gap-3">
+      {/* Filtros */}
+      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-6 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Búsqueda */}
+          <div className="relative">
+            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${colors.text.muted}`} />
+            <input
+              type="text"
+              placeholder="Buscar por nombre, email, teléfono..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className={`w-full pl-10 pr-4 py-2 rounded-lg border ${isDark ? 'border-[#334155]' : 'border-gray-300'} ${isDark ? 'bg-[#0F172A]' : 'bg-white'} ${colors.text.primary} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+
           {/* Filtro por estado */}
-          <div className="min-w-[180px]">
-            <div className="space-y-2">
-              <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
-                Estado
-              </label>
-              <div className="relative group">
-                <Users className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} group-focus-within:${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'} transition-colors duration-200 z-10`} />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => onStatusChange(e.target.value as ClientStatus | "")}
-                  className={`w-full pl-12 pr-10 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm ${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'} focus:ring-4 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
-                >
-                  {statusOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <svg className={`w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
+          <div className="relative">
+            <Filter className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${colors.text.muted}`} />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as 'Activo' | 'Inactivo' | '')}
+              className={`w-full pl-10 pr-4 py-2 rounded-lg border ${isDark ? 'border-[#334155]' : 'border-gray-300'} ${isDark ? 'bg-[#0F172A]' : 'bg-white'} ${colors.text.primary} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            >
+              {statusOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Filtro por tipo de cliente */}
-          <div className="min-w-[180px]">
-            <div className="space-y-2">
-              <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
-                Tipo
-              </label>
-              <div className="relative group">
-                <Crown className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} group-focus-within:${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'} transition-colors duration-200 z-10`} />
-                <select
-                  value={clientTypeFilter}
-                  onChange={(e) => onClientTypeChange(e.target.value as ClientType | "")}
-                  className={`w-full pl-12 pr-10 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm ${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'} focus:ring-4 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
-                >
-                  {clientTypeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <svg className={`w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Selector de vista */}
-          <div className="min-w-[120px]">
-            <div className="space-y-2">
-              <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} opacity-0`}>
-                Vista
-              </label>
-              <div className="flex rounded-xl border-2 border-gray-200 dark:border-[#334155] overflow-hidden">
-                <button
-                  onClick={() => onViewModeChange('grid')}
-                  className={`flex-1 flex items-center justify-center px-3 py-3.5 transition-all duration-200 ${
-                    viewMode === 'grid'
-                      ? `${isDark ? 'bg-[#F59E0B] text-white' : 'bg-[#275081] text-white'}`
-                      : `${isDark ? 'bg-[#1E293B] text-[#94A3B8] hover:bg-[#334155]' : 'bg-white text-gray-600 hover:bg-gray-50'}`
-                  }`}
-                  title="Vista de cuadrícula"
-                >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => onViewModeChange('list')}
-                  className={`flex-1 flex items-center justify-center px-3 py-3.5 transition-all duration-200 ${
-                    viewMode === 'list'
-                      ? `${isDark ? 'bg-[#F59E0B] text-white' : 'bg-[#275081] text-white'}`
-                      : `${isDark ? 'bg-[#1E293B] text-[#94A3B8] hover:bg-[#334155]' : 'bg-white text-gray-600 hover:bg-gray-50'}`
-                  }`}
-                  title="Vista de lista"
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+          {/* Filtro por tipo de documento */}
+          <div className="relative">
+            <Filter className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 ${colors.text.muted}`} />
+            <select
+              value={documentTypeFilter}
+              onChange={(e) => setDocumentTypeFilter(e.target.value as 'CI' | 'NIT' | 'PASSPORT' | '')}
+              className={`w-full pl-10 pr-4 py-2 rounded-lg border ${isDark ? 'border-[#334155]' : 'border-gray-300'} ${isDark ? 'bg-[#0F172A]' : 'bg-white'} ${colors.text.primary} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            >
+              {documentTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Indicador de resultados y filtros activos */}
-      {(searchValue || statusFilter || clientTypeFilter) && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-[#334155]">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 text-sm">
-              {searchValue && (
-                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Buscando: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>"{searchValue}"</span>
-                </span>
-              )}
-              {statusFilter && (
-                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Estado: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>{statusFilter}</span>
-                </span>
-              )}
-              {clientTypeFilter && (
-                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Tipo: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>{clientTypeFilter}</span>
-                </span>
-              )}
-            </div>
-            <button
-              onClick={() => {
-                onSearchChange('');
-                onStatusChange('');
-                onClientTypeChange('');
-              }}
-              className={`text-sm ${isDark ? 'text-[#94A3B8] hover:text-[#F8FAFC]' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
-            >
-              Limpiar filtros
-            </button>
-          </div>
+      {/* Estadísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
+          <p className={`text-sm ${colors.text.muted}`}>Total Clientes</p>
+          <p className={`text-2xl font-bold ${colors.text.primary}`}>
+            {filteredClients.length}
+          </p>
         </div>
+        <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
+          <p className={`text-sm ${colors.text.muted}`}>Clientes Activos</p>
+          <p className={`text-2xl font-bold text-green-600 dark:text-green-400`}>
+            {filteredClients.filter(c => c.status === 'Activo').length}
+          </p>
+        </div>
+        <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
+          <p className={`text-sm ${colors.text.muted}`}>Clientes Inactivos</p>
+          <p className={`text-2xl font-bold text-red-600 dark:text-red-400`}>
+            {filteredClients.filter(c => c.status === 'Inactivo').length}
+          </p>
+        </div>
+      </div>
+
+      {/* Grid de clientes */}
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <p className={`mt-4 ${colors.text.muted}`}>Cargando clientes...</p>
+        </div>
+      ) : (
+        <ClientGrid
+          clients={filteredClients}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       )}
     </div>
   );

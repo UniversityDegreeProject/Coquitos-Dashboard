@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteClient } from '../services/client.service';
-import { toast } from 'sonner';
+import Swal from 'sweetalert2';
 
 /**
  * Hook para eliminar un cliente
@@ -8,15 +8,44 @@ import { toast } from 'sonner';
 export const useDeleteClient = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const deleteClientMutation = useMutation({
     mutationFn: (id: string) => deleteClient(id),
     onSuccess: () => {
       // Invalidar y refetch las queries relacionadas
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      toast.success('Cliente eliminado exitosamente');
+
+      Swal.fire({
+        title: 'Cliente eliminado exitosamente',
+        text: 'El cliente se ha eliminado correctamente',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#38bdf8',
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-xl font-bold text-gray-800',
+          htmlContainer: 'text-gray-600',
+        },
+      });
     },
-    onError: (error: Error) => {
-      toast.error(`Error al eliminar cliente: ${error.message}`);
+    onError: (error) => {
+      Swal.fire({
+        title: 'Error al eliminar cliente',
+        text: error.message,
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#38bdf8',
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-xl font-bold text-gray-800',
+          htmlContainer: 'text-gray-600',
+        },
+      });
     },
+
   });
+
+  return {
+    deleteClientMutation,
+    ...deleteClientMutation,
+  }
 };

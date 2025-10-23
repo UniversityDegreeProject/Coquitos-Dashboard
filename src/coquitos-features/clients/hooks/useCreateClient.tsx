@@ -1,23 +1,56 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '../services/client.service';
-import type { CreateClientRequest } from '../interfaces';
-import { toast } from 'sonner';
+import type { ClientFormData } from '../interfaces';
 
+import { querysClient } from '../const';
+import Swal from 'sweetalert2';
 /**
  * Hook para crear un nuevo cliente
  */
 export const useCreateClient = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (clientData: CreateClientRequest) => createClient(clientData),
+  
+  const useCreateClientMutation = useMutation({
+    
+    // TODO: IMPLEMENTAR MUTACION OPTIMISTA
+    mutationFn: (clientData: ClientFormData) => createClient(clientData),
     onSuccess: () => {
       // Invalidar y refetch las queries relacionadas
-      queryClient.invalidateQueries({ queryKey: ['clients'] });
-      toast.success('Cliente creado exitosamente');
+      queryClient.invalidateQueries({ queryKey: querysClient.allClients });
+
+
+      Swal.fire({
+        title: '¡Cliente creado exitosamente!',
+        text: 'El cliente se ha creado correctamente',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#38bdf8',
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-xl font-bold text-gray-800',
+          htmlContainer: 'text-gray-600',
+        },
+      });
     },
     onError: (error: Error) => {
-      toast.error(`Error al crear cliente: ${error.message}`);
+      Swal.fire({
+        title: 'Error al crear cliente',
+        text: error.message,
+        icon: 'error',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#ef4444',
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-xl font-bold text-gray-800',
+          htmlContainer: 'text-gray-600',
+        },
+      });
     },
   });
+
+  return {
+    useCreateClientMutation,
+    ...useCreateClientMutation,
+  }
 };

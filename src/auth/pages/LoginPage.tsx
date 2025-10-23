@@ -24,6 +24,10 @@ export default function LoginPage() {
 
   const {control,handleSubmit,formState: { errors } } = useForm<UserLoginFormData>({
     resolver: zodResolver(loginUserSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+    },
   });
 
   // Limpiar error al desmontar el componente

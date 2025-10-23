@@ -5,48 +5,40 @@ import { z } from 'zod';
  */
 
 export const createClientSchema = z.object({
-  name: z.string()
-    .min(1, 'El nombre es requerido')
-    .max(100, 'El nombre no puede exceder 100 caracteres'),
+  id : z.uuid()
+  .optional(),
   
-  email: z.string()
-    .email('Email inválido')
+  firstName: z.string()
+    .min(1, 'El nombre es requerido')
+    .max(20, 'El nombre no puede exceder 20 caracteres')
+    .regex(/^[A-ZÁÉÍÓÚÑ][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, { error: 'El nombre debe comenzar con letra mayúscula y solo puede contener letras' }),
+
+  
+  lastName: z.string()
+    .min(1, 'El apellido es requerido')
+    .max(20, 'El apellido no puede exceder 20 caracteres')
+    .regex(/^[A-ZÁÉÍÓÚÑ][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, { error: 'El apellido debe comenzar con letra mayúscula y solo puede contener letras' }),
+
+  
+  email: z.email('Email inválido')
     .max(100, 'El email no puede exceder 100 caracteres'),
   
   phone: z.string()
     .min(1, 'El teléfono es requerido')
-    .max(20, 'El teléfono no puede exceder 20 caracteres'),
-  
+    .max(20, 'El teléfono no puede exceder 20 caracteres')
+    .refine( ( val ) => (/^\d{8}$/.test(val)) || (/^\+\d{11}$/.test(val)), {
+      message: 'Debe ingresar 8 números si es local o 11 números con el prefijo internacional (+59161853613)'
+    }),
   address: z.string()
+    .min(1, 'La dirección es requerida')
     .max(200, 'La dirección no puede exceder 200 caracteres')
-    .optional(),
-  
-  documentType: z.enum(['CI', 'NIT', 'PASSPORT'], {
-    errorMap: () => ({ message: 'Tipo de documento inválido' })
+    .regex(/^[A-ZÁÉÍÓÚÑ][a-zA-ZáéíóúÁÉÍÓÚñÑ0-9\s.,#-/]+$/, { error: 'La direecion solo puede contener letras, números, espacios, comas, #, - y /' }),
+
+  type: z.enum(['Regular', 'VIP', 'Ocasional'], {
+    error: 'Tipo de cliente inválido'
   }),
-  
-  documentNumber: z.string()
-    .min(1, 'El número de documento es requerido')
-    .max(50, 'El número de documento no puede exceder 50 caracteres'),
-  
-  status: z.enum(['Activo', 'Inactivo'])
-    .default('Activo'),
-  
-  notes: z.string()
-    .max(500, 'Las notas no pueden exceder 500 caracteres')
-    .optional(),
 });
 
 export const updateClientSchema = createClientSchema.partial();
 
-export const searchClientsSchema = z.object({
-  search: z.string().optional(),
-  status: z.enum(['Activo', 'Inactivo']).optional(),
-  documentType: z.enum(['CI', 'NIT', 'PASSPORT']).optional(),
-  page: z.number().int().positive().default(1),
-  limit: z.number().int().positive().max(100).default(10),
-});
-
 export type CreateClientFormData = z.infer<typeof createClientSchema>;
-export type UpdateClientFormData = z.infer<typeof updateClientSchema>;
-export type SearchClientsFormData = z.infer<typeof searchClientsSchema>;

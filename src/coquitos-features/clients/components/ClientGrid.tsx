@@ -1,32 +1,30 @@
-import { ClientCard } from './ClientCard';
-import type { ClientResponse } from '../interfaces';
+
+import type { Client } from '../interfaces';
+import { ClientSkeleton, ClientEmptyState, ClientList } from "./";
 
 interface ClientGridProps {
-  clients: ClientResponse[];
-  onEdit?: (client: ClientResponse) => void;
-  onDelete?: (client: ClientResponse) => void;
+  clients: Client[];
+  isLoading: boolean;
 }
 
 /**
- * Grid de tarjetas de clientes
+ * Componente que muestra los clientes en formato de lista moderna
+ * Sigue el patrón de UserGrid y CategoryGridTable
  */
-export const ClientGrid = ({ clients, onEdit, onDelete }: ClientGridProps) => {
-  if (clients.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 dark:text-gray-400">No hay clientes para mostrar</p>
-      </div>
-    );
-  }
+export const ClientGrid = ({ clients, isLoading }: ClientGridProps) => {
+
+  // Loading state
+  if (isLoading) return <ClientSkeleton />
+
+  // Empty state
+  if (clients.length === 0) return <ClientEmptyState />
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="space-y-4">
       {clients.map((client) => (
-        <ClientCard
+        <ClientList
           key={client.id}
           client={client}
-          onEdit={onEdit}
-          onDelete={onDelete}
         />
       ))}
     </div>

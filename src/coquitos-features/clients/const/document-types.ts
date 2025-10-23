@@ -1,15 +1,15 @@
 /**
- * Opciones de tipos de documento para clientes
+ * Opciones de tipos de cliente
  */
 
-export interface DocumentTypeOption {
-  value: 'CI' | 'NIT' | 'PASSPORT' | '';
+export interface ClientTypeOption {
+  value: 'Regular' | 'VIP' | 'Ocasional' | '';
   label: string;
 }
 
-export const documentTypeOptions: DocumentTypeOption[] = [
+export const clientTypeOptions: ClientTypeOption[] = [
   { value: '', label: 'Seleccionar tipo' },
-  { value: 'CI', label: 'Cédula de Identidad' },
-  { value: 'NIT', label: 'NIT' },
-  { value: 'PASSPORT', label: 'Pasaporte' },
+  { value: 'Regular', label: 'Cliente Regular' },
+  { value: 'VIP', label: 'Cliente VIP' },
+  { value: 'Ocasional', label: 'Cliente Ocasional' },
 ];

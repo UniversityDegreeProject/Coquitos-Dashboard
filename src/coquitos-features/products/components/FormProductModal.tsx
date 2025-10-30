@@ -135,7 +135,6 @@ export const FormProductModal = () => {
       // Obtener información del archivo
       const imageInfo = getImageInfo(file);
       
-      console.log('[ProductForm] 📸 Procesando imagen:', imageInfo);
 
       // Validar tamaño máximo (5 MB)
       if (!validateImageSize(file, 5)) {
@@ -167,7 +166,6 @@ export const FormProductModal = () => {
       });
 
     } catch (error) {
-      console.error('[ProductForm] ❌ Error al procesar imagen:', error);
       toast.error('Error al procesar imagen', {
         description: error instanceof Error ? error.message : 'No se pudo procesar la imagen',
       });
@@ -240,6 +238,7 @@ export const FormProductModal = () => {
               required
               placeholder="CHO-CLA-500"
               error={errors.sku?.message}
+              disabled = {true}
             />
 
             <LabelSelect

@@ -12,8 +12,11 @@ export const useCreateClient = () => {
 
   
   const useCreateClientMutation = useMutation({
+
+    onMutate: ( clientToCreate: ClientFormData) => {
+
+    },
     
-    // TODO: IMPLEMENTAR MUTACION OPTIMISTA
     mutationFn: (clientData: ClientFormData) => createClient(clientData),
     onSuccess: () => {
       // Invalidar y refetch las queries relacionadas

@@ -3,6 +3,7 @@ import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import type { User as UserType } from '@/coquitos-features/users/interfaces/user.interface';
+import { toast } from 'sonner';
 
 interface UserDropdownProps {
   user: UserType;
@@ -32,9 +33,14 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
   }, []);
 
   const handleLogout = useCallback(() => {
-    onLogout();
-    setIsOpen(false);
-    navigate(paths.auth.login);
+    toast.info('Cerrando Sesion...');
+
+    setTimeout(() => {
+      onLogout();
+      setIsOpen(false);
+      navigate(paths.auth.login);
+    }, 1000);
+      
   }, [onLogout, navigate]);
 
   return (

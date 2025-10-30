@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate } from "react-router";
 
 // components Layouts
 import { CoquitoLayout } from "@/coquitos-features/dashboard/layouts/CoquitoLayout";
-import { AuthLayout } from "@/auth/layout/AuthLayout";
 
 // components Route Guards
 import { PrivateRoute, PublicRoute, RootRedirect } from "./components";
@@ -19,7 +18,8 @@ import { ReportPage } from "@/coquitos-features/reports/pages/ReportPage";
 import { CashClosePage } from "@/coquitos-features/cash-closing/pages/CashClosePage";
 import { SettingPage } from "@/coquitos-features/settings/pages/SettingPage";
 import { StockMovementsPage } from "@/coquitos-features/stock-movements/pages/StockMovementsPage";
-import LoginPage from "@/auth/pages/LoginPage";
+import { LoginPage } from "@/auth/pages/LoginPage";
+import { NotFoundPage } from "@/shared/pages";
 
 export const appRouter = createBrowserRouter([
   {
@@ -27,22 +27,12 @@ export const appRouter = createBrowserRouter([
     element: <RootRedirect />,
   },
   {
-    path: "/login",
-    element: <Navigate to="/auth/login" replace />,
-  },
-  {
     path: "/auth",
     element: <PublicRoute />,
     children: [
       {
-        path: "",
-        element: <AuthLayout />,
-        children: [
-          {
-            path: "login",
-            element: <LoginPage />,
-          },
-        ],
+        path: "login",
+        element: <LoginPage />,
       },
     ],
   },
@@ -102,8 +92,20 @@ export const appRouter = createBrowserRouter([
             path: "stock-movements",
             element: <StockMovementsPage />,
           },
+          {
+            path: "404",
+            element: <NotFoundPage />,
+          },
+          {
+            path: "*",
+            element: <NotFoundPage />,
+          },
         ],
       },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ])

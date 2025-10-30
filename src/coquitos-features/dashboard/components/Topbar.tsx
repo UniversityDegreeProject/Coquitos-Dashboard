@@ -4,7 +4,7 @@ import { useTheme } from '@/shared/hooks/useTheme';
 import { useIsDark, useToggleTheme } from '@/shared/hooks/useThemeSelectors';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { useMemo } from 'react';
-import type { User } from '@/coquitos-features/users/interfaces/user.interface';
+import type { User } from '@/coquitos-features/users/interfaces';
 
 interface TopbarProps {
   title: string;

@@ -1,18 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
 
 interface UseUserActivityOptions {
-  /**
-   * Tiempo en milisegundos que se considera inactividad
-   * Por defecto: 10 minutos (600000 ms)
-   */
+
   inactivityTimeout?: number;
-  /**
-   * Callback que se ejecuta cuando se detecta inactividad
-   */
   onInactive?: () => void;
-  /**
-   * Callback que se ejecuta cuando se detecta actividad después de estar inactivo
-   */
   onActive?: () => void;
 }
 
@@ -21,11 +12,7 @@ interface UseUserActivityOptions {
  * Escucha eventos de mouse, teclado y touch para determinar si el usuario está activo
  */
 export const useUserActivity = (options: UseUserActivityOptions = {}) => {
-  const {
-    inactivityTimeout = 10 * 60 * 1000, // 10 minutos por defecto
-    onInactive,
-    onActive,
-  } = options;
+  const { inactivityTimeout = 5 * 60 * 1000, onInactive, onActive } = options;
 
   // Referencia al timestamp de la última actividad
   const lastActivityRef = useRef<number>(Date.now());

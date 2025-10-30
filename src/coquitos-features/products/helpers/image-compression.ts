@@ -67,17 +67,7 @@ export const compressImage = async (file: File): Promise<string> => {
         // Verificar tamaño final
         const sizeInKB = Math.round((compressedBase64.length * 3) / 4 / 1024);
         
-        console.log(`[ImageCompression] 📦 Imagen comprimida:
-          📏 Dimensiones originales: ${img.width}x${img.height}
-          📐 Dimensiones finales: ${width}x${height}
-          💾 Tamaño original: ~${Math.round(file.size / 1024)} KB
-          ✨ Tamaño comprimido: ~${sizeInKB} KB
-          🎯 Reducción: ${Math.round((1 - sizeInKB / (file.size / 1024)) * 100)}%`
-        );
 
-        if (sizeInKB > IMAGE_CONFIG.MAX_SIZE_KB) {
-          console.warn(`[ImageCompression] ⚠️ La imagen comprimida (${sizeInKB} KB) excede el límite recomendado (${IMAGE_CONFIG.MAX_SIZE_KB} KB)`);
-        }
 
         resolve(compressedBase64);
       };

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { useForm } from 'react-hook-form';
+import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState, useEffect } from 'react';
 
@@ -8,21 +8,22 @@ import { User, ArrowRight, StoreIcon } from 'lucide-react';
 import AnimatedWelcome from '@/auth/pages/AnimatedWelcome';
 import { useAuthStore } from '../store/auth.store';
 import { loginUserSchema } from '../schemas/login-user.schema';
-import type { UserLoginFormData } from '../interface';
+import type { AuthLoginFormData } from '../interface';
 import { paths } from '@/router/paths';
 import { LabelInputString, LabelPasswordInput } from '@/shared/components';
 import SplashCursor from '@/components/SplashCursor';
+import { toast } from 'sonner';
 
-export default function LoginPage() {
+export const LoginPage = () => {
   const [isHovered, setIsHovered] = useState(false);
-
+  
   const navigate = useNavigate();
-
+  
   const login = useAuthStore((state) => state.login);
   const status = useAuthStore((state) => state.status);
   const clearError = useAuthStore((state) => state.clearError);
 
-  const {control,handleSubmit,formState: { errors } } = useForm<UserLoginFormData>({
+  const {control,handleSubmit,formState: { errors } } = useForm<AuthLoginFormData>({
     resolver: zodResolver(loginUserSchema),
     defaultValues: {
       username: '',
@@ -35,6 +36,18 @@ export default function LoginPage() {
     return () => clearError();
   }, [clearError]);
 
+
+  const onSubmit : SubmitHandler<AuthLoginFormData> = async ( data ) => {
+    // Limpiar errores previos antes de intentar login
+    clearError();
+    const isSuccesLogged = await login(data)
+    if( isSuccesLogged ) {
+
+      const user = useAuthStore.getState().user;
+      toast.success(`¡Bienvenido, ${user?.firstName}!`);
+    }
+  };
+
   // Navegar cuando el usuario esté autenticado
   useEffect(() => {
     if (status === 'authenticated') {
@@ -42,11 +55,7 @@ export default function LoginPage() {
     }
   }, [status, navigate]);
 
-  const onSubmit = async (data: UserLoginFormData) => {
-    // Limpiar errores previos antes de intentar login
-    clearError();
-    await login(data);
-  };
+
 
 
 
@@ -227,4 +236,4 @@ export default function LoginPage() {
       <SplashCursor />
     </div>
   );
-}
+};

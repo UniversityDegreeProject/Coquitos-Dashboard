@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Lock, Shield, ArrowLeft, Home, Mail } from 'lucide-react';
 
 
+// TODO: Cambiar diseño
+
 interface Particle {
   id: number;
   left: number;

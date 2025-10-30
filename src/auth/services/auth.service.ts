@@ -1,22 +1,15 @@
 import { CoquitoApi } from "@/config";
-import type { UserResponse } from "@/coquitos-features/users/interfaces/user.interface";
-import type { UserLoginFormData } from "../interface";
-import type { UserLoginResponse } from "@/coquitos-features/users/interfaces/user.interface";
+import type { AuthLoginFormData, AuthLoginResponse } from "../interface";
 
-/**
- * Servicio de autenticación con el backend
- */
+
 
 /**
  * Inicia sesión con username y password
- * @returns Usuario y tokens (accessToken y refreshToken)
+ * @returns AuthLoginResponse { user: User, accessToken: string, refreshToken: string }
  */
-export const login = async ({ username, password }: UserLoginFormData): Promise<UserLoginResponse> => {
-    const response = await CoquitoApi.post(`/auth/login`, { username, password });
-    
-    if (!response.data) {
-      throw new Error("Respuesta del servidor inválida");
-    }
+export const login = async ({ username, password }: AuthLoginFormData): Promise<AuthLoginResponse> => {
+    const response = await CoquitoApi.post<AuthLoginResponse>(`/auth/login`, { username, password });
+
     
     return response.data;
 };
@@ -24,18 +17,11 @@ export const login = async ({ username, password }: UserLoginFormData): Promise<
 /**
  * Renueva el access token usando el refresh token
  * @param refreshToken Token de refresco actual
- * @returns Nuevos tokens (accessToken y refreshToken)
+ * @returns AuthLoginResponse { user: User, accessToken: string, refreshToken: string }
  */
-export const refreshAccessToken = async (refreshToken: string): Promise<{
-  user: UserResponse;
-  accessToken: string;
-  refreshToken: string;
-}> => {
-    const response = await CoquitoApi.post(`/auth/refresh-token`, { refreshToken });
-    
-    if (!response.data) {
-      throw new Error("Respuesta del servidor inválida");
-    }
+export const refreshAccessToken = async (refreshToken: string): Promise<AuthLoginResponse> => {
+    const response = await CoquitoApi.post<AuthLoginResponse>(`/auth/refresh-token`, { refreshToken });
+
     
     return response.data;
 };

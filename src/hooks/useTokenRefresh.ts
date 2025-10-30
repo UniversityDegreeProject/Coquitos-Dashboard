@@ -6,35 +6,17 @@ import { refreshAccessToken } from '@/auth/services/auth.service';
 import { toast } from 'sonner';
 
 interface JWTPayload {
-  /** ID del usuario */
   id: string;
-  /** Username */
   username: string;
-  /** Email */
   email: string;
-  /** Rol */
   role: string;
-  /** Fecha de emisión (timestamp en segundos) */
   iat: number;
-  /** Fecha de expiración (timestamp en segundos) */
   exp: number;
 }
 
 interface UseTokenRefreshOptions {
-  /**
-   * Tiempo en minutos antes de que expire el token para renovarlo proactivamente
-   * Por defecto: 5 minutos
-   */
   renewBeforeExpiry?: number;
-  /**
-   * Tiempo en minutos de inactividad antes de considerar al usuario inactivo
-   * Por defecto: 10 minutos
-   */
   inactivityTimeout?: number;
-  /**
-   * Intervalo en minutos para verificar el estado del token
-   * Por defecto: 1 minuto
-   */
   checkInterval?: number;
 }
 
@@ -49,13 +31,11 @@ interface UseTokenRefreshOptions {
  * @param options Opciones de configuración
  */
 export const useTokenRefresh = (options: UseTokenRefreshOptions = {}) => {
-  const {
-    renewBeforeExpiry = 5, // 5 minutos antes de expirar
-    inactivityTimeout = 10, // 10 minutos de inactividad
-    checkInterval = 1, // Verificar cada 1 minuto
-  } = options;
+
+  const { renewBeforeExpiry = 5, inactivityTimeout = 5, checkInterval = 2 } = options;
 
   const { accessToken, refreshToken, updateTokens, logout, status } = useAuthStore();
+
   const isRenewingRef = useRef(false);
   const inactivityLogoutTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -65,9 +45,9 @@ export const useTokenRefresh = (options: UseTokenRefreshOptions = {}) => {
   const getTokenExpirationTime = useCallback((token: string): number | null => {
     try {
       const decoded = jwtDecode<JWTPayload>(token);
-      return decoded.exp * 1000; // Convertir a milisegundos
+      return decoded.exp * 1000;
     } catch (error) {
-      console.error('Error al decodificar token:', error);
+      console.error('Error al decodificar el token:', error);
       return null;
     }
   }, []);
@@ -96,45 +76,21 @@ export const useTokenRefresh = (options: UseTokenRefreshOptions = {}) => {
     return Date.now() >= expirationTime;
   }, [getTokenExpirationTime]);
 
-  /**
-   * Obtiene el tiempo restante del token en formato legible
-   */
-  const getTimeUntilExpiry = useCallback((token: string): string => {
-    const expirationTime = getTokenExpirationTime(token);
-    if (!expirationTime) return 'Token inválido';
-
-    const now = Date.now();
-    const timeLeft = expirationTime - now;
-
-    if (timeLeft <= 0) return 'Expirado';
-
-    const minutes = Math.floor(timeLeft / 60000);
-    const seconds = Math.floor((timeLeft % 60000) / 1000);
-
-    if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
-    }
-    return `${seconds}s`;
-  }, [getTokenExpirationTime]);
 
   /**
    * Callback cuando el usuario se vuelve inactivo
    */
   const onUserInactive = useCallback(() => {
-    console.log('[TokenRefresh] ⚠️ Usuario inactivo detectado');
     
     // Verificar el estado del token cuando el usuario se vuelve inactivo
     const currentToken = useAuthStore.getState().accessToken;
     if (!currentToken) return;
     
-    const timeLeft = getTimeUntilExpiry(currentToken);
     const expirationTime = getTokenExpirationTime(currentToken);
     
-    // Si el token ya expiró, cerrar sesión inmediatamente
     if (isTokenExpired(currentToken)) {
-      console.log('[TokenRefresh] 🚪 Token expirado con usuario inactivo - Cerrando sesión');
       logout();
-      toast.info('Sesión cerrada por inactividad y token expirado');
+      toast.info('Se ha cerrado la sesion por inactividad y seguridad, por favor, inicia sesión nuevamente.');
       return;
     }
     
@@ -148,24 +104,20 @@ export const useTokenRefresh = (options: UseTokenRefreshOptions = {}) => {
       }
       
       // Programar cierre de sesión para cuando el token expire
-      console.log(`[TokenRefresh] ⏰ Usuario inactivo - Programando cierre de sesión en ${timeLeft}`);
       inactivityLogoutTimerRef.current = setTimeout(() => {
-        console.log('[TokenRefresh] 🚪 Token expirado durante inactividad - Cerrando sesión');
         logout();
-        toast.info('Sesión cerrada por inactividad y expiración del token');
+        toast.info('Sesión cerrada por inactividad y seguridad, por favor, inicia sesión nuevamente.');
       }, timeUntilExpiry);
     }
-  }, [isTokenExpired, getTimeUntilExpiry, getTokenExpirationTime, logout]);
+  }, [isTokenExpired, getTokenExpirationTime, logout]);
 
   /**
    * Callback cuando el usuario se reactiva después de estar inactivo
    */
   const onUserActive = useCallback(() => {
-    console.log('[TokenRefresh] ✅ Usuario activo nuevamente');
     
     // Cancelar cualquier cierre de sesión programado
     if (inactivityLogoutTimerRef.current) {
-      console.log('[TokenRefresh] ❌ Cancelando cierre de sesión programado');
       clearTimeout(inactivityLogoutTimerRef.current);
       inactivityLogoutTimerRef.current = null;
     }
@@ -189,17 +141,13 @@ export const useTokenRefresh = (options: UseTokenRefreshOptions = {}) => {
     isRenewingRef.current = true;
 
     try {
-      console.log('[TokenRefresh] Renovando token proactivamente...');
       const response = await refreshAccessToken(refreshToken);
       
       // Actualizar tokens en el store
-      updateTokens(response.accessToken, response.refreshToken);
+      updateTokens(response.accessToken, response.refreshToken, response.user);
       
-      console.log('[TokenRefresh] Token renovado exitosamente');
     } catch (error) {
-      console.error('[TokenRefresh] Error al renovar token:', error);
-      
-      // Si falla la renovación, cerrar sesión
+      console.error('Error al renovar el token:', error);
       logout();
       toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.');
     } finally {
@@ -213,25 +161,15 @@ export const useTokenRefresh = (options: UseTokenRefreshOptions = {}) => {
   const checkTokenStatus = useCallback(() => {
     // Solo verificar si el usuario está autenticado
     if (status !== 'authenticated' || !accessToken) {
-      console.log('[TokenRefresh] ⏸️ No autenticado - Sistema en espera');
       return;
     }
 
     const userActive = isUserActive();
-    const timeLeft = getTimeUntilExpiry(accessToken);
 
-    console.log(`[TokenRefresh] 🔍 Verificación periódica:
-      ⏰ Tiempo restante del token: ${timeLeft}
-      👤 Usuario ${userActive ? '✅ ACTIVO' : '❌ INACTIVO'}
-      📊 Estado: ${status}`);
 
     // Si el token ya expiró
     if (isTokenExpired(accessToken)) {
-      console.log('[TokenRefresh] ⚠️ Token expirado');
       
-      // Cerrar sesión inmediatamente sin importar si está activo o inactivo
-      // Si está activo y quiere seguir, tendrá que hacer login nuevamente
-      console.log('[TokenRefresh] 🚪 Token expirado - Cerrando sesión automáticamente');
       logout();
       toast.info('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
       return;
@@ -240,39 +178,25 @@ export const useTokenRefresh = (options: UseTokenRefreshOptions = {}) => {
     // Si el token está por expirar y el usuario está activo
     if (isTokenExpiringSoon(accessToken)) {
       if (userActive) {
-        console.log('[TokenRefresh] 🔄 Token por expirar con usuario activo - Renovando proactivamente');
         onRenewToken();
-      } else {
-        console.log(`[TokenRefresh] ⏳ Token por expirar (${timeLeft}) pero usuario INACTIVO - No se renovará`);
       }
-    } else {
-      console.log(`[TokenRefresh] ✅ Token válido por ${timeLeft} más`);
     }
-  }, [
-    status,
-    accessToken,
-    isTokenExpired,
-    isTokenExpiringSoon,
-    isUserActive,
-    onRenewToken,
-    logout,
-    getTimeUntilExpiry,
-  ]);
+  }, [ status, accessToken, isTokenExpired, isTokenExpiringSoon, isUserActive, onRenewToken, logout ]);
 
-  // Verificar el estado del token periódicamente
+  //* Verificar el estado del token periódicamente
   useEffect(() => {
-    // Verificar inmediatamente
+    //? Verificar inmediatamente
     checkTokenStatus();
 
-    // Configurar intervalo de verificación
+    //? Configurar intervalo de verificación
     const interval = setInterval(() => {
       checkTokenStatus();
-    }, checkInterval * 60 * 1000); // Convertir minutos a ms
+    }, checkInterval * 60 * 1000);
 
     return () => {
       clearInterval(interval);
       
-      // Limpiar timer de cierre de sesión por inactividad
+      //? Limpiar timer de cierre de sesión por inactividad
       if (inactivityLogoutTimerRef.current) {
         clearTimeout(inactivityLogoutTimerRef.current);
       }

@@ -29,7 +29,7 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
   // Email verification polling state
   const usersInPolling = useUserStore(useShallow((state) => state.usersInPolling));
   const { sendVerificationEmailMutation, isPending: isSendingVerificationEmail } = useSendVerificationEmail();
-  const isThisUserInPolling = usersInPolling.has(user.id);
+  const isThisUserInPolling = usersInPolling.has(user.id!);
   
   // Password
   const { useQuerySendChangePassword, isPending: isSendingPassword } = useSentChangePassword();
@@ -45,7 +45,7 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
       cancelButtonText: 'Cancelar',
     }).then((result) => {
       if (result.isConfirmed) {
-        deleteUserMutation.mutate(user.id);
+        deleteUserMutation.mutate(user.id!);
       }
     });
   }, [user.username, user.id, deleteUserMutation]);
@@ -57,12 +57,12 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
   const handleSendVerification = useCallback(() => {
     sendVerificationEmailMutation.mutate({
       email: user.email,
-      userId: user.id
+      userId: user.id!
     });
   }, [user.email, user.id, sendVerificationEmailMutation]);
 
   const handleSeeMore = useCallback(() => {
-    navigate(paths.dashboard.userDetail(user.id));
+    navigate(paths.dashboard.userDetail(user.id!));
   }, [user.id, navigate]);
 
   const handleChangePassword = useCallback(() => {

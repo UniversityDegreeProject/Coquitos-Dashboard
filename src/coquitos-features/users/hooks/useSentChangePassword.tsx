@@ -10,7 +10,6 @@ export const useSentChangePassword = () => {
     mutationFn: (email: string) => changeUserPassword(email),
 
     onSuccess: (_data, variables ) => {
-      console.log('variables', variables);
       Swal.fire({
         title: 'Correo de cambio de contraseña enviado',
         text: `Se ha enviado un correo de cambio de contraseña a ${variables}`,

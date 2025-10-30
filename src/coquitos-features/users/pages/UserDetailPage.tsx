@@ -42,7 +42,7 @@ export const UserDetailPage = () => {
 
 
   // Formatear fecha
-  const formatDate = (date?: Date) => {
+  const formatDate = (date : string) => {
     if (!date) return 'N/A';
     return new Date(date).toLocaleDateString('es-ES', {
       year: 'numeric',
@@ -62,25 +62,9 @@ export const UserDetailPage = () => {
   }
 
   if (!user) {
-    return (
-      <div className="space-y-6">
-        <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-8 shadow-lg text-center`}>
-          <XCircle className={`w-16 h-16 mx-auto mb-4 ${isDark ? 'text-red-400' : 'text-red-600'}`} />
-          <h2 className={`text-2xl font-bold mb-2 ${colors.text.primary}`}>
-            Usuario no encontrado
-          </h2>
-          <p className={`mb-6 ${colors.text.secondary}`}>
-            El usuario que buscas no existe o ha sido eliminado.
-          </p>
-          <button
-            onClick={handleGoBack}
-            className={`px-6 py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200`}
-          >
-            Volver a Usuarios
-          </button>
-        </div>
-      </div>
-    );
+    // Si no se encuentra el usuario, redirigir a la página 404
+    navigate('/dashboard/404', { replace: true });
+    return null;
   }
 
   return (
@@ -206,7 +190,7 @@ export const UserDetailPage = () => {
                 <span className={`text-sm font-semibold ${colors.text.secondary}`}>Última Conexión</span>
               </div>
               <p className={`text-sm font-mono ${colors.text.primary} break-all`}>
-                {user.lastConnection ? formatDate(new Date(user.lastConnection)) : 'N/A'}
+                {formatDate(user.lastConnection || 'Nunca')}
               </p>
             </div>
           </div>

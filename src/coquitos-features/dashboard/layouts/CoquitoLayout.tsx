@@ -24,6 +24,8 @@ const urlRoutes = {
 
 export const CoquitoLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+
   //? movil sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMobileDetection();
@@ -50,12 +52,11 @@ export const CoquitoLayout = () => {
   const { pathname } = useLocation();
   const urlRoute = urlRoutes[pathname as keyof typeof urlRoutes];
   
+  // Para rutas que no están en urlRoutes (como 404), usar valores por defecto
   const routeBreadcrumb = urlRoute?.title || 'Panel de administración';
   const routeSubtitle = urlRoute?.subtitle || 'Panel de control de Coquitos';
   
-  if (!routeBreadcrumb) {
-    return <div>404</div>;
-  }
+
 
   return (
     <div className={`flex h-screen ${css.content.background} ${css.content.text} relative`}>

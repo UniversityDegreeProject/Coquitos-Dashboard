@@ -1,5 +1,7 @@
-import axios, { type InternalAxiosRequestConfig } from "axios";
+import axios, { type InternalAxiosRequestConfig, type AxiosError, type AxiosResponse } from "axios";
 import { getEnvsAdapter } from "./getEnvs.adapter";
+import { useAuthStore } from "@/auth/store/auth.store";
+import type { AuthLoginResponse } from "@/auth/interface";
 
 /**
  * Instancia de Axios configurada para la API de Coquito
@@ -10,6 +12,7 @@ import { getEnvsAdapter } from "./getEnvs.adapter";
  */
 export const CoquitoApi = axios.create({
   baseURL: getEnvsAdapter.API_URL,
+  // ¡CORRECCIÓN DE SINTAXIS! 'headers' debe ser un objeto (faltaban las llaves {}).
   headers: {
     'Content-Type': 'application/json',
     'ngrok-skip-browser-warning': 'true',
@@ -20,64 +23,25 @@ export const CoquitoApi = axios.create({
   },
 });
 
-// Variable para evitar múltiples intentos de refresh simultáneos
+// Variable para evitar múltiples intentos de refresh simultáneos.
 let isRefreshing = false;
 let failedRequestsQueue: Array<{
   resolve: (value?: unknown) => void;
   reject: (reason?: unknown) => void;
 }> = [];
 
-/**
- * Obtiene los datos de autenticación del localStorage
- */
-const getAuthStorage = () => {
-  try {
-    const authStorage = localStorage.getItem('auth-storage');
-    if (authStorage) {
-      const { state } = JSON.parse(authStorage);
-      return state;
-    }
-  } catch (error) {
-    console.error('Error al parsear auth-storage:', error);
-  }
-  return null;
-};
-
-/**
- * Actualiza los tokens en el localStorage
- */
-const updateAuthStorage = (accessToken: string, refreshToken: string) => {
-  try {
-    const authStorage = localStorage.getItem('auth-storage');
-    if (authStorage) {
-      const parsed = JSON.parse(authStorage);
-      parsed.state.accessToken = accessToken;
-      parsed.state.refreshToken = refreshToken;
-      localStorage.setItem('auth-storage', JSON.stringify(parsed));
-    }
-  } catch (error) {
-    console.error('Error al actualizar auth-storage:', error);
-  }
-};
-
-/**
- * Limpia la autenticación y redirige al login
- */
-const clearAuthAndRedirect = () => {
-  localStorage.removeItem('auth-storage');
-  window.location.href = '/login';
-};
-
 //* Interceptor para agregar access token automáticamente a las peticiones
-CoquitoApi.interceptors.request.use(
-  (config) => {
-    const authState = getAuthStorage();
-    const accessToken = authState?.accessToken;
-    
+CoquitoApi.interceptors.request.use((config) => {
+    // 1. Llama al "Cuartel General" (Zustand) para obtener el token.
+    const accessToken = useAuthStore.getState().accessToken;
+
+    // 2. Si el token existe (estamos logueados)...
     if (accessToken) {
+      // 3. ...lo adjuntamos a la cabecera de la petición.
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
-    
+
+    // 4. Dejamos que la petición continúe.
     return config;
   },
   (error) => {
@@ -85,15 +49,15 @@ CoquitoApi.interceptors.request.use(
   }
 );
 
-//* Interceptor para manejar respuestas de error y renovación automática de tokens
-CoquitoApi.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+//* Interceptor para manejar respuestas de error y renovación automática de tokens.
+  CoquitoApi.interceptors.response.use((response : AxiosResponse) => response, async (error : AxiosError) => {
+      const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
 
-    // Si el error es 401 y no es un intento de renovación de token
+    // Si el error es 401 (Token Expirado) y no es un reintento.
     if (error.response?.status === 401 && !originalRequest._retry) {
-      // Si ya estamos renovando el token, agregar la petición a la cola
+      // Si ya estamos renovando el token, pone esta petición en la cola de espera.
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedRequestsQueue.push({ resolve, reject });
@@ -107,56 +71,65 @@ CoquitoApi.interceptors.response.use(
       }
 
       originalRequest._retry = true;
-      isRefreshing = true;
+      isRefreshing = true; // Activa el "semáforo" (¡Ocupado!)
 
-      const authState = getAuthStorage();
-      const refreshToken = authState?.refreshToken;
+      // ¡Correcto! Obtiene el refresh token desde Zustand.
+      const { refreshToken } = useAuthStore.getState();
 
       if (!refreshToken) {
-        // No hay refresh token, cerrar sesión
-        clearAuthAndRedirect();
+        // No hay refresh token, le dice a Zustand que cierre sesión.
+        useAuthStore.getState().logout();
         return Promise.reject(error);
       }
 
       try {
-        // Intentar renovar el token
-        const response = await axios.post(
+        // Intentar renovar el token.
+        // ¡CORRECCIÓN DE SINTAXIS! Así se llama a axios.post.
+        const response = await axios.post<AuthLoginResponse>(
           `${getEnvsAdapter.API_URL}/auth/refresh-token`,
           { refreshToken }
         );
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+        const {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+          user,
+        } = response.data;
 
-        // Actualizar tokens en localStorage
-        updateAuthStorage(newAccessToken, newRefreshToken);
+        // ¡Correcto! Le dice a Zustand que actualice todo.
+        useAuthStore
+          .getState()
+          .updateTokens(newAccessToken, newRefreshToken, user);
 
-        // Actualizar el header de la petición original
+        // Actualizar el header de la petición original.
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         }
 
-        // Procesar todas las peticiones que estaban en cola
+        // Procesar todas las peticiones que estaban en cola.
         failedRequestsQueue.forEach((request) => {
           request.resolve();
         });
         failedRequestsQueue = [];
 
-        // Reintentar la petición original
+        // Reintentar la petición original (ahora con el token nuevo).
         return CoquitoApi(originalRequest);
       } catch (refreshError) {
-        // Falló la renovación del token, cerrar sesión
+        // Falló la renovación del token (ej. el refresh token también expiró).
         failedRequestsQueue.forEach((request) => {
           request.reject(refreshError);
         });
         failedRequestsQueue = [];
-        
-        clearAuthAndRedirect();
+
+        // ¡Correcto! Le dice a Zustand que cierre sesión.
+        useAuthStore.getState().logout();
         return Promise.reject(refreshError);
       } finally {
-        isRefreshing = false;
+        isRefreshing = false; // Libera el "semáforo" (¡Libre!)
       }
     }
 
+    // Si no es un error 401, simplemente rechaza el error.
     return Promise.reject(error);
   }
 );

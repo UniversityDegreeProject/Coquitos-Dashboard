@@ -75,7 +75,7 @@ export const UsersPage = () => {
   }, [users, usersInPolling, removeUserFromPolling]);
 
 
-  if(!emailVerified || role === "Cajero" || status === "Inactivo" || status === "Suspendido") {
+  if( (emailVerified && role === "Cajero") || status === "Inactivo" || status === "Suspendido") {
     return <UnauthorizedUser />;
   }
 

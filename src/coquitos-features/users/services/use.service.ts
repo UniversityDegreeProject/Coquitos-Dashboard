@@ -1,15 +1,14 @@
 import { CoquitoApi } from "@/config/axios.adapter"
 import { AxiosError } from "axios";
-import type { User, UsersResponse } from "../interfaces/user.interface";
+import type { User, AuthLoginResponse } from "@/auth/interface/auth.interface";
 
 
 
-
-export const getUsers = async (): Promise<User[]> => {
+export const getUsers = async (): Promise<User> => {
   try {
-    const response = await CoquitoApi.get<UsersResponse>('/users/');
+    const response = await CoquitoApi.get<AuthLoginResponse>('/users/');
     
-    return response.data.users;
+    return response.data.user;
   } catch (error) {
     throw new Error(`Error al obtener usuarios: ${error}`);
   }

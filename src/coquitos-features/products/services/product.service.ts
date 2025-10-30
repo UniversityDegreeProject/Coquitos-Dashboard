@@ -80,8 +80,6 @@ export const createProduct = async ( productData: ProductFormData ): Promise<Pro
     return response.data.product;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
-      console.log(error.response?.data);
-
       throw new Error(error.response?.data.error || 'Error al crear producto');
     }
     throw new Error('Error desconocido al crear producto');

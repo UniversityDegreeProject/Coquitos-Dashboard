@@ -4,7 +4,7 @@ import { isAxiosError } from "axios";
 import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
 
-import type { AuthState, UserLoginFormData } from "@/auth/interface";
+import type { AuthLoginFormData, AuthState, User } from "@/auth/interface";
 import { login } from "../services/auth.service";
 import { useThemeStore } from "@/shared/stores/themeStore";
 
@@ -19,23 +19,18 @@ const authApi : StateCreator<AuthState, [["zustand/devtools", never], ["zustand/
   refreshToken: null,
   error: null,
 
-  login: async ( credentials : UserLoginFormData ) => {
+  login: async ( credentials : AuthLoginFormData ) : Promise<boolean>  => {
     set({ user: null, accessToken: null, refreshToken: null, status: "authenticating", error: null }, false , "Authenticating");
-    try {
-      const { accessToken, refreshToken, ...rest } = await login(credentials);
-      if (!accessToken || !refreshToken || !rest) {
-        const errorMessage = "Error al iniciar sesión";
-        set({ error: errorMessage, status: "not-authenticated" }, false , "Login error");
-        toast.error(errorMessage);
-        throw new Error("No se pudo iniciar sesión");
-      }
 
-      const user = rest.user;
-      set({ user: user, accessToken, refreshToken, status: "authenticated", error: null }, false , "Login success");
+    try {
+      const { accessToken, refreshToken, user } = await login(credentials);
+
+      set({ user : user, accessToken, refreshToken, status: "authenticated", error: null }, false , "Login success");
       
       useThemeStore.getState().setTheme('light');
-      toast.success(`¡Bienvenido, ${user.firstName}!`);
-  
+
+      return true;
+
     } catch (error) {
       let errorMessage = "Error al iniciar sesión";
       
@@ -44,26 +39,29 @@ const authApi : StateCreator<AuthState, [["zustand/devtools", never], ["zustand/
 
 
       } else if (isAxiosError(error) && error.request) {
-        errorMessage = "Error de conexión. Verifica tu internet";
+        errorMessage = "Error 500: Error de conexión. Verifica tu internet";
       }
 
       set({ error: errorMessage, status: "not-authenticated" }, false , "Login error");
       toast.error(errorMessage);
+
+      return false;
     }
   },
   logout: () => {
-    // Primero establecer el estado de "logging-out"
     set({ status: "logging-out" }, false, "Logging out");
     
-    // Pequeño delay para mostrar el loader
     setTimeout(() => {
       set({ user: null, accessToken: null, refreshToken: null, status: "not-authenticated", error: null }, false , "Logout success");
-      toast.info("Sesión cerrada");
     }, 500);
   },
-  clearError: () => set({ error: null }),
-  updateTokens: (accessToken: string, refreshToken: string) => {
-    set({ accessToken, refreshToken }, false, "Tokens updated");
+
+
+  clearError: () => set({ error: null }, false, "Clearing error"),
+
+
+  updateTokens: (accessToken: string, refreshToken: string, user: User) => {
+    set({ accessToken, refreshToken, user, status: "authenticated", error: null }, false, "Tokens updated");
   },
 });
 
@@ -78,6 +76,7 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken 
       }),
       onRehydrateStorage: () => (state) => {
+        console.log("Rehydrating storage");
         //? Cuando se recupera del localStorage, actualizar el estado de autenticación
         if (state) {
           if (state.user && state.accessToken && state.refreshToken) {
@@ -89,7 +88,6 @@ export const useAuthStore = create<AuthState>()(
               
               if (now >= expirationTime) {
                 // Token expirado - limpiar todo y cerrar sesión
-                console.log('[AuthStore] ⚠️ Token expirado detectado al iniciar - Limpiando sesión');
                 state.user = null;
                 state.accessToken = null;
                 state.refreshToken = null;
@@ -98,11 +96,9 @@ export const useAuthStore = create<AuthState>()(
               } else {
                 // Token válido - restaurar sesión
                 state.status = "authenticated";
-                console.log('[AuthStore] ✅ Sesión restaurada exitosamente');
               }
-            } catch (error) {
+            } catch {
               // Error al decodificar token - limpiar todo
-              console.error('[AuthStore] ❌ Error al verificar token:', error);
               state.user = null;
               state.accessToken = null;
               state.refreshToken = null;

@@ -6,3 +6,4 @@ export * from './UserSearchPage';
 export * from './UserTableSkeleton';
 export * from './UserEmptyState';
 export * from './UserListItem';
+export * from './UserPagination';

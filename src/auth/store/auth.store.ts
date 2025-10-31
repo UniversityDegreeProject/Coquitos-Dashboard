@@ -70,13 +70,13 @@ export const useAuthStore = create<AuthState>()(
   devtools(
     persist(authApi, {
       name: "auth-storage",
-      partialize: (state) => ({ 
+      partialize: (state) => ({
+        status: state.status,
         user: state.user, 
         accessToken: state.accessToken,
         refreshToken: state.refreshToken 
       }),
       onRehydrateStorage: () => (state) => {
-        console.log("Rehydrating storage");
         //? Cuando se recupera del localStorage, actualizar el estado de autenticación
         if (state) {
           if (state.user && state.accessToken && state.refreshToken) {

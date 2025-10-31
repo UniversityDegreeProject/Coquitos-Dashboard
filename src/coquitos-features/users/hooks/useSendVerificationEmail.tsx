@@ -1,8 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { sendVerificationEmail } from "../services/use.service";
 import Swal from "sweetalert2";
-import { useUserStore } from "../store/user.store";
-import { useShallow } from "zustand/shallow";
 
 interface SendVerificationParams {
   email: string;
@@ -16,15 +14,12 @@ interface SendVerificationParams {
  */
 export const useSendVerificationEmail = () => { 
 
-  const addUserToPolling = useUserStore(useShallow((state) => state.addUserToPolling));
 
   const sendVerificationEmailMutation = useMutation({
 
     mutationFn: ({ email }: SendVerificationParams) => sendVerificationEmail(email),
 
     onSuccess: (_data, variables: SendVerificationParams) => {
-      // Agregar el usuario al polling para que empiece a parpadear
-      addUserToPolling(variables.userId);
       
       Swal.fire({
         title: 'Email de verificación enviado exitosamente',

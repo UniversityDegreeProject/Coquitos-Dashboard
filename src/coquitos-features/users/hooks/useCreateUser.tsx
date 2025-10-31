@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createUser } from "../services/use.service";
-import { type User } from "../interfaces"
+import { type CreateUserResponse, type User } from "../interfaces"
 import Swal from "sweetalert2";
-import { useQuerys } from "../const";
+import { usersQueries } from "../const/users-queries";
 
 interface OptimisticMutationUser{
   optimisticUser : User
@@ -23,7 +23,7 @@ export const useCreateUser = () => {
       }
 
 
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers )=>{
+      queryClient.setQueryData<User[]>(usersQueries.allUsers, ( oldUsers )=>{
         if( !oldUsers ) return [optimisticUser];
         return [...oldUsers, optimisticUser];
       });
@@ -31,15 +31,15 @@ export const useCreateUser = () => {
       return { optimisticUser };
     },
 
-    mutationFn: ( newUser : User ) : Promise<User> => createUser( newUser ),
+    mutationFn: ( newUser : User ) : Promise<CreateUserResponse> => createUser( newUser ),
 
-    onSuccess: (createdUser: User, _ , { optimisticUser }) => {
+    onSuccess: (createdUser: CreateUserResponse, _ , { optimisticUser }) => {
 
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers )=>{
+      queryClient.setQueryData<CreateUserResponse[]>(usersQueries.allUsers, ( oldUsers )=>{
         if( !oldUsers ) return [createdUser];
 
         const userCreateSuccess = oldUsers.map( user => {
-          if (user.id === optimisticUser.id || (user as User & { isOptimistic?: boolean }).isOptimistic) {
+          if (user.user.id === optimisticUser.id || (user as CreateUserResponse & { isOptimistic?: boolean }).isOptimistic) {
             return createdUser;
           }
           return user;
@@ -54,7 +54,7 @@ export const useCreateUser = () => {
 
       Swal.fire({
         title: '¡Registro exitoso!',
-        text: `Usuario ${createdUser?.username || optimisticUser?.username} se ha registrado correctamente.`,
+        text: `Usuario ${createdUser?.user?.username || optimisticUser?.username} se ha registrado correctamente.`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -68,13 +68,10 @@ export const useCreateUser = () => {
 
     onError: (error : Error, _ , context? : OptimisticMutationUser | undefined ) : void => {
 
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldData : User[] | undefined) => {
-
+      queryClient.setQueryData<CreateUserResponse[]>(usersQueries.allUsers, ( oldData : CreateUserResponse[] | undefined) => {
         if (!oldData) return [];
-
         if (!context?.optimisticUser) return oldData;
-
-        return oldData.filter( ( user : User ) => user.id !== context.optimisticUser.id );
+        return oldData.filter( ( user : CreateUserResponse ) => user.user.id !== context.optimisticUser.id );
       });
 
       let errorMessage = "Ha ocurrido un error al crear el usuario.";

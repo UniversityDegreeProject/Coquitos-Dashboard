@@ -7,10 +7,6 @@ import { toast } from 'sonner';
 
 interface JWTPayload {
   id: string;
-  username: string;
-  email: string;
-  role: string;
-  iat: number;
   exp: number;
 }
 

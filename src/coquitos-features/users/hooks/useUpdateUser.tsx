@@ -3,8 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 
 // * Others
-import type { User } from '../interfaces';
-import { useQuerys } from '../const';
+import type { UpdateUserResponse, User } from '../interfaces';
+import { usersQueries } from '../const/users-queries';
 import { updateUser } from '../services/use.service';
 
 
@@ -21,7 +21,7 @@ export const useUpdateUser = () => {
 
     onMutate: (usertoUpdate: User) : OptimisticUpdateUser => {
 
-      const oldUsers = queryClient.getQueryData<User[]>(useQuerys.allUsers);
+      const oldUsers = queryClient.getQueryData<User[]>(usersQueries.allUsers);
       const originalUser = oldUsers?.find(user => user.id === usertoUpdate.id);
 
       if (!originalUser) {
@@ -35,7 +35,7 @@ export const useUpdateUser = () => {
       }
 
       // 3. Aplicar la mutación optimista
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[] =>  {
+      queryClient.setQueryData<User[]>(usersQueries.allUsers, ( oldUsers ) : User[] =>  {
         if( !oldUsers ) return [];
 
         return oldUsers.map(user => 
@@ -54,12 +54,12 @@ export const useUpdateUser = () => {
 
     onSuccess: (updatedUser, ) : void => {
       
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[]  => {
+      queryClient.setQueryData<UpdateUserResponse[]>(usersQueries.allUsers, ( oldUsers ) : UpdateUserResponse[]  => {
 
         if (!oldUsers) return [updatedUser];
 
-        const dataUpdatedSuccess = oldUsers.map(( user : User ) => {
-          if (user.id === updatedUser.id || (user as User & { isOptimistic?: boolean }).isOptimistic) {
+        const dataUpdatedSuccess = oldUsers.map(( user : UpdateUserResponse ) => {
+          if (user.user.id === updatedUser.user.id || (user as UpdateUserResponse & { isOptimistic?: boolean }).isOptimistic) {
             return updatedUser;
           }
           return user;
@@ -72,7 +72,7 @@ export const useUpdateUser = () => {
 
       Swal.fire({
         title: 'Usuario actualizado exitosamente',
-        text: `El usuario ${updatedUser.username} se ha actualizado correctamente`,
+        text: `El usuario ${updatedUser.user.username} se ha actualizado correctamente`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -86,7 +86,7 @@ export const useUpdateUser = () => {
 
     onError: ( error, userToUpdate : User, context? : OptimisticUpdateUser) : void => {
 
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers  ) : User[] => {
+      queryClient.setQueryData<User[]>(usersQueries.allUsers, ( oldUsers  ) : User[] => {
         
         if (!oldUsers) return [];
 

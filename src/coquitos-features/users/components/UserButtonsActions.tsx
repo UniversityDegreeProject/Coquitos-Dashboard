@@ -27,9 +27,7 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
   const { deleteUserMutation } = useDeleteUser();
 
   // Email verification polling state
-  const usersInPolling = useUserStore(useShallow((state) => state.usersInPolling));
   const { sendVerificationEmailMutation, isPending: isSendingVerificationEmail } = useSendVerificationEmail();
-  const isThisUserInPolling = usersInPolling.has(user.id!);
   
   // Password
   const { useQuerySendChangePassword, isPending: isSendingPassword } = useSentChangePassword();
@@ -105,7 +103,6 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
       {!user.emailVerified && (
         <button
           onClick={handleSendVerification}
-          disabled={isThisUserInPolling}
           className={`p-2 rounded-lg transition-all duration-200 ${
             isDark
               ? 'text-green-400 hover:bg-green-500/10 hover:text-green-300'
@@ -118,7 +115,7 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
           {isSendingVerificationEmail ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <MailCheck className={`w-4 h-4 ${isThisUserInPolling ? 'animate-pulse' : ''}`} />
+            <MailCheck className="w-4 h-4" />
           )}
         </button>
       )}

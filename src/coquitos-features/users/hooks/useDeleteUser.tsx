@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { deleteUser } from '../services/use.service';
-import { useQuerys } from '../const';
-import type { User } from '../interfaces';
+import { usersQueries } from '../const/users-queries';
+import type { DeleteUserResponse, User } from '../interfaces';
 
 interface OptimisticDeleteUser {
   deletedUser: User;
@@ -14,37 +14,40 @@ export const useDeleteUser = () => {
   const deleteUserMutation = useMutation({
 
     onMutate: async (userId: string): Promise<OptimisticDeleteUser> => {
-      const oldUsers = queryClient.getQueryData<User[]>(useQuerys.allUsers);
-      const deletedUser = oldUsers?.find(user => user.id === userId);
+      const oldUsers = queryClient.getQueryData<DeleteUserResponse[]>(usersQueries.allUsers);
+      const deletedUser = oldUsers?.find(user => user.user.id === userId);
 
       if (!deletedUser) {
         throw new Error('Usuario no encontrado');
       }
 
-      const optimisticUser: User = {
+      const optimisticUser: DeleteUserResponse = {
         ...deletedUser,
-        isOptimistic: true,
+        user: {
+          ...deletedUser.user,
+          isOptimistic: true,
+        },
       };
 
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[] => {
+      queryClient.setQueryData<DeleteUserResponse[]>(usersQueries.allUsers, ( oldUsers ) : DeleteUserResponse[] => {
         if( !oldUsers ) return [];
         
         return oldUsers.map(user => 
-          user.id === userId 
+        user.user.id === userId 
             ? optimisticUser 
             : user
         );
       });
 
-      return { deletedUser };
+      return { deletedUser: optimisticUser.user };
     },
 
-    mutationFn: (userId: string) => deleteUser(userId),
+    mutationFn: (userId: string) => deleteUser(userId), 
 
-    onSuccess: ( userDeleted:User, userId) => {
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[] => {
+    onSuccess: ( userDeleted:DeleteUserResponse, userId) => {
+      queryClient.setQueryData<DeleteUserResponse[]>(usersQueries.allUsers, ( oldUsers ) : DeleteUserResponse[] => {
         if( !oldUsers ) return [];
-        return oldUsers.filter( (user : User) => user.id !== userId );
+        return oldUsers.filter( (user : DeleteUserResponse) => user.user.id !== userId );
       });
 
       // Invalidar queries paginadas para reflejar la eliminación
@@ -52,7 +55,7 @@ export const useDeleteUser = () => {
 
       Swal.fire({
         title: 'Usuario eliminado exitosamente',
-        text: `El usuario ${userDeleted.username} se ha eliminado correctamente`,
+        text: `El usuario ${userDeleted.user.username} se ha eliminado correctamente`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -66,14 +69,20 @@ export const useDeleteUser = () => {
     
     onError: (error, userId: string, context?: OptimisticDeleteUser) : void  => {
 
-      queryClient.setQueryData<User[]>(useQuerys.allUsers, ( oldUsers ) : User[] => {
+      queryClient.setQueryData<DeleteUserResponse[]>(usersQueries.allUsers, ( oldUsers ) : DeleteUserResponse[] => {
         if( !oldUsers ) return [];
         
         if (!context?.deletedUser) return oldUsers;
 
-        return oldUsers.map(user => 
-          user.id === userId 
-            ? context.deletedUser
+        return oldUsers.map((user : DeleteUserResponse) => 
+          user.user.id === userId 
+            ? {
+              ...user,
+              user: {
+                ...user.user,
+                isOptimistic: false,
+              },
+            } as DeleteUserResponse
             : user
         );
       });

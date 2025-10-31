@@ -16,10 +16,10 @@ import {
 //* Others
 import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { useQuerys } from "../const/use-querys";
-import { getUsers } from "../services/use.service";
+import { getUserById } from "../services/use.service";
 import { getRoleColor, getStatusColor } from "../helpers";
 import { paths } from "@/router/paths";
+import { usersQueries } from "../const/users-queries";
 
 export const UserDetailPage = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -27,12 +27,11 @@ export const UserDetailPage = () => {
   const { colors, isDark } = useTheme();
 
   // Obtener todos los usuarios y filtrar por ID
-  const { data: users = [], isLoading } = useQuery({
-    queryKey: useQuerys.allUsers,
-    queryFn: getUsers,
+  const { data: user , isLoading } = useQuery({
+    queryKey: usersQueries.userById(userId as string),
+    queryFn: () => getUserById(userId as string),
   });
 
-  const user = users.find((u) => u.id === userId);
 
   // Manejador para volver
   const handleGoBack = () => {
@@ -168,7 +167,7 @@ export const UserDetailPage = () => {
                 <span className={`text-sm font-semibold ${colors.text.secondary}`}>Fecha de Registro</span>
               </div>
               <p className={`text-lg font-medium ${colors.text.primary}`}>
-                {formatDate(user.createdAt)}
+                {formatDate((user.createdAt as Date).toISOString())}
               </p>
             </div>
 
@@ -179,7 +178,7 @@ export const UserDetailPage = () => {
                 <span className={`text-sm font-semibold ${colors.text.secondary}`}>Última Actualización</span>
               </div>
               <p className={`text-lg font-medium ${colors.text.primary}`}>
-                {formatDate(user.updatedAt)}
+                {formatDate((user.updatedAt as Date).toISOString())}
               </p>
             </div>
 
@@ -190,7 +189,7 @@ export const UserDetailPage = () => {
                 <span className={`text-sm font-semibold ${colors.text.secondary}`}>Última Conexión</span>
               </div>
               <p className={`text-sm font-mono ${colors.text.primary} break-all`}>
-                {formatDate(user.lastConnection || 'Nunca')}
+                {formatDate((user.lastConnection as Date).toISOString())}
               </p>
             </div>
           </div>

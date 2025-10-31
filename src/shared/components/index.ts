@@ -4,4 +4,5 @@ export { LabelTextarea } from './LabelTextarea';
 export { LabelSelect } from './LabelSelect';
 export { LabelCheckbox } from './LabelCheckbox';
 export { LabelPasswordInput } from './LabelPasswordInput';
+export { GenericSearchBar } from './GenericSearchBar';
 

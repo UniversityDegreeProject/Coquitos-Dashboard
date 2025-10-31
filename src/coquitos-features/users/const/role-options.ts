@@ -7,7 +7,6 @@ interface RoleOption {
 }
 
 export const roleOptions : RoleOption[] = [
-  { value: "", label: "Todos los roles" },
   { value: "Administrador", label: "Administrador" },
   { value: "Cajero", label: "Cajero" },
 ];

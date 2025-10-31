@@ -29,7 +29,6 @@ export const LabelSelect = <T extends FieldValues>({
   disabled = false,
   icon: Icon,
   required = false,
-  placeholder = 'Selecciona una opción',
   className = '',
 }: LabelSelectProps<T>) => {
   const { isDark } = useTheme();
@@ -60,7 +59,6 @@ export const LabelSelect = <T extends FieldValues>({
               aria-invalid={error ? 'true' : 'false'}
               aria-describedby={error ? `${name}-error` : undefined}
             >
-              <option value="">{placeholder}</option>
               {options.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}

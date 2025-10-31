@@ -14,8 +14,6 @@ import { useCreateUser } from "../hooks/useCreateUser";
 import { useShallow } from "zustand/shallow";
 import { useUpdateUser } from "../hooks/useUpdateUser";
 
-const onlyStatusOptions = statusOptions.filter((option) => option.value !== "");
-const onlyRoleOptions = roleOptions.filter((option) => option.value !== "");
 
 const initialValues: RegisterUserSchema = {
   id: undefined,
@@ -165,7 +163,7 @@ export const FormUserModal = () => {
               label="Rol"
               name="role"
               control={control}
-              options={onlyRoleOptions}
+              options={roleOptions}
               icon={Shield}
               placeholder="Selecciona un rol"
               required
@@ -179,7 +177,7 @@ export const FormUserModal = () => {
               label="Estado"
               name="status"
               control={control}
-              options={onlyStatusOptions}
+              options={statusOptions}
               icon={UserCheck}
               placeholder="Selecciona un estado"
               required

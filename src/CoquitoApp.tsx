@@ -2,7 +2,6 @@ import { RouterProvider } from "react-router"
 import { appRouter } from "@/router/app.route"
 import { useTokenRefresh, useAuthInitialization, useAuthLogout } from "@/hooks"
 import { GlobalLoader } from "@/shared/loaders-Skeleton"
-import { TokenDebugger } from "@/components/TokenDebugger"
 
 export const CoquitoApp = () => {
   const isInitializing = useAuthInitialization();
@@ -28,7 +27,6 @@ export const CoquitoApp = () => {
   return (
     <>
       <RouterProvider router={appRouter} />
-      <TokenDebugger />
     </>
   )
 }

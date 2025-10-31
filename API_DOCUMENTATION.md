@@ -181,26 +181,9 @@ GET /api/users?page=1&limit=10&search=admin&role=Administrador&status=Activo
 Authorization: Bearer <token>
 ```
 
-#### Crear Usuario
-```http
-POST /api/users
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "username": "nuevo_usuario",
-  "email": "usuario@coquito.com",
-  "password": "Password123@",
-  "firstName": "Nombre",
-  "lastName": "Apellido",
-  "phone": "87654321",
-  "role": "Cajero"
-}
-```
-
 #### Actualizar Usuario
 ```http
-PUT /api/users/:id
+PATCH /api/users/:id
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -237,7 +220,7 @@ Content-Type: application/json
 
 #### Actualizar Categoría
 ```http
-PUT /api/categories/:id
+PATCH /api/categories/:id
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -290,7 +273,7 @@ Content-Type: application/json
 
 #### Actualizar Producto
 ```http
-PUT /api/products/:id
+PATCH /api/products/:id
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -355,7 +338,7 @@ Content-Type: application/json
 
 #### Actualizar Cliente
 ```http
-PUT /api/customers/:id
+PATCH /api/customers/:id
 Authorization: Bearer <token>
 Content-Type: application/json
 

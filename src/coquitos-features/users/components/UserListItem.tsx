@@ -1,8 +1,10 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useEffect } from "react";
 import { UserCheck } from "lucide-react";
+import { useShallow } from "zustand/shallow";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { UserButtonsActions } from "./UserButtonsActions";
 import { formateDatetime, getRoleColor, getStatusColor } from "../helpers";
+import { useUserStore } from "../store/user.store";
 import type { SearchUsersParams, User } from "../interfaces";
 
 interface UserListItemProps {
@@ -13,6 +15,8 @@ interface UserListItemProps {
 
 export const UserListItem = memo(({ user, currentParams, onPageEmpty }: UserListItemProps) => {
   const { isDark } = useTheme();
+  const pendingEmailVerifications = useUserStore(useShallow((state) => state.pendingEmailVerifications));
+  const removePendingEmailVerification = useUserStore(useShallow((state) => state.removePendingEmailVerification));
 
   const isOptimistic = user.isOptimistic;
 
@@ -20,6 +24,13 @@ export const UserListItem = memo(({ user, currentParams, onPageEmpty }: UserList
     if( !user.lastConnection ) return "Nunca";
     return formateDatetime(user.lastConnection );
   }, [user.lastConnection]);
+
+  // Efecto para limpiar el estado cuando el email es verificado
+  useEffect(() => {
+    if (user.emailVerified && pendingEmailVerifications.has(user.id!)) {
+      removePendingEmailVerification(user.id!);
+    }
+  }, [user.emailVerified, user.id, pendingEmailVerifications, removePendingEmailVerification]);
 
   return (
     <div

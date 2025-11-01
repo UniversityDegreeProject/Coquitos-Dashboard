@@ -21,6 +21,8 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const setOpenModalUpdate = useUserStore(useShallow((state) => state.setOpenModalUpdate));
+  const pendingEmailVerifications = useUserStore(useShallow((state) => state.pendingEmailVerifications));
+  const addPendingEmailVerification = useUserStore(useShallow((state) => state.addPendingEmailVerification));
   
   // Pasar parámetros actuales al hook
   const { deleteUserMutation } = useDeleteUser({ 
@@ -51,11 +53,14 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
   }, [user, setOpenModalUpdate]);
 
   const handleSendVerification = useCallback(() => {
+    // Agregar al set de pendientes
+    addPendingEmailVerification(user.id!);
+    
     sendVerificationEmailMutation.mutate({
       email: user.email,
       userId: user.id!
     });
-  }, [user.email, user.id, sendVerificationEmailMutation]);
+  }, [user.email, user.id, sendVerificationEmailMutation, addPendingEmailVerification]);
 
   const handleSeeMore = useCallback(() => {
     navigate(paths.dashboard.userDetail(user.id!));
@@ -110,7 +115,13 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
           {isSendingVerificationEmail ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <MailCheck className="w-4 h-4" />
+            <MailCheck 
+              className={`w-4 h-4 transition-all duration-300 ${
+                pendingEmailVerifications.has(user.id!) && !user.emailVerified 
+                  ? 'animate-pulse opacity-50 scale-95' 
+                  : ''
+              }`} 
+            />
           )}
         </button>
       )}

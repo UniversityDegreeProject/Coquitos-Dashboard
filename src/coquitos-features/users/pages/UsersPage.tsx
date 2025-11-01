@@ -1,6 +1,6 @@
 //* Librerias
 import { Plus, Users } from "lucide-react";
-import { useCallback, useState, useEffect, useMemo } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useShallow } from "zustand/shallow";
 
 //* Others
@@ -8,10 +8,11 @@ import { UserGrid, FormUserModal, UserStats, UserPagination } from "../component
 import { useUserStore } from "../store/user.store";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "../hooks/useDebounce";
-import type { SearchUsersParams, User } from "../interfaces";
+import type { SearchUsersParams } from "../interfaces";
 import { useAuthStore } from "@/auth/store/auth.store";
 import { UnauthorizedUser } from "@/shared/pages";
 import { useGetUsers } from "../hooks/useGetUsers";
+import { useUsersStats } from "../hooks/useUsersStats";
 import { userSearchSchema, type SearchUsersSchema } from "../schemas";
 import { GenericSearchBar } from "@/shared/components";
 import { usersSearchFilterOptions } from "../const";
@@ -21,16 +22,6 @@ const searchDefaultValues: SearchUsersSchema = {
   role: '',
   status: '',
 };
-
-
-const calculateStats = (users: User[], totalUsers: number) => {
-  return {
-    totalUsers: totalUsers,
-    activeUsers: users.filter(user => user.status === 'Activo').length,
-    inactiveUsers: users.filter(user => user.status === 'Inactivo' || user.status === 'Suspendido').length,
-    adminsUsers: users.filter(user => user.role === 'Administrador').length,
-  }
-}
 /**
  * Página principal de gestión de usuarios
  * Implementa búsqueda, filtros, estadísticas y CRUD completo
@@ -80,10 +71,12 @@ export const UsersPage = () => {
     isFetching 
   } = useGetUsers(currentParams);
 
-  const stats = useMemo( () => {
-
-    return calculateStats(users, total);
-  }, [total]);
+  // * Hook para estadísticas globales (todos los usuarios, no solo la página actual)
+  const { stats } = useUsersStats({
+    search: debouncedSearch,
+    role: searchFilters.role,
+    status: searchFilters.status,
+  });
 
   // * Handler cuando cambian los filtros del buscador
   const handleSearchFiltersChange = useCallback((values: SearchUsersSchema) => {

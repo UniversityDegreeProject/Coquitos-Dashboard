@@ -27,6 +27,9 @@ export const useGetUsers = (params: SearchUsersParams) => {
     retry: 2,
     retryDelay: 1000,
     enabled: true, 
+    // simular  socket 3 segundos
+    // refetchIntervalInBackground: true,
+    // refetchInterval: 3000,
   })
 
   const { data: users, total, page, limit, totalPages, nextPage, previousPage } = useQueryUsers.data || defaultResponse;

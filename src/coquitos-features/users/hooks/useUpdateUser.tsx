@@ -1,5 +1,5 @@
 // * Library
-import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 
 // * Others
@@ -7,85 +7,59 @@ import type { GetUsersResponse, SearchUsersParams, UpdateUserResponse, User } fr
 import { usersQueries } from '../const/users-queries';
 import { updateUser } from '../services/use.service';
 
-
-
-interface UseUpdateUserContext {
-  previousData : GetUsersResponse;
-  currentQueryKey : QueryKey;
-}
-
 interface UseUpdateUserOptions {
-  currentParams : SearchUsersParams,
+  currentParams: SearchUsersParams;
+  onSuccessCallback?: () => void;
+  onFinally?: () => void;
 }
-export const useUpdateUser = (options: UseUpdateUserOptions) => {
 
-  const { currentParams } = options;
+export const useUpdateUser = (options: UseUpdateUserOptions) => {
+  const { currentParams, onSuccessCallback, onFinally } = options;
   const queryClient = useQueryClient();
 
   const updateUserMutation = useMutation({
-
-    onMutate: async (userToUpdate: User) : Promise<UseUpdateUserContext> => {
-
+    onMutate: async (userToUpdate: User) => {
+      // Marcar el usuario como optimista solo para animación visual
       const currentQueryKey = usersQueries.userWithFilters(currentParams);
-
-      await queryClient.cancelQueries({ queryKey: currentQueryKey });
-
       const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
 
-      if (!previousData) {
-        
-        return { 
-          previousData: { data: [], total: 0, page: 1, limit: 5, totalPages: 1, nextPage: null, previousPage: null }, 
-          currentQueryKey 
-        };
+      if (previousData) {
+        queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            data: oldData.data.map(user =>
+              user.id === userToUpdate.id ? { ...userToUpdate, isOptimistic: true } : user
+            ),
+          };
+        });
       }
 
-      const optimisticUser = {
-        ...userToUpdate,
-        isOptimistic: true,
-      }
-      
-      queryClient.setQueryData<GetUsersResponse>( currentQueryKey , ( originalOldData ) =>{
-
-        if( !originalOldData ) return originalOldData;
-
-        const userOptimisticAdded = originalOldData.data.map( user => user.id === optimisticUser.id ? optimisticUser : user );
-
-        return {
-          ...originalOldData,
-          data : userOptimisticAdded,
-        }
-      });
-
-
-      return { previousData: previousData!, currentQueryKey };
-      
+      return { previousData };
     },
 
-    mutationFn: ( userUpdated : User) => updateUser(userUpdated.id!, userUpdated),
+    mutationFn: (userUpdated: User) => updateUser(userUpdated.id!, userUpdated),
 
-
-    onSuccess: ( updateUserResponse : UpdateUserResponse, _originalUserSubmmited : User, optimisticUserContext : UseUpdateUserContext ) : void => {
-      
-     const { currentQueryKey } = optimisticUserContext;
-
-      queryClient.setQueryData<GetUsersResponse>( currentQueryKey, ( dataWithOptimisticUser) =>{
-
-        if( !dataWithOptimisticUser ) return dataWithOptimisticUser;
-
-        const userUpdatedSuccess = dataWithOptimisticUser.data.map( user => user.id === updateUserResponse.user.id ? updateUserResponse.user : user )
-
-        return {
-          ...dataWithOptimisticUser,
-          data : userUpdatedSuccess,
-        }
-
+    onSuccess: async (updateUserResponse: UpdateUserResponse) => {
+      // Invalidar y refetch todas las queries de usuarios
+      await queryClient.invalidateQueries({ 
+        queryKey: usersQueries.allUsers,
       });
 
-      queryClient.invalidateQueries({ 
-        queryKey : usersQueries.allUsers,
-        refetchType : 'active'
+      // Asegurar que la página actual se refetch
+      await queryClient.refetchQueries({
+        queryKey: usersQueries.userWithFilters(currentParams),
       });
+
+      // Ejecutar callback de éxito (cerrar modal, etc.)
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+
+      // Desactivar estado de mutación
+      if (onFinally) {
+        onFinally();
+      }
 
       Swal.fire({
         title: 'Usuario actualizado exitosamente',
@@ -101,25 +75,24 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
       });
     },
 
-    onError: ( error : Error, _originalUserSubmmited : User, optimisticUserContext : UseUpdateUserContext | undefined ) : void => {
+    onError: (error: Error, _originalUserSubmitted: User, context) => {
+      // Rollback: restaurar datos anteriores
+      if (context?.previousData) {
+        const currentQueryKey = usersQueries.userWithFilters(currentParams);
+        queryClient.setQueryData(currentQueryKey, context.previousData);
+      }
 
-      if( !optimisticUserContext ) return;
+      // Cerrar modal también en caso de error
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
 
-      const { previousData, currentQueryKey  } = optimisticUserContext;
+      // Desactivar estado de mutación
+      if (onFinally) {
+        onFinally();
+      }
 
-      queryClient.setQueryData<GetUsersResponse>( currentQueryKey, previousData );
-
-       // Mapeo de errores más limpio
-      // const errorMessages: Record<string, string> = {
-      //   email: 'El correo electrónico ya está en uso',
-      //   username: 'El nombre de usuario ya está registrado',
-      //   phone: 'El número de teléfono ya existe',
-      // };
-
-      // const errorKey = Object.keys(errorMessages).find(key => 
-      //   error.message.toLowerCase().includes(key)
-      // );
-
+      // Mensaje de error personalizado
       let errorMessage = "Ha ocurrido un error al actualizar el usuario.";
 
       if (error.message.includes("email") || error.message.includes("correo")) {
@@ -147,6 +120,6 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
 
   return {
     updateUserMutation,
-    ...updateUserMutation,
-  }
+    isPending: updateUserMutation.isPending,
+  };
 }; 

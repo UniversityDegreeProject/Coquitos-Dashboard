@@ -43,13 +43,23 @@ export const FormUserModal = (props: FormUserModalProps) => {
   const closeModal = useUserStore(useShallow((state) => state.closeModal));
   const modalMode = useUserStore(useShallow((state) => state.modalMode));
   const userToUpdate = useUserStore(useShallow((state) => state.userToUpdate));
+  const setIsMutating = useUserStore(useShallow((state) => state.setIsMutating));
   
   // * Theme
   const { isDark } = useTheme();
 
   // * TanstackQuery
-  const { useCreateUserMutation, isPending: isCreatingUser } = useCreateUser({ currentParams, onNewPageCreated });
-  const { updateUserMutation, isPending: isUpdatingUser } = useUpdateUser({ currentParams });
+  const { useCreateUserMutation, isPending: isCreatingUser } = useCreateUser({ 
+    currentParams, 
+    onNewPageCreated,
+    onSuccessCallback: closeModal,
+    onFinally: () => setIsMutating(false)
+  });
+  const { updateUserMutation, isPending: isUpdatingUser } = useUpdateUser({ 
+    currentParams,
+    onSuccessCallback: closeModal,
+    onFinally: () => setIsMutating(false)
+  });
   // * Determinar si es modo editar
   const isEditMode = modalMode === 'update';
   
@@ -68,13 +78,14 @@ export const FormUserModal = (props: FormUserModalProps) => {
   };
 
   const handleSubmitForm : SubmitHandler<RegisterUserSchema> = (data) => {
+    // Cerrar modal y activar estado de mutación inmediatamente
     closeModal();
+    setIsMutating(true);
     
     if (isEditMode) {
       updateUserMutation.mutate(data);
       return; 
     } 
-
 
     useCreateUserMutation.mutate(data);
   };

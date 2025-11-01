@@ -14,83 +14,55 @@ export const useDeleteUser = (options: UseDeleteUserOptions) => {
 
   const deleteUserMutation = useMutation({
     onMutate: async (userId: string) => {
-      // 1. Query key específica de la página actual
+      // Marcar el usuario como optimista solo para animación visual
       const currentQueryKey = usersQueries.userWithFilters(options.currentParams);
-
-      // 2. Cancelar la query actual
-      await queryClient.cancelQueries({ queryKey: currentQueryKey });
-
-      // 3. Obtener snapshot de la query ACTUAL (no todas)
       const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
 
-      if (!previousData) {
-        console.error('No hay datos en cache');
-        return { previousData: null, currentQueryKey };
-      }
-
-      // 4. Aplicar optimistic update SOLO a la query actual
-      queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
+      if (previousData) {
+        queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
           if (!oldData) return oldData;
-
-          // Marcar el usuario como optimista (animación pulse)
           return {
             ...oldData,
             data: oldData.data.map(user =>
-              user.id === userId
-                ? { ...user, isOptimistic: true }
-                : user
+              user.id === userId ? { ...user, isOptimistic: true } : user
             ),
           };
-        }
-      );
+        });
+      }
 
-      return { previousData, currentQueryKey };
+      return { previousData, userId };
     },
 
     mutationFn: (userId: string) => deleteUser(userId),
 
     onSuccess: async (deletedUserResponse: DeleteUserResponse, userId: string, context) => {
-      const { currentQueryKey, previousData } = context;
+      const { previousData } = context;
 
-      if( !previousData ) {
-        await queryClient.invalidateQueries({ queryKey: usersQueries.allUsers });
-        // hacer un swal
-        return;
+      // 1. Determinar si la página quedará vacía
+      if (previousData) {
+        const willBeEmpty = previousData.data.filter(user => user.id !== userId).length === 0;
+        
+        if (willBeEmpty && previousData.page > 1 && options.onPageEmpty) {
+          // Navegar a la página anterior ANTES de invalidar
+          setTimeout(() => options.onPageEmpty!(), 100);
+        }
       }
 
-      // 1. Remover el usuario de la query actual
-      queryClient.setQueryData<GetUsersResponse>( currentQueryKey, (oldData) => {
-          if (!oldData) return oldData;
-
-          const filteredUsers = oldData.data.filter(user => user.id !== userId);
-
-          // Detectar si la página quedó vacía
-          if (filteredUsers.length === 0 && oldData.page > 1 && options.onPageEmpty) {
-            // Ejecutar callback para cambiar de página
-            setTimeout(() => options.onPageEmpty!(), 100);
-          }
-
-          return {
-            ...oldData,
-            data: filteredUsers,
-            total: Math.max(0, oldData.total - 1),
-          };
-        }
-      );
-
-      // 2. Invalidar TODAS las queries de usuarios para que se refresquen
+      // 2. Invalidar y refetch TODAS las queries de usuarios
       await queryClient.invalidateQueries({ 
         queryKey: usersQueries.allUsers,
-        refetchType: 'active'
       });
 
-      // 3. Mostrar mensaje de éxito
+      // 3. Asegurar que la página actual se refetch
+      await queryClient.refetchQueries({
+        queryKey: usersQueries.userWithFilters(options.currentParams),
+      });
+
+      // 4. Mensaje de éxito
       Swal.fire({
         title: '¡Usuario eliminado!',
         text: `${deletedUserResponse.user.username} se eliminó correctamente`,
         icon: 'success',
-        // timer: 2000,
-        // showConfirmButton: false,
         confirmButtonColor: '#38bdf8',
         confirmButtonText: 'OK',
         customClass: {
@@ -102,22 +74,17 @@ export const useDeleteUser = (options: UseDeleteUserOptions) => {
     },
 
     onError: async (error: Error, _userId: string, context) => {
-      if (!context) return;
-
-      const { previousData, currentQueryKey } = context;
-
-      // 1. Rollback: restaurar el snapshot
-      if (previousData) {
-        queryClient.setQueryData(currentQueryKey, previousData);
+      // Rollback: restaurar datos anteriores
+      if (context?.previousData) {
+        const currentQueryKey = usersQueries.userWithFilters(options.currentParams);
+        queryClient.setQueryData(currentQueryKey, context.previousData);
       }
 
-      // 2. Mostrar error
+      // Mensaje de error
       Swal.fire({
         title: 'Error al eliminar',
         text: error.message || 'No se pudo eliminar el usuario',
         icon: 'error',
-        // confirmButtonText: 'Entendido',
-        // confirmButtonColor: '#ef4444',
         confirmButtonColor: '#38bdf8',
         confirmButtonText: 'OK',
         customClass: {

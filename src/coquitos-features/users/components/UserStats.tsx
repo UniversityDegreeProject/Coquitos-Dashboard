@@ -1,28 +1,30 @@
 import { memo, useMemo } from "react";
 import { Users, CheckCircle, XCircle, Shield } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { User } from "../interfaces";
 
 interface UserStatsProps {
-  users: User[];
+  totalUsers : number;
+  activeUsers : number;
+  inactiveUsers : number;
+  adminsUsers : number;
 }
 
 /**
  * Componente que muestra estadísticas de usuarios
  * Diseño consistente con ProductStats y CategoryStats
  */
-export const UserStats = memo(({ users }: UserStatsProps) => {
+export const UserStats = memo(({ totalUsers, activeUsers, inactiveUsers, adminsUsers }: UserStatsProps) => {
   const { colors, isDark } = useTheme();
 
   // Calcular estadísticas
   const stats = useMemo(() => {
-    const total = users.length;
-    const active = users.filter(user => user.status === 'Activo').length;
-    const inactive = users.filter(user => user.status === 'Inactivo' || user.status === 'Suspendido').length;
-    const admins = users.filter(user => user.role === 'Administrador').length;
+    const total = totalUsers;
+    const active = activeUsers;
+    const inactive = inactiveUsers;
+    const admins = adminsUsers;
 
     return { total, active, inactive, admins };
-  }, [users]);
+  }, [totalUsers, activeUsers, inactiveUsers, adminsUsers]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

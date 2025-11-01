@@ -1,6 +1,6 @@
 //* Librerias
 import { Plus, Users } from "lucide-react";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 
 //* Others
@@ -8,7 +8,7 @@ import { UserGrid, FormUserModal, UserStats, UserPagination } from "../component
 import { useUserStore } from "../store/user.store";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "../hooks/useDebounce";
-import type { SearchUsersParams } from "../interfaces";
+import type { SearchUsersParams, User } from "../interfaces";
 import { useAuthStore } from "@/auth/store/auth.store";
 import { UnauthorizedUser } from "@/shared/pages";
 import { useGetUsers } from "../hooks/useGetUsers";
@@ -22,6 +22,15 @@ const searchDefaultValues: SearchUsersSchema = {
   status: '',
 };
 
+
+const calculateStats = (users: User[], totalUsers: number) => {
+  return {
+    totalUsers: totalUsers,
+    activeUsers: users.filter(user => user.status === 'Activo').length,
+    inactiveUsers: users.filter(user => user.status === 'Inactivo' || user.status === 'Suspendido').length,
+    adminsUsers: users.filter(user => user.role === 'Administrador').length,
+  }
+}
 /**
  * Página principal de gestión de usuarios
  * Implementa búsqueda, filtros, estadísticas y CRUD completo
@@ -45,6 +54,7 @@ export const UsersPage = () => {
   // * Zustand User
   const modalMode = useUserStore(useShallow((state) => state.modalMode));
   const setOpenModalCreate = useUserStore(useShallow((state) => state.setOpenModalCreate));
+  const isMutating = useUserStore(useShallow((state) => state.isMutating));
 
   // * Theme
   const { colors, isDark } = useTheme();
@@ -70,10 +80,10 @@ export const UsersPage = () => {
     isFetching 
   } = useGetUsers(currentParams);
 
-  // * Resetear página cuando cambian los filtros
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, searchFilters.role, searchFilters.status]);
+  const stats = useMemo( () => {
+
+    return calculateStats(users, total);
+  }, [total]);
 
   // * Handler cuando cambian los filtros del buscador
   const handleSearchFiltersChange = useCallback((values: SearchUsersSchema) => {
@@ -100,6 +110,12 @@ export const UsersPage = () => {
     setLimit(newLimit);
     setPage(1);
   }, []);
+
+  // * Resetear página cuando cambian los filtros
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, searchFilters.role, searchFilters.status]);
+  
 
   // * Validación de autorización
   if ((emailVerified && role === "Cajero") || status === "Inactivo" || status === "Suspendido") {
@@ -128,7 +144,7 @@ export const UsersPage = () => {
       </div>
 
       {/* Statistics */}
-      <UserStats users={users} />
+      <UserStats {...stats} />
 
       {/* Search and Filters - Maneja su propio estado con React Hook Form */}
       <GenericSearchBar
@@ -141,7 +157,7 @@ export const UsersPage = () => {
       />
 
       {/* Users Grid/Table */}
-      <UserGrid users={users} isPending={isFetching || isLoading} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
+      <UserGrid users={users} isPending={isFetching || isLoading || isMutating} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
 
       {/* Pagination */}
       {total > 0 && (

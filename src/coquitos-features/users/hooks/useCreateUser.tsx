@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Swal from "sweetalert2";
-import { createUser } from "../services/use.service";
+import { createUser, getUsers } from "../services/use.service";
 import { usersQueries } from "../const/users-queries";
 import type { 
   CreateUserResponse, 
@@ -9,151 +9,76 @@ import type {
   User 
 } from "../interfaces";
 
-interface UseCreateUserContext {
-  previousData: GetUsersResponse | null;
-  currentQueryKey: QueryKey;
-  optimisticUser: User;
-  shouldCreateNewPage: boolean;
-  newPageParams?: SearchUsersParams;
-}
-
 interface UseCreateUserOptions {
   currentParams: SearchUsersParams;
-  onNewPageCreated?: (newPage: number) => void; // Callback para navegar a nueva página
+  onNewPageCreated?: (newPage: number) => void;
+  onSuccessCallback?: () => void;
+  onFinally?: () => void;
 }
 
 export const useCreateUser = (options: UseCreateUserOptions) => {
-  const { currentParams, onNewPageCreated } = options;
+  const { currentParams, onNewPageCreated, onSuccessCallback, onFinally } = options;
   const queryClient = useQueryClient();
 
   const useCreateUserMutation = useMutation({
-    onMutate: async (userToCreate: User): Promise<UseCreateUserContext> => {
-      const currentQueryKey = usersQueries.userWithFilters(currentParams);
+    mutationFn: (newUser: User): Promise<CreateUserResponse> => createUser(newUser),
 
-      // Cancelar queries en progreso
-      await queryClient.cancelQueries({ queryKey: currentQueryKey });
+    onSuccess: async (createdUserResponse: CreateUserResponse) => {
+      // 1. PRIMERO: Verificar si la página actual estaba llena ANTES de invalidar
+      const dataBeforeRefetch = queryClient.getQueryData<GetUsersResponse>(
+        usersQueries.userWithFilters(currentParams)
+      );
+      const wasPageFull = dataBeforeRefetch && dataBeforeRefetch.data.length >= currentParams.limit;
 
-      // Obtener datos actuales
-      const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
+      // 2. Invalidar TODAS las queries de usuarios
+      await queryClient.invalidateQueries({
+        queryKey: usersQueries.allUsers,
+      });
 
-      if (!previousData) {
-        console.warn('No hay datos en cache para crear usuario');
-        return {
-          previousData: null,
-          currentQueryKey,
-          optimisticUser: {
-            ...userToCreate,
-            id: crypto.randomUUID(),
-            isOptimistic: true,
-          },
-          shouldCreateNewPage: false,
-        };
-      }
+      // 3. Refetch la página actual para obtener datos actualizados
+      await queryClient.refetchQueries({
+        queryKey: usersQueries.userWithFilters(currentParams),
+      });
 
-      // Crear usuario optimista con ID temporal
-      const optimisticUser: User = {
-        ...userToCreate,
-        id: crypto.randomUUID(),
-        isOptimistic: true,
-      };
-
-      // Detectar si la página actual está llena
-      const isPageFull = previousData.data.length >= currentParams.limit;
-      const shouldCreateNewPage = isPageFull;
-
-      if (shouldCreateNewPage) {
-        // CASO 1: Página llena → Crear usuario en NUEVA página
-        const newPageNumber = previousData.page + 1;
-        const newPageParams: SearchUsersParams = {
+      // 4. Si la página ESTABA llena, el nuevo usuario fue a una nueva página → navegar
+      if (wasPageFull) {
+        const newPageNumber = currentParams.page + 1;
+        const newPageParams = {
           ...currentParams,
           page: newPageNumber,
         };
-        const newPageQueryKey = usersQueries.userWithFilters(newPageParams);
-
-        // Crear nueva página con el usuario optimista
-        queryClient.setQueryData<GetUsersResponse>(newPageQueryKey, {
-          data: [optimisticUser],
-          total: previousData.total + 1,
-          page: newPageNumber,
-          limit: currentParams.limit,
-          totalPages: Math.ceil((previousData.total + 1) / currentParams.limit),
-          nextPage: null,
-          previousPage: `page=${previousData.page}`,
-        });
-
-        // Navegar a la nueva página después de un delay
-        setTimeout(() => {
-          if (onNewPageCreated) {
-            onNewPageCreated(newPageNumber);
-          }
-        }, 100);
-
-        return {
-          previousData,
-          currentQueryKey: newPageQueryKey, // ← Query key de la NUEVA página
-          optimisticUser,
-          shouldCreateNewPage: true,
-          newPageParams,
-        };
-      } else {
-        // CASO 2: Página con espacio → Agregar a página actual
-        queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
-          if (!oldData) return oldData;
-
-          // Agregar al final si no existe
-          const userExists = oldData.data.some(user => user.id === optimisticUser.id);
-          if (userExists) return oldData;
-
-          return {
-            ...oldData,
-            data: [...oldData.data, optimisticUser],
-            total: oldData.total + 1,
-            totalPages: Math.ceil((oldData.total + 1) / currentParams.limit),
-          };
-        });
-
-        return {
-          previousData,
-          currentQueryKey,
-          optimisticUser,
-          shouldCreateNewPage: false,
-        };
+        const newPageKey = usersQueries.userWithFilters(newPageParams);
+        
+        // Fetch la nueva página para asegurar que tenga datos
+        try {
+          await queryClient.fetchQuery({
+            queryKey: newPageKey,
+            queryFn: () => getUsers(newPageParams),
+          });
+        } catch (error) {
+          console.error('Error fetching new page:', error);
+        }
+        
+        // Navegar a la nueva página
+        if (onNewPageCreated) {
+          setTimeout(() => onNewPageCreated(newPageNumber), 100);
+        }
       }
-    },
 
-    mutationFn: (newUser: User): Promise<CreateUserResponse> => createUser(newUser),
+      // 5. Ejecutar callback de éxito (cerrar modal, etc.)
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
 
-    onSuccess: ( createdUserResponse: CreateUserResponse, _originalUser: User, context: UseCreateUserContext  ) => {
-      const { currentQueryKey, optimisticUser, shouldCreateNewPage } = context;
+      // 6. Desactivar estado de mutación
+      if (onFinally) {
+        onFinally();
+      }
 
-      // Reemplazar usuario optimista con el real del servidor
-      queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
-        if (!oldData) return oldData;
-
-        return {
-          ...oldData,
-          data: oldData.data.map(user =>
-            user.id === optimisticUser.id
-              ? createdUserResponse.user // ← Usuario real del backend
-              : user
-          ),
-        };
-      });
-
-      // Invalidar todas las queries para sincronizar
-      queryClient.invalidateQueries({
-        queryKey: usersQueries.allUsers,
-        refetchType: 'active',
-      });
-
-      // Mensaje de éxito
-      const successMessage = shouldCreateNewPage
-        ? `Usuario creado en nueva página`
-        : `Usuario creado correctamente`;
-
+      // 7. Mensaje de éxito
       Swal.fire({
         title: '¡Usuario creado!',
-        text: `${createdUserResponse.user.username} - ${successMessage}`,
+        text: `${createdUserResponse.user.username} se creó correctamente`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -165,40 +90,15 @@ export const useCreateUser = (options: UseCreateUserOptions) => {
       });
     },
 
-    onError: ( error: Error, _originalUser: User, context?: UseCreateUserContext ) => {
-      if (!context) return;
+    onError: (error: Error) => {
+      // Cerrar modal también en caso de error
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
 
-      const { previousData, currentQueryKey, optimisticUser, shouldCreateNewPage } = context;
-
-      if (shouldCreateNewPage) {
-        // Si se creó una página nueva, eliminarla completamente
-        queryClient.removeQueries({ queryKey: currentQueryKey });
-
-        // Restaurar la página anterior si existía
-        if (previousData) {
-          const previousPageKey = usersQueries.userWithFilters({
-            ...currentParams,
-            page: previousData.page,
-          });
-          queryClient.setQueryData(previousPageKey, previousData);
-        }
-
-        // Volver a la página anterior
-        if (onNewPageCreated && previousData) {
-          setTimeout(() => onNewPageCreated!(previousData.page), 100);
-        }
-      } else {
-        // Rollback: Remover usuario optimista de la página actual
-        queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
-          if (!oldData) return previousData || oldData;
-
-          return {
-            ...oldData,
-            data: oldData.data.filter(user => user.id !== optimisticUser.id),
-            total: Math.max(0, oldData.total - 1),
-            totalPages: Math.ceil(Math.max(0, oldData.total - 1) / currentParams.limit),
-          };
-        });
+      // Desactivar estado de mutación
+      if (onFinally) {
+        onFinally();
       }
 
       // Mensaje de error personalizado

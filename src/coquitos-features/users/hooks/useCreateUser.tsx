@@ -1,60 +1,159 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createUser } from "../services/use.service";
-import { type CreateUserResponse, type User } from "../interfaces"
+import { useMutation, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import Swal from "sweetalert2";
+import { createUser } from "../services/use.service";
 import { usersQueries } from "../const/users-queries";
+import type { 
+  CreateUserResponse, 
+  GetUsersResponse, 
+  SearchUsersParams, 
+  User 
+} from "../interfaces";
 
-interface OptimisticMutationUser{
-  optimisticUser : User
+interface UseCreateUserContext {
+  previousData: GetUsersResponse | null;
+  currentQueryKey: QueryKey;
+  optimisticUser: User;
+  shouldCreateNewPage: boolean;
+  newPageParams?: SearchUsersParams;
 }
 
-export const useCreateUser = () => {
+interface UseCreateUserOptions {
+  currentParams: SearchUsersParams;
+  onNewPageCreated?: (newPage: number) => void; // Callback para navegar a nueva página
+}
 
+export const useCreateUser = (options: UseCreateUserOptions) => {
+  const { currentParams, onNewPageCreated } = options;
   const queryClient = useQueryClient();
 
   const useCreateUserMutation = useMutation({
+    onMutate: async (userToCreate: User): Promise<UseCreateUserContext> => {
+      const currentQueryKey = usersQueries.userWithFilters(currentParams);
 
+      // Cancelar queries en progreso
+      await queryClient.cancelQueries({ queryKey: currentQueryKey });
 
-    onMutate: ( userToCreate : User ) : OptimisticMutationUser => {
-      const optimisticUser : User = {
+      // Obtener datos actuales
+      const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
+
+      if (!previousData) {
+        console.warn('No hay datos en cache para crear usuario');
+        return {
+          previousData: null,
+          currentQueryKey,
+          optimisticUser: {
+            ...userToCreate,
+            id: crypto.randomUUID(),
+            isOptimistic: true,
+          },
+          shouldCreateNewPage: false,
+        };
+      }
+
+      // Crear usuario optimista con ID temporal
+      const optimisticUser: User = {
         ...userToCreate,
         id: crypto.randomUUID(),
         isOptimistic: true,
-      }
+      };
 
+      // Detectar si la página actual está llena
+      const isPageFull = previousData.data.length >= currentParams.limit;
+      const shouldCreateNewPage = isPageFull;
 
-      queryClient.setQueryData<User[]>(usersQueries.allUsers, ( oldUsers )=>{
-        if( !oldUsers ) return [optimisticUser];
-        return [...oldUsers, optimisticUser];
-      });
+      if (shouldCreateNewPage) {
+        // CASO 1: Página llena → Crear usuario en NUEVA página
+        const newPageNumber = previousData.page + 1;
+        const newPageParams: SearchUsersParams = {
+          ...currentParams,
+          page: newPageNumber,
+        };
+        const newPageQueryKey = usersQueries.userWithFilters(newPageParams);
 
-      return { optimisticUser };
-    },
-
-    mutationFn: ( newUser : User ) : Promise<CreateUserResponse> => createUser( newUser ),
-
-    onSuccess: (createdUser: CreateUserResponse, _ , { optimisticUser }) => {
-
-      queryClient.setQueryData<CreateUserResponse[]>(usersQueries.allUsers, ( oldUsers )=>{
-        if( !oldUsers ) return [createdUser];
-
-        const userCreateSuccess = oldUsers.map( user => {
-          if (user.user.id === optimisticUser.id || (user as CreateUserResponse & { isOptimistic?: boolean }).isOptimistic) {
-            return createdUser;
-          }
-          return user;
+        // Crear nueva página con el usuario optimista
+        queryClient.setQueryData<GetUsersResponse>(newPageQueryKey, {
+          data: [optimisticUser],
+          total: previousData.total + 1,
+          page: newPageNumber,
+          limit: currentParams.limit,
+          totalPages: Math.ceil((previousData.total + 1) / currentParams.limit),
+          nextPage: null,
+          previousPage: `page=${previousData.page}`,
         });
 
-        return userCreateSuccess;
+        // Navegar a la nueva página después de un delay
+        setTimeout(() => {
+          if (onNewPageCreated) {
+            onNewPageCreated(newPageNumber);
+          }
+        }, 100);
 
+        return {
+          previousData,
+          currentQueryKey: newPageQueryKey, // ← Query key de la NUEVA página
+          optimisticUser,
+          shouldCreateNewPage: true,
+          newPageParams,
+        };
+      } else {
+        // CASO 2: Página con espacio → Agregar a página actual
+        queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
+          if (!oldData) return oldData;
+
+          // Agregar al final si no existe
+          const userExists = oldData.data.some(user => user.id === optimisticUser.id);
+          if (userExists) return oldData;
+
+          return {
+            ...oldData,
+            data: [...oldData.data, optimisticUser],
+            total: oldData.total + 1,
+            totalPages: Math.ceil((oldData.total + 1) / currentParams.limit),
+          };
+        });
+
+        return {
+          previousData,
+          currentQueryKey,
+          optimisticUser,
+          shouldCreateNewPage: false,
+        };
+      }
+    },
+
+    mutationFn: (newUser: User): Promise<CreateUserResponse> => createUser(newUser),
+
+    onSuccess: ( createdUserResponse: CreateUserResponse, _originalUser: User, context: UseCreateUserContext  ) => {
+      const { currentQueryKey, optimisticUser, shouldCreateNewPage } = context;
+
+      // Reemplazar usuario optimista con el real del servidor
+      queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          data: oldData.data.map(user =>
+            user.id === optimisticUser.id
+              ? createdUserResponse.user // ← Usuario real del backend
+              : user
+          ),
+        };
       });
-      
-      // Invalidar queries paginadas para reflejar el nuevo usuario
-      queryClient.invalidateQueries({ queryKey: ['users', 'paginated'] });
+
+      // Invalidar todas las queries para sincronizar
+      queryClient.invalidateQueries({
+        queryKey: usersQueries.allUsers,
+        refetchType: 'active',
+      });
+
+      // Mensaje de éxito
+      const successMessage = shouldCreateNewPage
+        ? `Usuario creado en nueva página`
+        : `Usuario creado correctamente`;
 
       Swal.fire({
-        title: '¡Registro exitoso!',
-        text: `Usuario ${createdUser?.user?.username || optimisticUser?.username} se ha registrado correctamente.`,
+        title: '¡Usuario creado!',
+        text: `${createdUserResponse.user.username} - ${successMessage}`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -66,30 +165,65 @@ export const useCreateUser = () => {
       });
     },
 
-    onError: (error : Error, _ , context? : OptimisticMutationUser | undefined ) : void => {
+    onError: ( error: Error, _originalUser: User, context?: UseCreateUserContext ) => {
+      if (!context) return;
 
-      queryClient.setQueryData<CreateUserResponse[]>(usersQueries.allUsers, ( oldData : CreateUserResponse[] | undefined) => {
-        if (!oldData) return [];
-        if (!context?.optimisticUser) return oldData;
-        return oldData.filter( ( user : CreateUserResponse ) => user.user.id !== context.optimisticUser.id );
-      });
+      const { previousData, currentQueryKey, optimisticUser, shouldCreateNewPage } = context;
 
-      let errorMessage = "Ha ocurrido un error al crear el usuario.";
-      
-      if (error.message.includes("email") || error.message.includes("correo")) {
-        errorMessage = error.message;
-      } else if (error.message.includes("username") || error.message.includes("usuario")) {
-        errorMessage = error.message;
+      if (shouldCreateNewPage) {
+        // Si se creó una página nueva, eliminarla completamente
+        queryClient.removeQueries({ queryKey: currentQueryKey });
+
+        // Restaurar la página anterior si existía
+        if (previousData) {
+          const previousPageKey = usersQueries.userWithFilters({
+            ...currentParams,
+            page: previousData.page,
+          });
+          queryClient.setQueryData(previousPageKey, previousData);
+        }
+
+        // Volver a la página anterior
+        if (onNewPageCreated && previousData) {
+          setTimeout(() => onNewPageCreated!(previousData.page), 100);
+        }
       } else {
-        errorMessage = error.message;
+        // Rollback: Remover usuario optimista de la página actual
+        queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
+          if (!oldData) return previousData || oldData;
+
+          return {
+            ...oldData,
+            data: oldData.data.filter(user => user.id !== optimisticUser.id),
+            total: Math.max(0, oldData.total - 1),
+            totalPages: Math.ceil(Math.max(0, oldData.total - 1) / currentParams.limit),
+          };
+        });
       }
+
+      // Mensaje de error personalizado
+      const errorMessages: Record<string, string> = {
+        email: 'El correo electrónico ya está registrado',
+        username: 'El nombre de usuario ya existe',
+        phone: 'El número de teléfono ya está en uso',
+        correo: 'El correo electrónico ya está registrado',
+        usuario: 'El nombre de usuario ya existe',
+      };
+
+      const errorKey = Object.keys(errorMessages).find(key =>
+        error.message.toLowerCase().includes(key)
+      );
+
+      const errorMessage = errorKey
+        ? errorMessages[errorKey]
+        : error.message || 'Error al crear el usuario';
 
       Swal.fire({
         title: 'Error al crear usuario',
         text: errorMessage,
         icon: 'error',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#38bdf8',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',
@@ -101,6 +235,6 @@ export const useCreateUser = () => {
 
   return {
     useCreateUserMutation,
-    ...useCreateUserMutation,
+    isPending: useCreateUserMutation.isPending,
   };
-};  
+};

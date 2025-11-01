@@ -24,7 +24,8 @@ export const useDeleteUser = (options: UseDeleteUserOptions) => {
       const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
 
       if (!previousData) {
-        throw new Error('No hay datos en cache');
+        console.error('No hay datos en cache');
+        return { previousData: null, currentQueryKey };
       }
 
       // 4. Aplicar optimistic update SOLO a la query actual
@@ -49,7 +50,13 @@ export const useDeleteUser = (options: UseDeleteUserOptions) => {
     mutationFn: (userId: string) => deleteUser(userId),
 
     onSuccess: async (deletedUserResponse: DeleteUserResponse, userId: string, context) => {
-      const { currentQueryKey } = context;
+      const { currentQueryKey, previousData } = context;
+
+      if( !previousData ) {
+        await queryClient.invalidateQueries({ queryKey: usersQueries.allUsers });
+        // hacer un swal
+        return;
+      }
 
       // 1. Remover el usuario de la query actual
       queryClient.setQueryData<GetUsersResponse>( currentQueryKey, (oldData) => {

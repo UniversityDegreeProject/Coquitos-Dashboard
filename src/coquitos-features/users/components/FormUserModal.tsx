@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateUser } from "../hooks/useCreateUser";
 import { useShallow } from "zustand/shallow";
 import { useUpdateUser } from "../hooks/useUpdateUser";
+import type { SearchUsersParams } from "../interfaces";
 
 
 const initialValues: RegisterUserSchema = {
@@ -28,7 +29,13 @@ const initialValues: RegisterUserSchema = {
   status: "Activo",
 };
 
-export const FormUserModal = () => {
+interface FormUserModalProps {
+  currentParams : SearchUsersParams;
+  onNewPageCreated? : (newPage: number) => void;
+}
+
+export const FormUserModal = (props: FormUserModalProps) => {
+  const { currentParams, onNewPageCreated } = props;
   // * React State
   const [showPasswordField, setShowPasswordField] = useState(false);
   
@@ -41,8 +48,8 @@ export const FormUserModal = () => {
   const { isDark } = useTheme();
 
   // * TanstackQuery
-  const { useCreateUserMutation, isPending: isCreatingUser } = useCreateUser();
-  const { updateUserMutation } = useUpdateUser();
+  const { useCreateUserMutation, isPending: isCreatingUser } = useCreateUser({ currentParams, onNewPageCreated });
+  const { updateUserMutation, isPending: isUpdatingUser } = useUpdateUser({ currentParams });
   // * Determinar si es modo editar
   const isEditMode = modalMode === 'update';
   
@@ -252,11 +259,12 @@ export const FormUserModal = () => {
             </button>
             <button 
               type="submit"
-              disabled={isCreatingUser || !isValid}
+              disabled={isCreatingUser || isUpdatingUser || !isValid}
               className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
             >
               {isCreatingUser && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isCreatingUser ? (isEditMode ? 'Actualizando...' : 'Creando...') : (isEditMode ? 'Actualizar Usuario' : 'Registrar')}
+              {isUpdatingUser && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isCreatingUser || isUpdatingUser ? (isEditMode ? 'Actualizando...' : 'Creando...') : (isEditMode ? 'Actualizar Usuario' : 'Registrar')}
             </button>
           </div>
         </form>

@@ -162,8 +162,8 @@ export const UsersPage = () => {
       )}
 
       {/* Modals */}
-      {modalMode === 'create' && <FormUserModal />}
-      {modalMode === 'update' && <FormUserModal />}
+      {modalMode === 'create' && <FormUserModal currentParams={currentParams} onNewPageCreated={handlePageChange} />}
+      {modalMode === 'update' && <FormUserModal currentParams={currentParams} onNewPageCreated={handlePageChange} />}
     </div>
   );
 };

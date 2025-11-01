@@ -9,30 +9,28 @@ import { useDeleteUser } from "../hooks/useDeleteUser";
 import { useSendVerificationEmail } from "../hooks/useSendVerificationEmail";
 import { useSentChangePassword } from "../hooks/useSentChangePassword";
 import { paths } from "@/router/paths";
-import type { User } from "../interfaces";
+import type { User, SearchUsersParams } from "../interfaces";
 
 interface UserButtonsActionsProps {
   user: User;
+  currentParams: SearchUsersParams; // ← Parámetros actuales
+  onPageEmpty?: () => void;
 }
 
-/**
- * Componente de botones de acción para cada usuario
- * Incluye: editar, eliminar, enviar verificación, cambiar contraseña, ver detalle
- * Optimizado con memoización
- */
-export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
+export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: UserButtonsActionsProps) => {
   const navigate = useNavigate();
   const { isDark } = useTheme();
   const setOpenModalUpdate = useUserStore(useShallow((state) => state.setOpenModalUpdate));
-  const { deleteUserMutation } = useDeleteUser();
-
-  // Email verification polling state
-  const { sendVerificationEmailMutation, isPending: isSendingVerificationEmail } = useSendVerificationEmail();
   
-  // Password
+  // Pasar parámetros actuales al hook
+  const { deleteUserMutation } = useDeleteUser({ 
+    currentParams,
+    onPageEmpty 
+  });
+
+  const { sendVerificationEmailMutation, isPending: isSendingVerificationEmail } = useSendVerificationEmail();
   const { useQuerySendChangePassword, isPending: isSendingPassword } = useSentChangePassword();
   
-  // Memoizar handlers
   const handleDeleteUser = useCallback(() => {
     Swal.fire({
       title: '¿Estás seguro de querer eliminar este usuario?',
@@ -69,7 +67,6 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
 
   return (
     <div className="flex space-x-2 flex-shrink-0">
-      {/* Editar */}
       <button
         onClick={handleEditUser}
         className={`p-2 rounded-lg transition-all duration-200 ${
@@ -84,7 +81,6 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
         <Edit2 className="w-4 h-4" />
       </button>
 
-      {/* Eliminar */}
       <button
         onClick={handleDeleteUser}
         className={`p-2 rounded-lg transition-all duration-200 ${
@@ -99,7 +95,6 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
         <Trash2 className="w-4 h-4" />
       </button>
 
-      {/* Enviar verificación (solo si no está verificado) */}
       {!user.emailVerified && (
         <button
           onClick={handleSendVerification}
@@ -120,7 +115,6 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
         </button>
       )}
 
-      {/* Cambiar contraseña */}
       <button
         onClick={handleChangePassword}
         className={`p-2 rounded-lg transition-all duration-200 ${
@@ -139,7 +133,6 @@ export const UserButtonsActions = memo(({ user }: UserButtonsActionsProps) => {
         )}
       </button>
 
-      {/* Ver más detalle */}
       <button
         onClick={handleSeeMore}
         className={`p-2 rounded-lg transition-all duration-200 ${

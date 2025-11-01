@@ -33,7 +33,7 @@ export const UsersPage = () => {
   const [limit, setLimit] = useState<number>(5);
   
   // * Estado para los filtros (controlado por el formulario)
-  const [searchFilters, setSearchFilters] = useState<SearchUsersSchema>(searchDefaultValues);
+  const [ searchFilters, setSearchFilters] = useState<SearchUsersSchema>(searchDefaultValues);
 
   // * Debounce para la búsqueda (500ms)
   const debouncedSearch = useDebounce(searchFilters.search, 500);
@@ -50,6 +50,14 @@ export const UsersPage = () => {
   const { colors, isDark } = useTheme();
 
   // * Tanstack Query - Hook de búsqueda con todos los filtros
+  const currentParams: SearchUsersParams = {
+    search: debouncedSearch,
+    role: searchFilters.role,
+    status: searchFilters.status,
+    page,
+    limit,
+  };
+
   const { 
     users, 
     total, 
@@ -60,13 +68,7 @@ export const UsersPage = () => {
     previousPage, 
     isLoading, 
     isFetching 
-  } = useGetUsers({
-    search: debouncedSearch,
-    role: searchFilters.role,
-    status: searchFilters.status,
-    page,
-    limit,
-  } as SearchUsersParams);
+  } = useGetUsers(currentParams);
 
   // * Resetear página cuando cambian los filtros
   useEffect(() => {
@@ -77,6 +79,12 @@ export const UsersPage = () => {
   const handleSearchFiltersChange = useCallback((values: SearchUsersSchema) => {
     setSearchFilters(values);
   }, []);
+
+  // * Callback cuando una página queda vacía después de eliminar
+  const handlePageEmpty = useCallback(() => {
+    const newPage = Math.max(1, page - 1);
+    setPage(newPage);
+  }, [page]);
 
   // * Memoizar callbacks
   const handleOpenModal = useCallback(() => {
@@ -101,21 +109,21 @@ export const UsersPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <div className={`p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
             <Users className={`w-6 h-6 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
           </div>
-          <h3 className={`text-xl sm:text-2xl font-bold ${colors.text.primary}`}>
+          <h3 className={`text-2xl font-bold ${colors.text.primary}`}>
             Usuarios del Sistema
           </h3>
         </div>
         <button
           onClick={handleOpenModal}
-          className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5 w-full sm:w-auto`}
+          className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
         >
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-[#2309095c]" />
-          <span className="text-sm sm:text-base text-[#08080865] font-bold">Agregar Usuario</span>
+          <Plus className="w-5 h-5 mr-2 text-[#2309095c]" />
+          <span className="text-[#08080865] font-bold">Agregar Usuario</span>
         </button>
       </div>
 
@@ -133,7 +141,7 @@ export const UsersPage = () => {
       />
 
       {/* Users Grid/Table */}
-      <UserGrid users={users} isPending={isFetching || isLoading} />
+      <UserGrid users={users} isPending={isFetching || isLoading} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
 
       {/* Pagination */}
       {total > 0 && (

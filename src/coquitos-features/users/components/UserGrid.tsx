@@ -1,22 +1,24 @@
 import { memo } from "react";
-import { type User } from "../interfaces";
-import { UserTableSkeleton } from "./UserTableSkeleton";
+import { type SearchUsersParams, type User } from "../interfaces";
+import { GenericGridLoader } from "@/shared/components";
 import { UserEmptyState } from "./UserEmptyState";
 import { UserListItem } from "./UserListItem";
 
 interface UserGridProps {
   users: User[];
   isPending: boolean;
+  currentParams: SearchUsersParams;
+  onPageEmpty?: () => void;
 }
 
 /**
  * Componente que muestra los usuarios en formato de lista moderna
  * Refactorizado con componentes reutilizables para mejor mantenibilidad
  */
-export const UserGrid = memo(({ users, isPending }: UserGridProps) => {
+export const UserGrid = memo(({ users, isPending, currentParams, onPageEmpty }: UserGridProps) => {
   // Mostrar skeleton loader durante la carga
   if (isPending) {
-    return <UserTableSkeleton />;
+    return <GenericGridLoader title="Cargando usuarios" />;
   }
 
   // Mostrar estado vacío cuando no hay usuarios
@@ -28,7 +30,7 @@ export const UserGrid = memo(({ users, isPending }: UserGridProps) => {
   return (
     <div className="space-y-4">
       {users.map((user) => (
-        <UserListItem key={user.id} user={user} />
+        <UserListItem key={user.id} user={user} currentParams={currentParams} onPageEmpty={onPageEmpty} />
       ))}
     </div>
   );

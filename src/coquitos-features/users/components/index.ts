@@ -3,7 +3,7 @@ export * from './UserButtonsActions';
 export * from './UserGrid';
 export * from './UserStats';
 export * from './UserSearchPage';
-export * from './UserTableSkeleton';
+export * from '../../../shared/components/GenericLoader';
 export * from './UserEmptyState';
 export * from './UserListItem';
 export * from './UserPagination';

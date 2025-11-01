@@ -2,63 +2,90 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { deleteUser } from '../services/use.service';
 import { usersQueries } from '../const/users-queries';
-import type { DeleteUserResponse, User } from '../interfaces';
+import type { DeleteUserResponse, GetUsersResponse, SearchUsersParams } from '../interfaces';
 
-interface OptimisticDeleteUser {
-  deletedUser: User;
+interface UseDeleteUserOptions {
+  currentParams: SearchUsersParams;
+  onPageEmpty?: () => void;
 }
 
-export const useDeleteUser = () => {
+export const useDeleteUser = (options: UseDeleteUserOptions) => {
   const queryClient = useQueryClient();
 
   const deleteUserMutation = useMutation({
+    onMutate: async (userId: string) => {
+      // 1. Query key específica de la página actual
+      const currentQueryKey = usersQueries.userWithFilters(options.currentParams);
 
-    onMutate: async (userId: string): Promise<OptimisticDeleteUser> => {
-      const oldUsers = queryClient.getQueryData<DeleteUserResponse[]>(usersQueries.allUsers);
-      const deletedUser = oldUsers?.find(user => user.user.id === userId);
+      // 2. Cancelar la query actual
+      await queryClient.cancelQueries({ queryKey: currentQueryKey });
 
-      if (!deletedUser) {
-        throw new Error('Usuario no encontrado');
+      // 3. Obtener snapshot de la query ACTUAL (no todas)
+      const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
+
+      if (!previousData) {
+        throw new Error('No hay datos en cache');
       }
 
-      const optimisticUser: DeleteUserResponse = {
-        ...deletedUser,
-        user: {
-          ...deletedUser.user,
-          isOptimistic: true,
-        },
-      };
+      // 4. Aplicar optimistic update SOLO a la query actual
+      queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
+          if (!oldData) return oldData;
 
-      queryClient.setQueryData<DeleteUserResponse[]>(usersQueries.allUsers, ( oldUsers ) : DeleteUserResponse[] => {
-        if( !oldUsers ) return [];
-        
-        return oldUsers.map(user => 
-        user.user.id === userId 
-            ? optimisticUser 
-            : user
-        );
-      });
+          // Marcar el usuario como optimista (animación pulse)
+          return {
+            ...oldData,
+            data: oldData.data.map(user =>
+              user.id === userId
+                ? { ...user, isOptimistic: true }
+                : user
+            ),
+          };
+        }
+      );
 
-      return { deletedUser: optimisticUser.user };
+      return { previousData, currentQueryKey };
     },
 
-    mutationFn: (userId: string) => deleteUser(userId), 
+    mutationFn: (userId: string) => deleteUser(userId),
 
-    onSuccess: ( userDeleted:DeleteUserResponse, userId) => {
-      queryClient.setQueryData<DeleteUserResponse[]>(usersQueries.allUsers, ( oldUsers ) : DeleteUserResponse[] => {
-        if( !oldUsers ) return [];
-        return oldUsers.filter( (user : DeleteUserResponse) => user.user.id !== userId );
+    onSuccess: async (deletedUserResponse: DeleteUserResponse, userId: string, context) => {
+      const { currentQueryKey } = context;
+
+      // 1. Remover el usuario de la query actual
+      queryClient.setQueryData<GetUsersResponse>( currentQueryKey, (oldData) => {
+          if (!oldData) return oldData;
+
+          const filteredUsers = oldData.data.filter(user => user.id !== userId);
+
+          // Detectar si la página quedó vacía
+          if (filteredUsers.length === 0 && oldData.page > 1 && options.onPageEmpty) {
+            // Ejecutar callback para cambiar de página
+            setTimeout(() => options.onPageEmpty!(), 100);
+          }
+
+          return {
+            ...oldData,
+            data: filteredUsers,
+            total: Math.max(0, oldData.total - 1),
+          };
+        }
+      );
+
+      // 2. Invalidar TODAS las queries de usuarios para que se refresquen
+      await queryClient.invalidateQueries({ 
+        queryKey: usersQueries.allUsers,
+        refetchType: 'active'
       });
 
-      // Invalidar queries paginadas para reflejar la eliminación
-      queryClient.invalidateQueries({ queryKey: ['users', 'paginated'] });
-
+      // 3. Mostrar mensaje de éxito
       Swal.fire({
-        title: 'Usuario eliminado exitosamente',
-        text: `El usuario ${userDeleted.user.username} se ha eliminado correctamente`,
+        title: '¡Usuario eliminado!',
+        text: `${deletedUserResponse.user.username} se eliminó correctamente`,
         icon: 'success',
-        confirmButtonText: 'OK',
+        // timer: 2000,
+        // showConfirmButton: false,
         confirmButtonColor: '#38bdf8',
+        confirmButtonText: 'OK',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',
@@ -66,33 +93,26 @@ export const useDeleteUser = () => {
         },
       });
     },
-    
-    onError: (error, userId: string, context?: OptimisticDeleteUser) : void  => {
 
-      queryClient.setQueryData<DeleteUserResponse[]>(usersQueries.allUsers, ( oldUsers ) : DeleteUserResponse[] => {
-        if( !oldUsers ) return [];
-        
-        if (!context?.deletedUser) return oldUsers;
+    onError: async (error: Error, _userId: string, context) => {
+      if (!context) return;
 
-        return oldUsers.map((user : DeleteUserResponse) => 
-          user.user.id === userId 
-            ? {
-              ...user,
-              user: {
-                ...user.user,
-                isOptimistic: false,
-              },
-            } as DeleteUserResponse
-            : user
-        );
-      });
+      const { previousData, currentQueryKey } = context;
 
+      // 1. Rollback: restaurar el snapshot
+      if (previousData) {
+        queryClient.setQueryData(currentQueryKey, previousData);
+      }
+
+      // 2. Mostrar error
       Swal.fire({
-        title: 'Error al eliminar usuario',
-        text: error.message,
+        title: 'Error al eliminar',
+        text: error.message || 'No se pudo eliminar el usuario',
         icon: 'error',
-        confirmButtonText: 'OK',
+        // confirmButtonText: 'Entendido',
+        // confirmButtonColor: '#ef4444',
         confirmButtonColor: '#38bdf8',
+        confirmButtonText: 'OK',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',
@@ -104,6 +124,6 @@ export const useDeleteUser = () => {
 
   return {
     deleteUserMutation,
-    ...deleteUserMutation,
-  }
-}; 
+    isPending: deleteUserMutation.isPending,
+  };
+};

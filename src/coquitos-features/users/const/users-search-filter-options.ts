@@ -12,7 +12,7 @@ export const usersSearchFilterOptions: SelectFilterConfig<SearchUsersSchema>[] =
     label: 'Rol',
     options: roleOptions,
     icon: Shield,
-    placeholder: 'Filtrar por rol',
+    placeholder: 'Todos los roles',
   },
 
   {
@@ -20,6 +20,6 @@ export const usersSearchFilterOptions: SelectFilterConfig<SearchUsersSchema>[] =
     label: 'Estado',
     options: statusOptions,
     icon: UserCheck,
-    placeholder: 'Filtrar por estado',
+    placeholder: 'Todos los estados',
   },
 ];

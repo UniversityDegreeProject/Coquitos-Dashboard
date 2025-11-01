@@ -87,6 +87,7 @@ export const updateUser = async (userId: string, user: User): Promise<UpdateUser
 
 
 export const deleteUser = async (userId: string): Promise<DeleteUserResponse> => {
+  console.log(userId);
   try {
     const response = await CoquitoApi.delete<DeleteUserResponse>(`/users/${userId}`);
     const { data } = response;
@@ -101,6 +102,8 @@ export const deleteUser = async (userId: string): Promise<DeleteUserResponse> =>
     throw new Error('Error desconocido');
   }
 }
+
+
 export const sendVerificationEmail = async (email: string): Promise<User> => {
   try {
     const response = await CoquitoApi.post(`/auth/retry-verify-email`, { email });

@@ -28,7 +28,7 @@ const searchDefaultValues: SearchUsersSchema = {
  * Optimizado usando React Hook Form - Sin estados locales innecesarios
  */
 export const UsersPage = () => {
-  // * Estados de paginación (solo estos son necesarios)
+  // * Paginacion ( necesarios)
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(5);
   
@@ -68,7 +68,7 @@ export const UsersPage = () => {
     nextPage, 
     previousPage, 
     isLoading, 
-    isFetching 
+    // isFetching NO se usa - el refetch automático debe ser silencioso
   } = useGetUsers(currentParams);
 
   // * Hook para estadísticas globales (todos los usuarios, no solo la página actual)
@@ -150,7 +150,9 @@ export const UsersPage = () => {
       />
 
       {/* Users Grid/Table */}
-      <UserGrid users={users} isPending={isFetching || isLoading || isMutating} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
+      {/* Solo mostrar loader en: carga inicial (isLoading) o mutaciones CRUD (isMutating) */}
+      {/* El refetch automático cada 3s NO debe mostrar loader */}
+      <UserGrid users={users} isPending={isLoading || isMutating} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
 
       {/* Pagination */}
       {total > 0 && (
@@ -166,7 +168,7 @@ export const UsersPage = () => {
           onPageChange={handlePageChange}
           onLimitChange={handleLimitChange}
           currentLimit={limit}
-          isLoading={isFetching || isLoading}
+          isLoading={isLoading}
         />
       )}
 

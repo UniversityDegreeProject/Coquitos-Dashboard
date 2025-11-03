@@ -18,21 +18,13 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
   const queryClient = useQueryClient();
 
   const updateUserMutation = useMutation({
-    onMutate: async (userToUpdate: User) => {
+    onMutate: async () => {
       // Marcar el usuario como optimista solo para animación visual
       const currentQueryKey = usersQueries.userWithFilters(currentParams);
       const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
 
       if (previousData) {
-        queryClient.setQueryData<GetUsersResponse>(currentQueryKey, (oldData) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            data: oldData.data.map(user =>
-              user.id === userToUpdate.id ? { ...userToUpdate, isOptimistic: true } : user
-            ),
-          };
-        });
+        throw new Error('Usuario no encontrado');
       }
 
       return { previousData };

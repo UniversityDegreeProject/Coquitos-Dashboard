@@ -6,6 +6,7 @@ import { UserButtonsActions } from "./UserButtonsActions";
 import { formateDatetime, getRoleColor, getStatusColor } from "../helpers";
 import { useUserStore } from "../store/user.store";
 import type { SearchUsersParams, User } from "../interfaces";
+import { cn } from "@/lib/utils";
 
 interface UserListItemProps {
   user: User;
@@ -18,7 +19,6 @@ export const UserListItem = memo(({ user, currentParams, onPageEmpty }: UserList
   const pendingEmailVerifications = useUserStore(useShallow((state) => state.pendingEmailVerifications));
   const removePendingEmailVerification = useUserStore(useShallow((state) => state.removePendingEmailVerification));
 
-  const isOptimistic = user.isOptimistic;
 
   const formattedLastConnection = useMemo(() => {
     if( !user.lastConnection ) return "Nunca";
@@ -34,13 +34,10 @@ export const UserListItem = memo(({ user, currentParams, onPageEmpty }: UserList
 
   return (
     <div
-      className={`${
-        isDark ? 'bg-[#1E293B]' : 'bg-white'
-      } rounded-xl shadow-lg border ${
-        isDark ? 'border-[#334155]' : 'border-gray-100'
-      } p-4 hover:shadow-xl transition-all duration-200 ${
-        isOptimistic ? 'animate-pulse opacity-60' : ''
-      }`}
+      className={cn(
+        'rounded-xl shadow-lg border p-4 hover:shadow-xl transition-all duration-200',
+        isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-gray-100'
+      )}
     >
       <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:space-x-4">
         {/* Sección izquierda: Avatar + Info principal */}

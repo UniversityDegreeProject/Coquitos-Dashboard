@@ -13,7 +13,7 @@ import type { User, SearchUsersParams } from "../interfaces";
 
 interface UserButtonsActionsProps {
   user: User;
-  currentParams: SearchUsersParams; // ← Parámetros actuales
+  currentParams: SearchUsersParams;
   onPageEmpty?: () => void;
 }
 
@@ -23,11 +23,13 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
   const setOpenModalUpdate = useUserStore(useShallow((state) => state.setOpenModalUpdate));
   const pendingEmailVerifications = useUserStore(useShallow((state) => state.pendingEmailVerifications));
   const addPendingEmailVerification = useUserStore(useShallow((state) => state.addPendingEmailVerification));
+  const setIsMutating = useUserStore(useShallow((state) => state.setIsMutating));
   
   // Pasar parámetros actuales al hook
   const { deleteUserMutation } = useDeleteUser({ 
     currentParams,
-    onPageEmpty 
+    onPageEmpty,
+    onFinally: () => setIsMutating(false)
   });
 
   const { sendVerificationEmailMutation, isPending: isSendingVerificationEmail } = useSendVerificationEmail();
@@ -43,17 +45,19 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
       cancelButtonText: 'Cancelar',
     }).then((result) => {
       if (result.isConfirmed) {
+        setIsMutating(true);
         deleteUserMutation.mutate(user.id!);
       }
     });
-  }, [user.username, user.id, deleteUserMutation]);
+  }, [user.username, user.id, deleteUserMutation, setIsMutating]);
 
+  // * Handler para editar usuario
   const handleEditUser = useCallback(() => {
     setOpenModalUpdate(user);
   }, [user, setOpenModalUpdate]);
 
+  // * Handler para enviar verificación de email
   const handleSendVerification = useCallback(() => {
-    // Agregar al set de pendientes
     addPendingEmailVerification(user.id!);
     
     sendVerificationEmailMutation.mutate({
@@ -62,10 +66,12 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
     });
   }, [user.email, user.id, sendVerificationEmailMutation, addPendingEmailVerification]);
 
+  // * Handler para ver más detalle
   const handleSeeMore = useCallback(() => {
     navigate(paths.dashboard.userDetail(user.id!));
   }, [user.id, navigate]);
 
+  // * Handler para cambiar contraseña
   const handleChangePassword = useCallback(() => {
     useQuerySendChangePassword.mutate(user.email);
   }, [user.email, useQuerySendChangePassword]);
@@ -111,6 +117,7 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
           aria-label="Enviar verificación"
           title="Enviar verificación"
           type="button"
+          disabled={pendingEmailVerifications.has(user.id!) || isSendingVerificationEmail}
         >
           {isSendingVerificationEmail ? (
             <Loader2 className="w-4 h-4 animate-spin" />

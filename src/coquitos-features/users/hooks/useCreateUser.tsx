@@ -9,6 +9,11 @@ import type {
   User 
 } from "../interfaces";
 
+
+interface OptimisticMutateUser {
+  previousData: GetUsersResponse;
+}
+
 interface UseCreateUserOptions {
   currentParams: SearchUsersParams;
   onNewPageCreated?: (newPage: number) => void;
@@ -21,14 +26,28 @@ export const useCreateUser = (options: UseCreateUserOptions) => {
   const queryClient = useQueryClient();
 
   const useCreateUserMutation = useMutation({
+
+
+    onMutate: async (): Promise<OptimisticMutateUser> => {
+      // Marcar el usuario como optimista solo para animación visual
+      const currentQueryKey = usersQueries.userWithFilters(currentParams);
+      const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
+      
+      if (!previousData) {
+        throw new Error('No se encontraron datos para el usuario');
+      }
+
+
+ 
+      return { previousData };
+    },
+
     mutationFn: (newUser: User): Promise<CreateUserResponse> => createUser(newUser),
 
-    onSuccess: async (createdUserResponse: CreateUserResponse) => {
-      // 1. PRIMERO: Verificar si la página actual estaba llena ANTES de invalidar
-      const dataBeforeRefetch = queryClient.getQueryData<GetUsersResponse>(
-        usersQueries.userWithFilters(currentParams)
-      );
-      const wasPageFull = dataBeforeRefetch && dataBeforeRefetch.data.length >= currentParams.limit;
+    onSuccess: async (createdUserResponse: CreateUserResponse , _User : User, { previousData } : OptimisticMutateUser) => {
+      const dataBeforeRefetch = previousData;
+
+      const wasPageFull = dataBeforeRefetch && currentParams.limit <= dataBeforeRefetch.data.length
 
       // 2. Invalidar TODAS las queries de usuarios
       await queryClient.invalidateQueries({

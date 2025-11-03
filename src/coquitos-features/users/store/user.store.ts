@@ -9,7 +9,7 @@ interface UserState {
   modalMode : 'create' | 'update' | 'delete' | null;
   userToUpdate : User | null;
   isMutating : boolean;
-  pendingEmailVerifications : Set<string>; // IDs de usuarios con emails pendientes
+  pendingEmailVerifications : Set<string>; 
   setOpenModalCreate : () => void;
   setOpenModalUpdate : ( user : User ) => void;
   closeModal : () => void;

@@ -87,6 +87,7 @@ export const UsersPage = () => {
   const handlePageEmpty = useCallback(() => {
     const newPage = Math.max(1, page - 1);
     setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
 
   // * Memoizar callbacks

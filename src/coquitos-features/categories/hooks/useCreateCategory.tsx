@@ -1,56 +1,103 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createCategory } from "../services/category.service";
-import { type Category } from "../interfaces"
 import Swal from "sweetalert2";
-import { useQuerys } from "../const";
+import { createCategory, getCategories } from "../services/category.service";
+import { categoriesQueries } from "../const";
+import type { 
+  CreateCategoryResponse, 
+  GetCategoriesResponse, 
+  SearchCategoriesParams, 
+  Category 
+} from "../interfaces";
 
-interface OptimisticMutationCategory {
-  optimisticCategory: Category
+
+interface OptimisticMutateCategory {
+  previousData: GetCategoriesResponse;
 }
 
-/**
- * Hook para crear una nueva categoría
- * Implementa actualización optimista de la UI
- */
-export const useCreateCategory = () => {
+interface UseCreateCategoryOptions {
+  currentParams: SearchCategoriesParams;
+  onNewPageCreated?: (newPage: number) => void;
+  onSuccessCallback?: () => void;
+  onFinally?: () => void;
+}
+
+export const useCreateCategory = (options: UseCreateCategoryOptions) => {
+  const { currentParams, onNewPageCreated, onSuccessCallback, onFinally } = options;
   const queryClient = useQueryClient();
 
   const useCreateCategoryMutation = useMutation({
 
-    onMutate: (categoryToCreate: Category): OptimisticMutationCategory => {
-      const optimisticCategory: Category = {
-        ...categoryToCreate,
-        id: crypto.randomUUID(),
-        isOptimistic: true,
+
+    onMutate: async (): Promise<OptimisticMutateCategory> => {
+      // Marcar el usuario como optimista solo para animación visual
+      const currentQueryKey = categoriesQueries.categoryWithFilters(currentParams);
+      const previousData = queryClient.getQueryData<GetCategoriesResponse>(currentQueryKey);
+      
+      if (!previousData) {
+        throw new Error('No se encontraron datos para la categoría');
       }
 
-      queryClient.setQueryData<Category[]>(useQuerys.allCategories, (oldCategories) => {
-        if (!oldCategories) return [optimisticCategory];
-        return [...oldCategories, optimisticCategory];
-      });
 
-      return { optimisticCategory };
+ 
+      return { previousData };
     },
 
-    mutationFn: (newCategory: Category): Promise<Category> => createCategory(newCategory),
+    mutationFn: (newCategory: Category): Promise<CreateCategoryResponse> => createCategory(newCategory),
 
-    onSuccess: (createdCategory: Category, _, { optimisticCategory }) => {
-      queryClient.setQueryData<Category[]>(useQuerys.allCategories, (oldCategories) => {
-        if (!oldCategories) return [createdCategory];
+    onSuccess: async (createdCategoryResponse: CreateCategoryResponse , _Category : Category, { previousData } : OptimisticMutateCategory) => {
+      const dataBeforeRefetch = previousData;
 
-        const categoryCreateSuccess = oldCategories.map(category => {
-          if (category.id === optimisticCategory.id || (category as Category & { isOptimistic?: boolean }).isOptimistic) {
-            return createdCategory;
-          }
-          return category;
-        });
+      const wasPageFull = dataBeforeRefetch && currentParams.limit <= dataBeforeRefetch.data.length
 
-        return categoryCreateSuccess;
+      // 2. Invalidar TODAS las queries de usuarios
+      await queryClient.invalidateQueries({
+        queryKey: categoriesQueries.allCategories,
       });
 
+      // 3. Refetch la página actual para obtener datos actualizados
+      await queryClient.refetchQueries({
+        queryKey: categoriesQueries.categoryWithFilters(currentParams),
+      });
+
+      // 4. Si la página ESTABA llena, el nuevo usuario fue a una nueva página → navegar
+      if (wasPageFull) {
+        const newPageNumber = currentParams.page + 1;
+        const newPageParams = {
+          ...currentParams,
+          page: newPageNumber,
+        };
+        const newPageKey = categoriesQueries.categoryWithFilters(newPageParams);
+        
+        // Fetch la nueva página para asegurar que tenga datos
+        try {
+          await queryClient.fetchQuery({
+            queryKey: newPageKey,
+            queryFn: () => getCategories(newPageParams),
+          });
+        } catch (error) {
+          console.error('Error fetching new page:', error);
+        }
+        
+        // Navegar a la nueva página
+        if (onNewPageCreated) {
+          setTimeout(() => onNewPageCreated(newPageNumber), 100);
+        }
+      }
+
+      // 5. Ejecutar callback de éxito (cerrar modal, etc.)
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+
+      // 6. Desactivar estado de mutación
+      if (onFinally) {
+        onFinally();
+      }
+
+      // 7. Mensaje de éxito
       Swal.fire({
-        title: '¡Registro exitoso!',
-        text: `Categoría ${createdCategory?.name || optimisticCategory?.name} se ha registrado correctamente.`,
+        title: '¡Categoría creada!',
+        text: `${createdCategoryResponse.category.name} se creó correctamente`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -62,21 +109,37 @@ export const useCreateCategory = () => {
       });
     },
 
-    onError: (error: Error, _, context?: OptimisticMutationCategory | undefined): void => {
-      queryClient.setQueryData<Category[]>(useQuerys.allCategories, (oldData: Category[] | undefined) => {
-        if (!oldData) return [];
-        if (!context?.optimisticCategory) return oldData;
-        return oldData.filter((category: Category) => category.id !== context.optimisticCategory.id);
-      });
+    onError: (error: Error) => {
+      // Cerrar modal también en caso de error
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
 
-      const errorMessage = error.message || "Ha ocurrido un error al crear la categoría.";
+      // Desactivar estado de mutación
+      if (onFinally) {
+        onFinally();
+      }
+
+      // Mensaje de error personalizado
+      const errorMessages: Record<string, string> = {
+        name: 'El nombre ya está en uso',
+        description: 'La descripción ya está en uso',
+      };
+
+      const errorKey = Object.keys(errorMessages).find(key =>
+        error.message.toLowerCase().includes(key)
+      );
+
+      const errorMessage = errorKey
+        ? errorMessages[errorKey]
+        : error.message || 'Error al crear la categoría';
 
       Swal.fire({
         title: 'Error al crear categoría',
         text: errorMessage,
         icon: 'error',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#38bdf8',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',
@@ -88,7 +151,6 @@ export const useCreateCategory = () => {
 
   return {
     useCreateCategoryMutation,
-    ...useCreateCategoryMutation,
+    isPending: useCreateCategoryMutation.isPending,
   };
 };
-

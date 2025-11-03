@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateCategory } from "../hooks/useCreateCategory";
 import { useShallow } from "zustand/shallow";
 import { useUpdateCategory } from "../hooks/useUpdateCategory";
+import type { SearchCategoriesParams } from "../interfaces";
 
 const onlyStatusOptions = statusOptions.filter((option) => option.value !== "");
 
@@ -23,22 +24,37 @@ const initialValues: CategorySchema = {
   status: "Activo",
 };
 
+interface FormCategoryModalProps {
+  currentParams: SearchCategoriesParams;
+  onNewPageCreated: (page: number) => void;
+}
+
 /**
  * Modal de formulario para crear/editar categorías
  * Implementa validación con React Hook Form y Zod
  */
-export const FormCategoryModal = () => {
+export const FormCategoryModal = (props: FormCategoryModalProps) => {
+  const { currentParams, onNewPageCreated } = props;
   // * Zustand
   const closeModal = useCategoryStore(useShallow((state) => state.closeModal));
   const modalMode = useCategoryStore(useShallow((state) => state.modalMode));
   const categoryToUpdate = useCategoryStore(useShallow((state) => state.categoryToUpdate));
-  
+  const setIsMutation = useCategoryStore(useShallow((state) => state.setIsMutation));
   // * Theme
   const { isDark } = useTheme();
 
   // * TanstackQuery
-  const { useCreateCategoryMutation, isPending: isCreatingCategory } = useCreateCategory();
-  const { updateCategoryMutation } = useUpdateCategory();
+  const { useCreateCategoryMutation, isPending: isCreatingCategory } = useCreateCategory({
+    currentParams,
+    onNewPageCreated,
+    onSuccessCallback: closeModal,
+    onFinally: () => setIsMutation(false)
+  });
+  const { updateCategoryMutation, isPending: isUpdatingCategory } = useUpdateCategory({
+    currentParams,
+    onSuccessCallback: closeModal,
+    onFinally: () => setIsMutation(false)
+  });
   
   // * Determinar si es modo editar
   const isEditMode = modalMode === 'update';
@@ -145,11 +161,13 @@ export const FormCategoryModal = () => {
             </button>
             <button 
               type="submit"
-              disabled={isCreatingCategory || !isValid}
+              disabled={isCreatingCategory || isUpdatingCategory || !isValid}
               className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
             >
               {isCreatingCategory && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isUpdatingCategory && <Loader2 className="w-4 h-4 animate-spin" />}
               {isCreatingCategory ? (isEditMode ? 'Actualizando...' : 'Creando...') : (isEditMode ? 'Actualizar Categoría' : 'Registrar')}
+              {isUpdatingCategory ? 'Actualizando...' : (isEditMode ? 'Actualizar Categoría' : 'Registrar')}
             </button>
           </div>
         </form>

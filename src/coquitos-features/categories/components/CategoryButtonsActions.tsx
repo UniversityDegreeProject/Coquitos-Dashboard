@@ -1,57 +1,60 @@
 import { memo, useCallback } from "react";
 import { Edit2, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
-import { useCategoryStore } from "../store/category.store";
-import { useDeleteCategory } from "../hooks/useDeleteCategory";
 import { useShallow } from "zustand/shallow";
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { Category } from "../interfaces";
+import type { Category, SearchCategoriesParams } from "../interfaces";
+import { useCategoryStore } from "../store/category.store";
+import { useDeleteCategory } from "../hooks/useDeleteCategory";
 
 interface CategoryButtonsActionsProps {
   category: Category;
+  currentParams: SearchCategoriesParams;
+  onPageEmpty?: () => void;
 }
 
-/**
- * Componente de botones de acción para cada categoría
- * Incluye editar y eliminar con confirmación, optimizado con memoización
- */
-export const CategoryButtonsActions = memo(({ category }: CategoryButtonsActionsProps) => {
+export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmpty }: CategoryButtonsActionsProps) => {
   const { isDark } = useTheme();
   const setOpenModalUpdate = useCategoryStore(useShallow((state) => state.setOpenModalUpdate));
-  const { deleteCategoryMutation } = useDeleteCategory();
+  const setIsMutation = useCategoryStore(useShallow((state) => state.setIsMutation));
+  
+  // Pasar parámetros actuales al hook
+  const { deleteCategoryMutation } = useDeleteCategory({ 
+    currentParams,
+    onPageEmpty,
+    onFinally: () => setIsMutation(false)
+  });
 
-  // Memoizar el handler de edición
-  const handleEdit = useCallback(() => {
-    setOpenModalUpdate(category);
-  }, [setOpenModalUpdate, category]);
-
-  // Memoizar el handler de eliminación
-  const handleDelete = useCallback(async () => {
-    const result = await Swal.fire({
-      title: '¿Estás seguro?',
-      text: `¿Deseas eliminar la categoría "${category.name}"? Esta acción no se puede deshacer.`,
+  
+  const handleDeleteCategory = useCallback(() => {
+    Swal.fire({
+      title: '¿Estás seguro de querer eliminar esta categoría?',
+      text: `La categoría ${category.name} se eliminará permanentemente`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#ef4444',
-      cancelButtonColor: '#64748b',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonText: 'Si, eliminar',
       cancelButtonText: 'Cancelar',
-      customClass: {
-        popup: 'rounded-xl',
-        title: 'text-xl font-bold text-gray-800',
-        htmlContainer: 'text-gray-600',
-      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setIsMutation(true);
+        deleteCategoryMutation.mutate(category.id!);
+      }
     });
+  }, [category.name, category.id, deleteCategoryMutation, setIsMutation]);
 
-    if (result.isConfirmed && category.id) {
-      deleteCategoryMutation.mutate(category.id);
-    }
-  }, [category.name, category.id, deleteCategoryMutation]);
+  // * Handler para editar usuario
+  const handleEditCategory = useCallback(() => {
+    setOpenModalUpdate(category);
+  }, [category, setOpenModalUpdate]);
+ 
+
+
+
 
   return (
     <div className="flex space-x-2 flex-shrink-0">
       <button
-        onClick={handleEdit}
+        onClick={handleEditCategory}
         className={`p-2 rounded-lg transition-all duration-200 ${
           isDark
             ? 'text-blue-400 hover:bg-blue-500/10 hover:text-blue-300'
@@ -59,11 +62,13 @@ export const CategoryButtonsActions = memo(({ category }: CategoryButtonsActions
         }`}
         aria-label="Editar categoría"
         title="Editar categoría"
+        type="button"
       >
         <Edit2 className="w-4 h-4" />
       </button>
+
       <button
-        onClick={handleDelete}
+        onClick={handleDeleteCategory}
         className={`p-2 rounded-lg transition-all duration-200 ${
           isDark
             ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
@@ -71,10 +76,12 @@ export const CategoryButtonsActions = memo(({ category }: CategoryButtonsActions
         }`}
         aria-label="Eliminar categoría"
         title="Eliminar categoría"
+        type="button"
       >
         <Trash2 className="w-4 h-4" />
       </button>
+
+      
     </div>
   );
 });
-

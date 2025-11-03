@@ -3,69 +3,59 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 
 // * Others
-import type { Category } from '../interfaces';
-import { useQuerys } from '../const';
+import type { GetCategoriesResponse, SearchCategoriesParams, UpdateCategoryResponse, Category } from '../interfaces';
+import { categoriesQueries } from '../const';
 import { updateCategory } from '../services/category.service';
 
-interface OptimisticUpdateCategory {
-  optimisticCategory: Category;
-  originalCategory: Category;
+interface UseUpdateCategoryOptions {
+  currentParams: SearchCategoriesParams;
+  onSuccessCallback?: () => void;
+  onFinally?: () => void;
 }
 
-/**
- * Hook para actualizar una categoría existente
- * Implementa actualización optimista de la UI
- */
-export const useUpdateCategory = () => {
+export const useUpdateCategory = (options: UseUpdateCategoryOptions) => {
+  const { currentParams, onSuccessCallback, onFinally } = options;
   const queryClient = useQueryClient();
 
   const updateCategoryMutation = useMutation({
+    onMutate: async () => {
+      // Marcar el usuario como optimista solo para animación visual
+      const currentQueryKey = categoriesQueries.categoryWithFilters(currentParams);
+      const previousData = queryClient.getQueryData<GetCategoriesResponse>(currentQueryKey);
 
-    onMutate: (categoryToUpdate: Category): OptimisticUpdateCategory => {
-      const oldCategories = queryClient.getQueryData<Category[]>(useQuerys.allCategories);
-      const originalCategory = oldCategories?.find(category => category.id === categoryToUpdate.id);
-
-      if (!originalCategory) {
+      if (!previousData) {
         throw new Error('Categoría no encontrada');
       }
 
-      const optimisticCategory: Category = {
-        ...categoryToUpdate,
-        isOptimistic: true,
-      }
-
-      // Aplicar la mutación optimista
-      queryClient.setQueryData<Category[]>(useQuerys.allCategories, (oldCategories): Category[] => {
-        if (!oldCategories) return [];
-
-        return oldCategories.map(category =>
-          category.id === categoryToUpdate.id
-            ? optimisticCategory
-            : category
-        );
-      });
-
-      return { optimisticCategory, originalCategory };
+      return { previousData };
     },
 
     mutationFn: (categoryUpdated: Category) => updateCategory(categoryUpdated.id!, categoryUpdated),
 
-    onSuccess: (updatedCategory): void => {
-      queryClient.setQueryData<Category[]>(useQuerys.allCategories, (oldCategories): Category[] => {
-        if (!oldCategories) return [updatedCategory];
-
-        const dataUpdatedSuccess = oldCategories.map((category: Category) => {
-          if (category.id === updatedCategory.id || (category as Category & { isOptimistic?: boolean }).isOptimistic) {
-            return updatedCategory;
-          }
-          return category;
-        });
-        return dataUpdatedSuccess;
+    onSuccess: async (updateCategoryResponse: UpdateCategoryResponse) => {
+      // Invalidar y refetch todas las queries de usuarios
+      await queryClient.invalidateQueries({ 
+        queryKey: categoriesQueries.allCategories,
       });
+
+      // Asegurar que la página actual se refetch
+      await queryClient.refetchQueries({
+        queryKey: categoriesQueries.categoryWithFilters(currentParams),
+      });
+
+      // Ejecutar callback de éxito (cerrar modal, etc.)
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
+
+      // Desactivar estado de mutación
+      if (onFinally) {
+        onFinally();
+      }
 
       Swal.fire({
         title: 'Categoría actualizada exitosamente',
-        text: `La categoría ${updatedCategory.name} se ha actualizado correctamente`,
+        text: `La categoría ${updateCategoryResponse.category.name} se ha actualizado correctamente`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',
@@ -77,21 +67,33 @@ export const useUpdateCategory = () => {
       });
     },
 
-    onError: (error, categoryToUpdate: Category, context?: OptimisticUpdateCategory): void => {
-      queryClient.setQueryData<Category[]>(useQuerys.allCategories, (oldCategories): Category[] => {
-        if (!oldCategories) return [];
-        if (!context?.originalCategory) return oldCategories;
+    onError: (error: Error, _originalCategorySubmitted: Category, context) => {
+      // Rollback: restaurar datos anteriores
+      if (context?.previousData) {
+        const currentQueryKey = categoriesQueries.categoryWithFilters(currentParams);
+        queryClient.setQueryData(currentQueryKey, context.previousData);
+      }
 
-        // Restaurar los datos originales de la categoría
-        return oldCategories.map((category: Category) =>
-          category.id === categoryToUpdate.id
-            ? context.originalCategory
-            : category
-        );
-      });
+      // Cerrar modal también en caso de error
+      if (onSuccessCallback) {
+        onSuccessCallback();
+      }
 
-      const errorMessage = error.message || "Ha ocurrido un error al actualizar la categoría.";
+      // Desactivar estado de mutación
+      if (onFinally) {
+        onFinally();
+      }
 
+      // Mensaje de error personalizado
+        let errorMessage = "Ha ocurrido un error al actualizar la categoría.";
+
+      if (error.message.includes("name") || error.message.includes("nombre")) {
+        errorMessage = error.message;
+      } else if (error.message.includes("description") || error.message.includes("descripción")) {
+        errorMessage = error.message;
+      } else {
+        errorMessage = error.message;
+      }
       Swal.fire({
         title: 'Error al actualizar categoría',
         text: errorMessage,
@@ -109,7 +111,6 @@ export const useUpdateCategory = () => {
 
   return {
     updateCategoryMutation,
-    ...updateCategoryMutation,
-  }
-};
-
+    isPending: updateCategoryMutation.isPending,
+  };
+}; 

@@ -1,27 +1,28 @@
 import { memo, useMemo } from "react";
 import { Layers, CheckCircle, XCircle } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { Category } from "../interfaces";
 
 interface CategoryStatsProps {
-  categories: Category[];
+  totalCategories : number;
+  activeCategories : number;
+  inactiveCategories : number;
 }
 
 /**
- * Componente que muestra estadísticas de categorías
- * Diseño idéntico a ProductStats para consistencia visual
+ * Componente que muestra estadísticas de usuarios
+ * Diseño consistente con ProductStats y CategoryStats
  */
-export const CategoryStats = memo(({ categories }: CategoryStatsProps) => {
+export const CategoryStats = memo(({ totalCategories, activeCategories, inactiveCategories }: CategoryStatsProps) => {
   const { colors, isDark } = useTheme();
 
   // Calcular estadísticas
   const stats = useMemo(() => {
-    const total = categories.length;
-    const active = categories.filter(cat => cat.status === 'Activo').length;
-    const inactive = categories.filter(cat => cat.status === 'Inactivo').length;
+    const total = totalCategories;
+    const active = activeCategories;
+    const inactive = inactiveCategories;
 
     return { total, active, inactive };
-  }, [categories]);
+  }, [totalCategories, activeCategories, inactiveCategories]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -40,12 +41,12 @@ export const CategoryStats = memo(({ categories }: CategoryStatsProps) => {
         </div>
       </div>
 
-      {/* Activas */}
+      {/* Categorías Activas */}
       <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
         <div className="flex items-center justify-between">
           <div>
             <p className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-              Activas
+              Categorías Activas
             </p>
             <p className={`text-2xl font-bold text-green-600`}>
               {stats.active}
@@ -55,12 +56,12 @@ export const CategoryStats = memo(({ categories }: CategoryStatsProps) => {
         </div>
       </div>
 
-      {/* Inactivas */}
+      {/* Categorías Inactivas */}
       <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
         <div className="flex items-center justify-between">
           <div>
             <p className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-              Inactivas
+              Categorías Inactivas
             </p>
             <p className={`text-2xl font-bold text-red-600`}>
               {stats.inactive}

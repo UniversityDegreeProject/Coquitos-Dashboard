@@ -1,24 +1,30 @@
 import { memo, useCallback, useMemo } from "react";
-import { Search, Filter } from "lucide-react";
+import { Search, Layers, Users } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { statusOptions } from "../const";
-import type { CategoryStatus } from "../interfaces";
+import { categoriesOptions } from "../const/categories-options";
+import { statusOptions } from "../const/status-options";
+import type { Status } from "../interfaces";
 
 interface CategorySearchPageProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
-  statusFilter?: CategoryStatus | "";
-  onStatusChange?: (value: CategoryStatus | "") => void;
+  categoryFilter: string | undefined;
+  onCategoryChange: (value: string) => void;
+  statusFilter: Status | "";
+  onStatusChange: (value: Status | "") => void;
 }
 
 /**
- * Componente de búsqueda y filtros para categorías
- * Diseño elegante con efectos, animaciones y optimizado con memoización
+ * Componente de búsqueda y filtros para usuarios
+ * Diseño consistente con ProductSearchPage y CategorySearchPage
+ * Incluye indicador de filtros activos
  */
 export const CategorySearchPage = memo(({
   searchValue,
   onSearchChange,
-  statusFilter = "",
+  categoryFilter,
+  onCategoryChange,
+  statusFilter,
   onStatusChange,
 }: CategorySearchPageProps) => {
   const { isDark } = useTheme();
@@ -26,15 +32,14 @@ export const CategorySearchPage = memo(({
   // Memoizar el callback para limpiar filtros
   const handleClearFilters = useCallback(() => {
     onSearchChange('');
-    if (onStatusChange) {
-      onStatusChange('');
-    }
-  }, [onSearchChange, onStatusChange]);
+    onCategoryChange('');
+    onStatusChange('');
+  }, [onSearchChange, onCategoryChange, onStatusChange]);
 
   // Detectar si hay filtros activos
   const hasActiveFilters = useMemo(() => {
-    return Boolean(searchValue || statusFilter);
-  }, [searchValue, statusFilter]);
+    return Boolean(searchValue || categoryFilter || statusFilter);
+  }, [searchValue, categoryFilter, statusFilter]);
 
   return (
     <div
@@ -43,7 +48,7 @@ export const CategorySearchPage = memo(({
       } rounded-xl p-6 shadow-lg border backdrop-blur-sm transition-all duration-300 hover:shadow-xl`}
     >
       <div className="flex flex-col lg:flex-row gap-4">
-        {/* Campo de búsqueda */}
+        {/* Campo de búsqueda principal */}
         <div className="flex-1">
           <div className="space-y-2">
             <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
@@ -65,25 +70,24 @@ export const CategorySearchPage = memo(({
           </div>
         </div>
 
-        {/* Filtro de estado */}
-        {onStatusChange && (
+        {/* Filtros */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Filtro por rol */}
           <div className="min-w-[180px]">
             <div className="space-y-2">
               <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
-                Estado
+                Categoría
               </label>
               <div className="relative group">
-                <Filter className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} group-focus-within:${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'} transition-colors duration-200 z-10`} />
+                <Layers className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} group-focus-within:${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'} transition-colors duration-200 z-10`} />
                 <select
-                  value={statusFilter}
-                  onChange={(e) => onStatusChange(e.target.value as CategoryStatus | "")}
+                  value={categoryFilter}
+                  onChange={(e) => onCategoryChange(e.target.value as string)}
                   className={`w-full pl-12 pr-10 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm ${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'} focus:ring-4 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
                 >
-                  <option value="">Todos los estados</option>
-                  {statusOptions.map((option) => {
-                    if (option.value === "") {
-                      return null;
-                    }
+                  <option value="">Todas las categorías</option>
+                  {categoriesOptions.map((option) => {
+                    if (option.value === "") return null;
                     return (
                       <option key={option.value} value={option.value}>
                         {option.label}
@@ -99,7 +103,39 @@ export const CategorySearchPage = memo(({
               </div>
             </div>
           </div>
-        )}
+
+          {/* Filtro por estado */}
+          <div className="min-w-[180px]">
+            <div className="space-y-2">
+              <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+                Estado
+              </label>
+              <div className="relative group">
+                <Users className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} group-focus-within:${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'} transition-colors duration-200 z-10`} />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => onStatusChange(e.target.value as Status | "")}
+                  className={`w-full pl-12 pr-10 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm ${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'} focus:ring-4 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
+                >
+                  <option value="">Todos los estados</option>
+                  {statusOptions.map((option) => {
+                    if (option.value === "") return null;
+                    return (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    );
+                  })}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className={`w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Indicador de resultados */}
@@ -110,6 +146,11 @@ export const CategorySearchPage = memo(({
               {searchValue && (
                 <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
                   Buscando: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>"{searchValue}"</span>
+                </span>
+              )}
+              {categoryFilter && (
+                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
+                  Categoría: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>{categoryFilter}</span>
                 </span>
               )}
               {statusFilter && (
@@ -130,3 +171,4 @@ export const CategorySearchPage = memo(({
     </div>
   );
 });
+

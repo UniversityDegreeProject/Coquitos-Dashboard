@@ -23,7 +23,7 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
       const currentQueryKey = usersQueries.userWithFilters(currentParams);
       const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
 
-      if (previousData) {
+      if (!previousData) {
         throw new Error('Usuario no encontrado');
       }
 

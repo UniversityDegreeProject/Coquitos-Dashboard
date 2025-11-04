@@ -53,7 +53,8 @@ export const FormCategoryModal = (props: FormCategoryModalProps) => {
   const { updateCategoryMutation, isPending: isUpdatingCategory } = useUpdateCategory({
     currentParams,
     onSuccessCallback: closeModal,
-    onFinally: () => setIsMutation(false)
+    onFinally: () => setIsMutation(false),
+    categoryMessageState: ""
   });
   
   // * Determinar si es modo editar
@@ -68,7 +69,7 @@ export const FormCategoryModal = (props: FormCategoryModalProps) => {
 
   const handleSubmitForm: SubmitHandler<CategorySchema> = (data) => {
     closeModal();
-    
+    setIsMutation(true);
     if (isEditMode) {
       updateCategoryMutation.mutate(data);
       return; 
@@ -164,10 +165,8 @@ export const FormCategoryModal = (props: FormCategoryModalProps) => {
               disabled={isCreatingCategory || isUpdatingCategory || !isValid}
               className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
             >
-              {isCreatingCategory && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isUpdatingCategory && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isCreatingCategory ? (isEditMode ? 'Actualizando...' : 'Creando...') : (isEditMode ? 'Actualizar Categoría' : 'Registrar')}
-              {isUpdatingCategory ? 'Actualizando...' : (isEditMode ? 'Actualizar Categoría' : 'Registrar')}
+              {isCreatingCategory || isUpdatingCategory && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isCreatingCategory || isUpdatingCategory ? 'Actualizando...' : (isEditMode ? 'Actualizar Categoría' : 'Registrar')}
             </button>
           </div>
         </form>

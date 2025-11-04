@@ -65,15 +65,15 @@ export const CategoryListItem = memo(({ category, currentParams, onPageEmpty }: 
         </div>
 
         {/* Sección derecha: Desktop */}
-        <div className="hidden sm:flex items-center gap-4 flex-shrink-0 self-center">
-          <div className="flex-shrink-0">
+        <div className="hidden sm:flex items-end gap-4 flex-shrink-0 self-center">
+          <div className="flex-shrink-0 mb-1">
             <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(category.status)}`}>
               {category.status}
             </span>
           </div>
 
-          <div className="flex-shrink-0 text-right min-w-[140px]">
-            <p className={`text-xs ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`}>
+          <div className="flex-shrink-0 text-center min-w-[140px]">
+            <p className={`text-xs ${isDark ? 'text-[#64748B]' : 'text-gray-400'} mb-1`}>
               Fecha de creación
             </p>
             <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>
@@ -86,9 +86,9 @@ export const CategoryListItem = memo(({ category, currentParams, onPageEmpty }: 
         </div>
 
         {/* Móvil */}
-        <div className="flex sm:hidden items-center justify-between pt-2 border-t border-gray-200 dark:border-[#334155]">
-          <div className="text-left">
-            <p className={`text-xs ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`}>
+        <div className="flex sm:hidden items-end justify-between pt-2 border-t border-gray-200 dark:border-[#334155]">
+          <div className="text-center">
+            <p className={`text-xs ${isDark ? 'text-[#64748B]' : 'text-gray-400'} mb-1`}>
               Fecha de creación
             </p>
             <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>

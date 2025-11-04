@@ -90,29 +90,7 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
   const isActive = category.status === "Activo";
 
   return (
-    <div className="flex items-center space-x-3 flex-shrink-0">
-      {/* Switch de Estado */}
-      <button
-        onClick={handleToggleStatus}
-        disabled={isTogglingStatus}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-          isActive
-            ? 'bg-green-500 focus:ring-green-500'
-            : isDark 
-              ? 'bg-gray-600 focus:ring-gray-500' 
-              : 'bg-gray-300 focus:ring-gray-400'
-        } ${isTogglingStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}`}
-        aria-label={`Cambiar estado de categoría a ${isActive ? 'Inactivo' : 'Activo'}`}
-        title={`Estado: ${category.status}. Click para cambiar`}
-        type="button"
-      >
-        <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 shadow-md ${
-            isActive ? 'translate-x-6' : 'translate-x-1'
-          }`}
-        />
-      </button>
-
+    <div className="flex items-end space-x-3 flex-shrink-0">
       {/* Botón Editar */}
       <button
         onClick={handleEditCategory}
@@ -142,6 +120,33 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
       >
         <Trash2 className="w-4 h-4" />
       </button>
+
+      {/* Switch de Estado - Alineado verticalmente */}
+      <div className="flex flex-col items-center space-y-1 flex-shrink-0">
+        <p className={`text-xs ${isDark ? 'text-[#64748B]' : 'text-gray-400'} whitespace-nowrap`}>
+          Estado
+        </p>
+        <button
+          onClick={handleToggleStatus}
+          disabled={isTogglingStatus}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+            isActive
+              ? 'bg-green-500 focus:ring-green-500'
+              : isDark 
+                ? 'bg-gray-600 focus:ring-gray-500' 
+                : 'bg-gray-300 focus:ring-gray-400'
+          } ${isTogglingStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}`}
+          aria-label={`Cambiar estado de categoría a ${isActive ? 'Inactivo' : 'Activo'}`}
+          title={`Estado: ${category.status}. Click para cambiar`}
+          type="button"
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 shadow-md ${
+              isActive ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+      </div>
     </div>
   );
 });

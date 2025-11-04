@@ -7,6 +7,9 @@ import { useSidebarState } from '../hooks/useSidebarState';
 import { menuItems } from '../config/menuItems';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { useTheme } from '@/shared/hooks/useTheme';
+import { useAuthStore } from '@/auth/store/auth.store';
+import { useShallow } from 'zustand/shallow';
+import type { User } from '@/auth/interface';
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -16,6 +19,13 @@ interface SidebarProps {
 export const Sidebar = memo<SidebarProps>(({ isCollapsed = false, onCloseSidebar }: SidebarProps) => {
   const { expandedItems, handleToggleSubmenu } = useSidebarState();
   const { css } = useTheme();
+
+  const user = useAuthStore(useShallow((state) => state.user));
+  const { role } = user as User ?? {};
+
+  const isAdmin = role === "Administrador";
+
+  const menuItemsWithRole = menuItems(isAdmin);
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-72'} ${css.sidebar.background} ${css.sidebar.shadow} border-r ${css.sidebar.border} transition-all duration-200 relative flex flex-col h-full`}>
@@ -27,7 +37,7 @@ export const Sidebar = memo<SidebarProps>(({ isCollapsed = false, onCloseSidebar
       {/* Navegación principal - Con scroll invisible */}
       <nav className={`flex-1 py-6 ${isCollapsed ? 'px-2' : 'px-4'} overflow-y-auto sidebar-scroll`}>
         <ul className="space-y-1">
-          {menuItems.map((item) => (
+          {menuItemsWithRole.map((item) => (
             <SidebarMenuItem
               key={item.to}
               item={item}

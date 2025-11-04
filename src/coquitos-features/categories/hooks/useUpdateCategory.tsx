@@ -11,10 +11,11 @@ interface UseUpdateCategoryOptions {
   currentParams: SearchCategoriesParams;
   onSuccessCallback?: () => void;
   onFinally?: () => void;
+  categoryMessageState: string;
 }
 
 export const useUpdateCategory = (options: UseUpdateCategoryOptions) => {
-  const { currentParams, onSuccessCallback, onFinally } = options;
+  const { currentParams, onSuccessCallback, onFinally, categoryMessageState } = options;
   const queryClient = useQueryClient();
 
   const updateCategoryMutation = useMutation({
@@ -30,7 +31,7 @@ export const useUpdateCategory = (options: UseUpdateCategoryOptions) => {
       return { previousData };
     },
 
-    mutationFn: (categoryUpdated: Category) => updateCategory(categoryUpdated.id!, categoryUpdated),
+    mutationFn: (categoryUpdated: Category,) => updateCategory(categoryUpdated.id!, categoryUpdated),
 
     onSuccess: async (updateCategoryResponse: UpdateCategoryResponse) => {
       // Invalidar y refetch todas las queries de usuarios
@@ -55,7 +56,7 @@ export const useUpdateCategory = (options: UseUpdateCategoryOptions) => {
 
       Swal.fire({
         title: 'Categoría actualizada exitosamente',
-        text: `La categoría ${updateCategoryResponse.category.name} se ha actualizado correctamente`,
+        text: categoryMessageState || `La categoría ${updateCategoryResponse.category.name} se ha actualizado correctamente`,
         icon: 'success',
         confirmButtonText: 'OK',
         confirmButtonColor: '#38bdf8',

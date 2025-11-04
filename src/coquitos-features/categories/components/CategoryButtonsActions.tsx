@@ -18,20 +18,23 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
   const { isDark } = useTheme();
   const setOpenModalUpdate = useCategoryStore(useShallow((state) => state.setOpenModalUpdate));
   const setIsMutation = useCategoryStore(useShallow((state) => state.setIsMutation));
+
   
-  // Estado local para el switch (optimista)
+  //* Estado local para el switch 
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  const categoryMessageState = isTogglingStatus && "El estado de la categoría se ha cambiado correctamente";
   
-  // Pasar parámetros actuales al hook
+  //* Pasar parámetros actuales al hook
   const { deleteCategoryMutation } = useDeleteCategory({ 
     currentParams,
     onPageEmpty,
     onFinally: () => setIsMutation(false)
   });
 
-  // Hook para actualizar categoría
+  //* Hook para actualizar categoría
   const { updateCategoryMutation } = useUpdateCategory({
     currentParams,
+    categoryMessageState: categoryMessageState || "",
     onFinally: () => {
       setIsMutation(false);
       setIsTogglingStatus(false);
@@ -64,12 +67,17 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
   const handleToggleStatus = useCallback(() => {
     const newStatus = category.status === "Activo" ? "Inactivo" : "Activo";
     
+    setIsMutation(false);
     setIsTogglingStatus(true);
-    setIsMutation(true);
+
+
+    const categoryCopy = { ...category };
+    delete categoryCopy.updatedAt;
+    delete categoryCopy.createdAt;
     
-    // Actualizar solo el estado de la categoría
+    //* Actualizar solo el estado de la categoría
     updateCategoryMutation.mutate({
-      ...category,
+      ...categoryCopy,
       status: newStatus
     });
   }, [category, updateCategoryMutation, setIsMutation]);
@@ -78,7 +86,7 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
 
 
 
-  // Estado actual de la categoría (para UI optimista)
+  //* Estado actual de la categoría una vez que se cambie
   const isActive = category.status === "Activo";
 
   return (

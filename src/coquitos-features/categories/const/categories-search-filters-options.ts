@@ -1,20 +1,11 @@
 import type { SelectFilterConfig } from "@/shared/components/GenericSearchBar";
 import type { SearchCategoriesSchema } from "../schemas";
-import { Layers, MinusSquare, SquareAsterisk  } from "lucide-react";
-import { categoriesOptions } from "./categories-options";
-import { minStockOptions } from "./min-stock-options";
+import { SquareAsterisk  } from "lucide-react";
 import { statusOptions } from "./status-options";
 
 
 export const categoriesSearchFilterOptions: SelectFilterConfig<SearchCategoriesSchema>[] = [
 
-  {
-    name: 'categoryId',
-    label: 'Categoría',
-    options: categoriesOptions,
-    icon: Layers,
-    placeholder: 'Todas las categorías',
-  },
 
   {
     name: 'status',
@@ -23,11 +14,5 @@ export const categoriesSearchFilterOptions: SelectFilterConfig<SearchCategoriesS
     icon: SquareAsterisk,
     placeholder: 'Todos los estados',
   },
-  {
-    name: 'minStock',
-    label: 'Stock mínimo',
-    options: minStockOptions,
-    icon: MinusSquare,
-    placeholder: 'Todos los stocks',
-  },
+  
 ];

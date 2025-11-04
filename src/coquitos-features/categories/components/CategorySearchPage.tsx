@@ -1,15 +1,12 @@
 import { memo, useCallback, useMemo } from "react";
-import { Search, Layers, Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { categoriesOptions } from "../const/categories-options";
 import { statusOptions } from "../const/status-options";
 import type { Status } from "../interfaces";
 
 interface CategorySearchPageProps {
   searchValue: string;
   onSearchChange: (value: string) => void;
-  categoryFilter: string | undefined;
-  onCategoryChange: (value: string) => void;
   statusFilter: Status | "";
   onStatusChange: (value: Status | "") => void;
 }
@@ -22,8 +19,6 @@ interface CategorySearchPageProps {
 export const CategorySearchPage = memo(({
   searchValue,
   onSearchChange,
-  categoryFilter,
-  onCategoryChange,
   statusFilter,
   onStatusChange,
 }: CategorySearchPageProps) => {
@@ -32,14 +27,13 @@ export const CategorySearchPage = memo(({
   // Memoizar el callback para limpiar filtros
   const handleClearFilters = useCallback(() => {
     onSearchChange('');
-    onCategoryChange('');
     onStatusChange('');
-  }, [onSearchChange, onCategoryChange, onStatusChange]);
+  }, [onSearchChange, onStatusChange]);
 
   // Detectar si hay filtros activos
   const hasActiveFilters = useMemo(() => {
-    return Boolean(searchValue || categoryFilter || statusFilter);
-  }, [searchValue, categoryFilter, statusFilter]);
+    return Boolean(searchValue || statusFilter);
+  }, [searchValue, statusFilter]);
 
   return (
     <div
@@ -72,38 +66,6 @@ export const CategorySearchPage = memo(({
 
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Filtro por rol */}
-          <div className="min-w-[180px]">
-            <div className="space-y-2">
-              <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
-                Categoría
-              </label>
-              <div className="relative group">
-                <Layers className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} group-focus-within:${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'} transition-colors duration-200 z-10`} />
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => onCategoryChange(e.target.value as string)}
-                  className={`w-full pl-12 pr-10 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm ${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'} focus:ring-4 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
-                >
-                  <option value="">Todas las categorías</option>
-                  {categoriesOptions.map((option) => {
-                    if (option.value === "") return null;
-                    return (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    );
-                  })}
-                </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <svg className={`w-5 h-5 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Filtro por estado */}
           <div className="min-w-[180px]">
             <div className="space-y-2">
@@ -147,12 +109,7 @@ export const CategorySearchPage = memo(({
                 <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
                   Buscando: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>"{searchValue}"</span>
                 </span>
-              )}
-              {categoryFilter && (
-                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Categoría: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>{categoryFilter}</span>
-                </span>
-              )}
+              )}  
               {statusFilter && (
                 <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
                   Estado: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>{statusFilter}</span>

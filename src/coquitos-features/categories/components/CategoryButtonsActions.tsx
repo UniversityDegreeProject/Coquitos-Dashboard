@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { Edit2, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 import { useShallow } from "zustand/shallow";
@@ -6,6 +6,7 @@ import { useTheme } from "@/shared/hooks/useTheme";
 import type { Category, SearchCategoriesParams } from "../interfaces";
 import { useCategoryStore } from "../store/category.store";
 import { useDeleteCategory } from "../hooks/useDeleteCategory";
+import { useUpdateCategory } from "../hooks/useUpdateCategory";
 
 interface CategoryButtonsActionsProps {
   category: Category;
@@ -18,11 +19,23 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
   const setOpenModalUpdate = useCategoryStore(useShallow((state) => state.setOpenModalUpdate));
   const setIsMutation = useCategoryStore(useShallow((state) => state.setIsMutation));
   
+  // Estado local para el switch (optimista)
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
+  
   // Pasar parámetros actuales al hook
   const { deleteCategoryMutation } = useDeleteCategory({ 
     currentParams,
     onPageEmpty,
     onFinally: () => setIsMutation(false)
+  });
+
+  // Hook para actualizar categoría
+  const { updateCategoryMutation } = useUpdateCategory({
+    currentParams,
+    onFinally: () => {
+      setIsMutation(false);
+      setIsTogglingStatus(false);
+    }
   });
 
   
@@ -42,17 +55,57 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
     });
   }, [category.name, category.id, deleteCategoryMutation, setIsMutation]);
 
-  // * Handler para editar usuario
+  // * Handler para editar categoría
   const handleEditCategory = useCallback(() => {
     setOpenModalUpdate(category);
   }, [category, setOpenModalUpdate]);
+
+  // * Handler para cambiar el estado de la categoría (Activo/Inactivo)
+  const handleToggleStatus = useCallback(() => {
+    const newStatus = category.status === "Activo" ? "Inactivo" : "Activo";
+    
+    setIsTogglingStatus(true);
+    setIsMutation(true);
+    
+    // Actualizar solo el estado de la categoría
+    updateCategoryMutation.mutate({
+      ...category,
+      status: newStatus
+    });
+  }, [category, updateCategoryMutation, setIsMutation]);
  
 
 
 
 
+  // Estado actual de la categoría (para UI optimista)
+  const isActive = category.status === "Activo";
+
   return (
-    <div className="flex space-x-2 flex-shrink-0">
+    <div className="flex items-center space-x-3 flex-shrink-0">
+      {/* Switch de Estado */}
+      <button
+        onClick={handleToggleStatus}
+        disabled={isTogglingStatus}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+          isActive
+            ? 'bg-green-500 focus:ring-green-500'
+            : isDark 
+              ? 'bg-gray-600 focus:ring-gray-500' 
+              : 'bg-gray-300 focus:ring-gray-400'
+        } ${isTogglingStatus ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-md'}`}
+        aria-label={`Cambiar estado de categoría a ${isActive ? 'Inactivo' : 'Activo'}`}
+        title={`Estado: ${category.status}. Click para cambiar`}
+        type="button"
+      >
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 shadow-md ${
+            isActive ? 'translate-x-6' : 'translate-x-1'
+          }`}
+        />
+      </button>
+
+      {/* Botón Editar */}
       <button
         onClick={handleEditCategory}
         className={`p-2 rounded-lg transition-all duration-200 ${
@@ -67,6 +120,7 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
         <Edit2 className="w-4 h-4" />
       </button>
 
+      {/* Botón Eliminar */}
       <button
         onClick={handleDeleteCategory}
         className={`p-2 rounded-lg transition-all duration-200 ${
@@ -80,8 +134,8 @@ export const CategoryButtonsActions = memo(({ category, currentParams, onPageEmp
       >
         <Trash2 className="w-4 h-4" />
       </button>
-
-      
     </div>
   );
 });
+
+CategoryButtonsActions.displayName = 'CategoryButtonsActions';

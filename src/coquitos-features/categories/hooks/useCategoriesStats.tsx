@@ -14,7 +14,7 @@ interface CategoryStatsData {
  * Hace una query separada que obtiene TODOS las categorías (sin límite de paginación)
  * para calcular estadísticas precisas independientes de la página actual
  */
-export const useCategoriesStats = (filters: Pick<SearchCategoriesParams, 'search' | 'categoryId' | 'status' | 'minStock'>) => {
+export const useCategoriesStats = (filters: Pick<SearchCategoriesParams, 'search' | 'status'>) => {
   const { data, isLoading } = useQuery({
     queryKey: [...categoriesQueries.allCategories, 'stats', filters],
     queryFn: async () => {

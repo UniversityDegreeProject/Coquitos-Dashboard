@@ -20,12 +20,7 @@ export const getCategories = async ( params : SearchCategoriesParams): Promise<G
     if (params.status && String(params.status).trim() !== "") {
       cleanParams.status = params.status;
     }
-    if (params.categoryId && String(params.categoryId).trim() !== "") {
-      cleanParams.categoryId = params.categoryId;
-    }
-    if (params.minStock && String(params.minStock).trim() !== "") {
-      cleanParams.minStock = params.minStock;
-    }
+
 
     const response = await CoquitoApi.get<GetCategoriesResponse>('/categories', { params: cleanParams });
     const { data } = response;

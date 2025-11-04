@@ -31,8 +31,6 @@ export interface CategoryFormData {
 export interface SearchCategoriesParams {
   search?: string;
   status?: Status | "";
-  categoryId?: string | "";
-  minStock?: number | "";
   page : number;
   limit : number;
 }

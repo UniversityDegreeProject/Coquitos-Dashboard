@@ -1,6 +1,6 @@
 //* Librerias
 import { Layers, Plus } from "lucide-react";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 
 //* Others
@@ -17,9 +17,7 @@ import { categoriesSearchFilterOptions } from "../const";
 
 const searchDefaultValues: SearchCategoriesSchema = {
   search: '',
-  categoryId: '',
   status: '',
-  minStock: 0,
 };
 /**
  * Página principal de gestión de categorías
@@ -36,6 +34,7 @@ export const CategoriesPage = () => {
 
   // * Debounce para la búsqueda (500ms)
   const debouncedSearch = useDebounce(searchFilters.search, 500);
+  const debouncedStatus = useDebounce(searchFilters.status, 500);
 
 
 
@@ -50,8 +49,6 @@ export const CategoriesPage = () => {
   // * Tanstack Query - Hook de búsqueda con todos los filtros
   const currentParams: SearchCategoriesParams = {
     search: debouncedSearch,
-    categoryId: searchFilters.categoryId,
-    minStock: searchFilters.minStock,
     status: searchFilters.status,
     page,
     limit,
@@ -66,13 +63,12 @@ export const CategoriesPage = () => {
     nextPage, 
     previousPage, 
     isLoading, 
-    // isFetching NO se usa - el refetch automático debe ser silencioso
+    isFetching
   } = useGetCategories(currentParams);
 
   // * Hook para estadísticas globales (todas las categorías, no solo la página actual)
   const { stats } = useCategoriesStats({
     search: debouncedSearch,
-    minStock: searchFilters.minStock,
     status: searchFilters.status,
   });
 
@@ -106,8 +102,37 @@ export const CategoriesPage = () => {
   // * Resetear página cuando cambian los filtros
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, searchFilters.categoryId, searchFilters.status, searchFilters.minStock]);
+  }, [debouncedSearch, searchFilters.status]);
   
+
+  // * Render cada vez que el usuario esta escribiendo en el search
+  const isSearchPending = searchFilters.search !== debouncedSearch || searchFilters.status !== debouncedStatus;
+  // * 
+  const isIntentionalFetchByUser = useRef<boolean>(false);
+
+
+  // * Detectar si los filtros han cambiado por el usuario
+  useEffect(() => {
+    const filtersHasBeenChange = searchFilters.search !== '' || searchFilters.status !== '';
+    if ( filtersHasBeenChange ) {
+      isIntentionalFetchByUser.current = true;
+    }
+  }, [searchFilters.search, searchFilters.status]);
+
+  // * Resetear el flag cuando el fetch ha terminado
+  useEffect(() => {
+    if ( !isFetching && isIntentionalFetchByUser.current ) {
+      const time = setTimeout(() => {
+        isIntentionalFetchByUser.current = false;
+      }, 1000);
+      return () => clearTimeout(time);
+    } 
+  }, [isFetching, isSearchPending]);
+
+  // * El usuario esta buscando (ha escrito o filtrado) y hay un fetch en curso que NO es el debounce
+  const isSearching = useMemo(() => {
+    return isIntentionalFetchByUser.current && isFetching && !isSearchPending && !isMutation;
+  }, [isFetching, isSearchPending, isMutation]);
 
   return (
     <div className="space-y-6">
@@ -146,7 +171,7 @@ export const CategoriesPage = () => {
       {/* Category Grid */}
       {/* Solo mostrar loader en: carga inicial (isLoading) o mutaciones CRUD (isMutating) */}
       {/* El refetch automático cada 3s NO debe mostrar loader */}
-      <CategoryGrid categories={categories} isPending={isLoading || isMutation} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
+      <CategoryGrid categories={categories} isPending={isLoading || isMutation || isSearching } currentParams={currentParams} onPageEmpty={handlePageEmpty} />
 
       {/* Pagination */}
       {total > 0 && (

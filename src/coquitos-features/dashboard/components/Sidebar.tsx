@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 
 //* components
 import { SidebarHeader } from './SidebarHeader';
@@ -25,7 +25,7 @@ export const Sidebar = memo<SidebarProps>(({ isCollapsed = false, onCloseSidebar
 
   const isAdmin = role === "Administrador";
 
-  const menuItemsWithRole = menuItems(isAdmin);
+  const menuItemsWithRole = useMemo(() => menuItems(isAdmin), [isAdmin]);
 
   return (
     <div className={`${isCollapsed ? 'w-16' : 'w-72'} ${css.sidebar.background} ${css.sidebar.shadow} border-r ${css.sidebar.border} transition-all duration-200 relative flex flex-col h-full`}>
@@ -57,3 +57,5 @@ export const Sidebar = memo<SidebarProps>(({ isCollapsed = false, onCloseSidebar
     </div>
   );
 });
+
+Sidebar.displayName = 'Sidebar';

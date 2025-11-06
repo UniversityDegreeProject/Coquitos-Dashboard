@@ -38,9 +38,10 @@ export const getUsers = async ( params : SearchUsersParams): Promise<GetUsersRes
 
 export const getUserById = async (userId: string): Promise<User> => {
   try {
-    const response = await CoquitoApi.get<User>(`/users/${userId}`);
-    const { data : user } = response;
-    return backendUserToFrontendUser( user);
+    const response = await CoquitoApi.get(`/users/${userId}`);
+    const { user } = response.data;
+
+    return backendUserToFrontendUser(user);
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       throw new Error(error.response?.data.error || 'Error al obtener usuario');

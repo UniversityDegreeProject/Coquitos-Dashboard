@@ -7,13 +7,11 @@ import { backendCategoriesToFrontendCategories } from "../mapper/backendCategori
 
 export const getCategories = async ( params : SearchCategoriesParams): Promise<GetCategoriesResponse> => {
   try {
-    // Limpiar parámetros vacíos antes de enviar al backend
     const cleanParams: Partial<SearchCategoriesParams> = {
       page: params.page,
       limit: params.limit,
     };
 
-    // Solo agregar parámetros opcionales si tienen valor
     if (params.search && params.search.trim() !== "") {
       cleanParams.search = params.search;
     }

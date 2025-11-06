@@ -1,5 +1,5 @@
 //* Librerias
-import { useParams, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { 
   ArrowLeft, 
   User, 
@@ -14,24 +14,19 @@ import {
 } from "lucide-react";
 
 //* Others
-import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { getUserById } from "../services/use.service";
-import { getRoleColor, getStatusColor } from "../helpers";
+import { formateDatetime, getRoleColor, getStatusColor } from "../helpers";
 import { paths } from "@/router/paths";
-import { usersQueries } from "../const/users-queries";
+import { useGetUserById } from "../hooks/useGetUserById";
 
 export const UserDetailPage = () => {
-  const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { colors, isDark } = useTheme();
 
   // Obtener todos los usuarios y filtrar por ID
-  const { data: user , isLoading } = useQuery({
-    queryKey: usersQueries.userById(userId as string),
-    queryFn: () => getUserById(userId as string),
-  });
+  const { user, isLoading } = useGetUserById();
 
+  console.log(user);
 
   // Manejador para volver
   const handleGoBack = () => {
@@ -40,16 +35,12 @@ export const UserDetailPage = () => {
 
 
 
+
   // Formatear fecha
-  const formatDate = (date : string) => {
+  const formatDate = (date : Date | string ) => {
     if (!date) return 'N/A';
-    return new Date(date).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    
+    return formateDatetime(date);
   };
 
   if (isLoading) {
@@ -167,7 +158,7 @@ export const UserDetailPage = () => {
                 <span className={`text-sm font-semibold ${colors.text.secondary}`}>Fecha de Registro</span>
               </div>
               <p className={`text-lg font-medium ${colors.text.primary}`}>
-                {formatDate((user.createdAt as Date).toISOString())}
+                {formatDate(user.createdAt || new Date())}
               </p>
             </div>
 
@@ -178,7 +169,7 @@ export const UserDetailPage = () => {
                 <span className={`text-sm font-semibold ${colors.text.secondary}`}>Última Actualización</span>
               </div>
               <p className={`text-lg font-medium ${colors.text.primary}`}>
-                {formatDate((user.updatedAt as Date).toISOString())}
+                  {formatDate(user.updatedAt || new Date())}
               </p>
             </div>
 
@@ -189,7 +180,7 @@ export const UserDetailPage = () => {
                 <span className={`text-sm font-semibold ${colors.text.secondary}`}>Última Conexión</span>
               </div>
               <p className={`text-sm font-mono ${colors.text.primary} break-all`}>
-                {formatDate((user.lastConnection as Date).toISOString())}
+                {formatDate(user.lastConnection || new Date())}
               </p>
             </div>
           </div>

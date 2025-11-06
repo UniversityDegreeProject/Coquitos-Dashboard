@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "../services/category.service";
-import { categoriesQueries } from "../const/categories.queries";
+import { categoriesQueries } from "../const/categories-queries";
 import type { SearchCategoriesParams } from "../interfaces";
 
 interface CategoryStatsData {

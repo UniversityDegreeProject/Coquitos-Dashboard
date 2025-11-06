@@ -1,5 +1,5 @@
 // * Library
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 
 // * Others
@@ -7,27 +7,34 @@ import type { GetUsersResponse, SearchUsersParams, UpdateUserResponse, User } fr
 import { usersQueries } from '../const/users-queries';
 import { updateUser } from '../services/use.service';
 
+
+interface UpdateUserContext {
+  previousData?: GetUsersResponse;
+  currentQueryKey: QueryKey;
+}
 interface UseUpdateUserOptions {
   currentParams: SearchUsersParams;
   onSuccessCallback?: () => void;
   onFinally?: () => void;
 }
 
+
 export const useUpdateUser = (options: UseUpdateUserOptions) => {
   const { currentParams, onSuccessCallback, onFinally } = options;
   const queryClient = useQueryClient();
 
   const updateUserMutation = useMutation({
-    onMutate: async () => {
+    onMutate: async (): Promise<UpdateUserContext> => {
       // Marcar el usuario como optimista solo para animación visual
       const currentQueryKey = usersQueries.userWithFilters(currentParams);
+      await queryClient.cancelQueries({ queryKey: currentQueryKey });
       const previousData = queryClient.getQueryData<GetUsersResponse>(currentQueryKey);
 
       if (!previousData) {
         throw new Error('Usuario no encontrado');
       }
 
-      return { previousData };
+      return { previousData, currentQueryKey };
     },
 
     mutationFn: (userUpdated: User) => updateUser(userUpdated.id!, userUpdated),
@@ -48,12 +55,14 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
         onSuccessCallback();
       }
 
-      // Desactivar estado de mutación
+      
+      // Desactivar estado de mutación (después de que el usuario cierre el mensaje)
       if (onFinally) {
         onFinally();
       }
 
-      Swal.fire({
+      // Mensaje de éxito (esperar a que el usuario haga clic en OK)
+      await Swal.fire({
         title: 'Usuario actualizado exitosamente',
         text: `El usuario ${updateUserResponse.user.firstName} se ha actualizado correctamente`,
         icon: 'success',
@@ -65,13 +74,13 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
           htmlContainer: 'text-gray-600',
         },
       });
+
     },
 
-    onError: (error: Error, _originalUserSubmitted: User, context) => {
+    onError: async (error: Error, _originalUserSubmitted: User, context?: UpdateUserContext) => {
       // Rollback: restaurar datos anteriores
       if (context?.previousData) {
-        const currentQueryKey = usersQueries.userWithFilters(currentParams);
-        queryClient.setQueryData(currentQueryKey, context.previousData);
+        queryClient.setQueryData<GetUsersResponse>(context.currentQueryKey, context.previousData);
       }
 
       // Cerrar modal también en caso de error
@@ -79,7 +88,7 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
         onSuccessCallback();
       }
 
-      // Desactivar estado de mutación
+      // Desactivar estado de mutación (después de que el usuario cierre el mensaje)
       if (onFinally) {
         onFinally();
       }
@@ -95,7 +104,8 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
         errorMessage = error.message;
       }
 
-      Swal.fire({
+      // Mensaje de error (esperar a que el usuario haga clic en OK)
+      await Swal.fire({
         title: 'Error al actualizar usuario',
         text: errorMessage,
         icon: 'error',
@@ -107,6 +117,7 @@ export const useUpdateUser = (options: UseUpdateUserOptions) => {
           htmlContainer: 'text-gray-600',
         },
       });
+
     },
   });
 

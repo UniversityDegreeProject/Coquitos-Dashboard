@@ -1,3 +1,1 @@
-export { type Client, type ClientResponse, type ClientFormData, type GetClientsResponse } from './client.interface';
-
-export { type ClientType } from './client.interface';
+export { type Client, type ClientFormData, type GetClientsResponse, type SearchClientsParams, type ClientType } from './client.interface';

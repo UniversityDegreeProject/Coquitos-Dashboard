@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 import { createCategory, getCategories } from "../services/category.service";
 import { categoriesQueries } from "../const";
@@ -12,6 +12,7 @@ import type {
 
 interface OptimisticMutateCategory {
   previousData: GetCategoriesResponse;
+  currentQueryKey: QueryKey;
 }
 
 interface UseCreateCategoryOptions {
@@ -29,8 +30,11 @@ export const useCreateCategory = (options: UseCreateCategoryOptions) => {
 
 
     onMutate: async (): Promise<OptimisticMutateCategory> => {
-      // Marcar el usuario como optimista solo para animación visual
+
       const currentQueryKey = categoriesQueries.categoryWithFilters(currentParams);
+
+      queryClient.cancelQueries({ queryKey: currentQueryKey });
+
       const previousData = queryClient.getQueryData<GetCategoriesResponse>(currentQueryKey);
       
       if (!previousData) {
@@ -39,7 +43,7 @@ export const useCreateCategory = (options: UseCreateCategoryOptions) => {
 
 
  
-      return { previousData };
+      return { previousData, currentQueryKey };
     },
 
     mutationFn: (newCategory: Category): Promise<CreateCategoryResponse> => createCategory(newCategory),
@@ -109,8 +113,12 @@ export const useCreateCategory = (options: UseCreateCategoryOptions) => {
       });
     },
 
-    onError: (error: Error) => {
+    onError: (error: Error, _categorySubmitted: Category, context?: OptimisticMutateCategory) => {
       // Cerrar modal también en caso de error
+      if (context?.previousData) {
+        queryClient.setQueryData<GetCategoriesResponse>(context.currentQueryKey, context.previousData);
+      }
+
       if (onSuccessCallback) {
         onSuccessCallback();
       }

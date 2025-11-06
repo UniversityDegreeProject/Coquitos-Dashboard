@@ -1,31 +1,30 @@
 
-import type { Client } from '../interfaces';
-import { ClientSkeleton, ClientEmptyState, ClientList } from "./";
+import { GenericGridLoader } from '@/shared/components/GenericLoader';
+import type { Client, SearchClientsParams } from '../interfaces';
+import { ClientEmptyState, ClientListItem } from "./";
 
 interface ClientGridProps {
   clients: Client[];
-  isLoading: boolean;
+  isPending: boolean;
+  currentParams: SearchClientsParams;
+  onPageEmpty?: () => void;
 }
 
 /**
  * Componente que muestra los clientes en formato de lista moderna
- * Sigue el patrón de UserGrid y CategoryGridTable
+ * Refactorizado con componentes reutilizables para mejor mantenibilidad
  */
-export const ClientGrid = ({ clients, isLoading }: ClientGridProps) => {
+export const ClientGrid = ({ clients, isPending, currentParams, onPageEmpty }: ClientGridProps) => {
 
-  // Loading state
-  if (isLoading) return <ClientSkeleton />
+  if (isPending) return <GenericGridLoader title="Cargando clientes" />
 
-  // Empty state
   if (clients.length === 0) return <ClientEmptyState />
 
+   // Renderizar lista de clientes
   return (
     <div className="space-y-4">
       {clients.map((client) => (
-        <ClientList
-          key={client.id}
-          client={client}
-        />
+        <ClientListItem key={client.id} client={client} currentParams={currentParams} onPageEmpty={onPageEmpty} />
       ))}
     </div>
   );

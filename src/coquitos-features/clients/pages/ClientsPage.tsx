@@ -1,64 +1,135 @@
-import { useState, useCallback } from 'react';
-import { Users, Plus } from 'lucide-react';
-import { useDebounce } from "@/coquitos-features/users/hooks/useDebounce";
-import { useGetClients } from '../hooks';
-import { useClientStore } from '../store/client.store';
-import { ClientStats, ClientSearchPage, ClientGrid, FormClientModal } from '../components';
-import type { ClientType } from '../interfaces';
-import { useTheme } from "@/shared/hooks/useTheme";
+//* Librerias
+import { Plus, Users } from "lucide-react";
+import { useCallback, useState, useEffect, useRef, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
+import type { SearchClientsParams } from "../interfaces";
+import { useClientsStats, useDebounce, useGetClients } from "../hooks";
+import { useClientStore } from "../store/client.store";
+import { useTheme } from "@/shared/hooks/useTheme";
+import { searchClientsSchema, type SearchClientsSchema } from "../schemas";
+import { ClientGrid, ClientPagination, ClientStats, FormClientModal } from "../components";
+import { clientsSearchFilterOptions } from "../const";
+import { GenericSearchBar } from "@/shared/components";
 
+//* Others
+
+const searchDefaultValues: SearchClientsSchema = {
+  search: '',
+  type: '',
+};
 /**
  * Página principal de gestión de clientes
- * Sigue el mismo patrón que ProductPage y CategoriesPage
+ * Implementa búsqueda, filtros, estadísticas y CRUD completo
+ * Optimizado usando React Hook Form - Sin estados locales innecesarios
  */
 export const ClientsPage = () => {
-  // * Estados locales para filtros
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<ClientType | "">("");
+  // * Paginacion ( necesarios)
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(5);
   
+  // * Estado para los filtros (controlado por el formulario)
+  const [ searchFilters, setSearchFilters] = useState<SearchClientsSchema>(searchDefaultValues);
+
   // * Debounce para la búsqueda (500ms)
-  const debouncedSearch = useDebounce(searchTerm, 500);
-  
-  // * Zustand - Optimizado con selectores específicos
+  const debouncedSearch = useDebounce(searchFilters.search, 500);
+  const debouncedType = useDebounce(searchFilters.type, 500);
+
+
+
+  // * Zustand Clients
   const modalMode = useClientStore(useShallow((state) => state.modalMode));
   const setOpenModalCreate = useClientStore(useShallow((state) => state.setOpenModalCreate));
-  
-  // * TanStack Query
-  const { clients, isLoading } = useGetClients();
+  const isMutating = useClientStore(useShallow((state) => state.isMutation));
 
   // * Theme
   const { colors, isDark } = useTheme();
 
-  // * Filtrar clientes basado en los filtros
-  const filteredClients = clients.filter(client => {
-    const matchesSearch = 
-      client.firstName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      client.lastName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      client.email.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      client.phone.includes(debouncedSearch) ||
-      client.address.toLowerCase().includes(debouncedSearch.toLowerCase());
-    
-    const matchesType = !typeFilter || client.type === typeFilter;
-    
-    return matchesSearch && matchesType;
+  // * Tanstack Query - Hook de búsqueda con todos los filtros
+  const currentParams: SearchClientsParams = {
+    search: debouncedSearch,
+    type: searchFilters.type,
+    page,
+    limit,
+  };
+
+  const { 
+    clients, 
+    total, 
+    page: currentPage, 
+    limit: currentLimit, 
+    totalPages, 
+    nextPage, 
+    previousPage, 
+    isLoading, 
+    isFetching,
+  } = useGetClients(currentParams);
+
+  // * Hook para estadísticas globales (todos los usuarios, no solo la página actual)
+  const { stats } = useClientsStats({
+    search : debouncedSearch,
+    type : searchFilters.type,
   });
+
+  // * Handler cuando cambian los filtros del buscador
+  const handleSearchFiltersChange = useCallback((values: SearchClientsSchema) => {
+    setSearchFilters(values);
+  }, []);
+
+  // * Callback cuando una página queda vacía después de eliminar
+  const handlePageEmpty = useCallback(() => {
+    const newPage = Math.max(1, page - 1);
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   // * Memoizar callbacks
   const handleOpenModal = useCallback(() => {
     setOpenModalCreate();
   }, [setOpenModalCreate]);
 
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchTerm(value);
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
-  const handleTypeChange = useCallback((value: ClientType | "") => {
-    setTypeFilter(value);
+  const handleLimitChange = useCallback((newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
   }, []);
 
+  // * Resetear página cuando cambian los filtros
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, searchFilters.type]);
+  
 
+  // * El usuario esta escribiendo en el buscador
+  const isSearchPending =  searchFilters.search !== debouncedSearch || searchFilters.type !== debouncedType;
+  // * Ref para rastrear si hay un fetch intencional (usuario busca/filtra)
+  const isIntentionalFetchByUser = useRef<boolean>(false);
 
+  // * ESTRATEGIA: Activar el flag cuando el usuario EMPIEZA a escribir o cambia filtros
+  useEffect(() => {
+    const searchHasBeenChange : boolean = searchFilters.search !== '' || searchFilters.type !== '';
+
+    if (searchHasBeenChange) {
+      isIntentionalFetchByUser.current = true;
+    }
+  }, [searchFilters.search, searchFilters.type]);
+
+  useEffect(() => {
+    if (!isFetching && isIntentionalFetchByUser.current) {
+      const timer = setTimeout(() => {
+        isIntentionalFetchByUser.current = false;
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isFetching, isIntentionalFetchByUser]);
+
+  const isSearching = useMemo(() =>{
+    return  isIntentionalFetchByUser.current && isFetching && !isSearchPending && !isMutating;
+  }, [isFetching, isSearchPending, isMutating]); 
   
 
   return (
@@ -70,7 +141,7 @@ export const ClientsPage = () => {
             <Users className={`w-6 h-6 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
           </div>
           <h3 className={`text-2xl font-bold ${colors.text.primary}`}>
-            Gestión de Clientes
+            Clientes del Sistema
           </h3>
         </div>
         <button
@@ -82,31 +153,45 @@ export const ClientsPage = () => {
         </button>
       </div>
 
-      {/* Estadísticas rápidas */}
-      <ClientStats clients={filteredClients} />
+      {/* Statistics */}
+      <ClientStats {...stats} />
 
-      {/* Search and Filters */}
-      <ClientSearchPage
-        searchValue={searchTerm}
-        onSearchChange={handleSearchChange}
-        typeFilter={typeFilter}
-        onTypeChange={handleTypeChange}
+      {/* Search and Filters - Maneja su propio estado con React Hook Form */}
+      <GenericSearchBar
+        schema={searchClientsSchema}
+        defaultValues={searchDefaultValues}
+        onSearchChange={handleSearchFiltersChange}
+        selectFilters={clientsSearchFilterOptions}
+        searchPlaceholder="Buscar por nombre, email o teléfono..."
+        searchLabel="Buscar Clientes"
       />
 
-      {/* Clients Grid */}
-      <ClientGrid 
-        clients={filteredClients}
-        isLoading={isLoading}
-      />
+      {/* Clients Grid/Table */}
+      {/* Solo mostrar loader en: carga inicial (isLoading) o mutaciones CRUD (isMutating) */}
+      {/* El refetch automático cada 3s NO debe mostrar loader */}
+      <ClientGrid clients={clients} isPending={isLoading || isMutating || isSearching} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
 
-      {/* Create Client Modal */}
-      {modalMode === 'create' && (
-        <FormClientModal />
+      {/* Pagination */}
+      {total > 0 && (
+        <ClientPagination
+          paginationData={{ 
+            total, 
+            page: currentPage, 
+            limit: currentLimit, 
+            totalPages, 
+            nextPage, 
+            previousPage 
+          }}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          currentLimit={limit}
+          isLoading={isLoading}
+        />
       )}
-      {/* Update Client Modal */}
-      {modalMode === 'update' && (
-        <FormClientModal />
-      )}
+
+      {/* Modals */}
+      {modalMode === 'create' && <FormClientModal currentParams={currentParams} onNewPageCreated={handlePageChange} />}
+      {modalMode === 'update' && <FormClientModal currentParams={currentParams} onNewPageCreated={handlePageChange} />}
     </div>
   );
 };

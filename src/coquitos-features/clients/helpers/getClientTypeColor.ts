@@ -4,10 +4,10 @@
 export const getClientTypeColor = (type: string) => {
   switch (type) {
     case 'Regular':
-      return 'bg-blue-100 text-blue-800';
+      return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-200';
     case 'VIP':
-      return 'bg-green-100 text-green-800';
+      return 'bg-amber-100 text-amber-800 dark:bg-amber-700 dark:text-amber-200';
     case 'Ocasional':
-      return 'bg-red-100 text-red-800';
+      return 'bg-purple-100 text-purple-800 dark:bg-purple-700 dark:text-purple-200';
   }
 };

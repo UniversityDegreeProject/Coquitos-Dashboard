@@ -1,5 +1,5 @@
 // * Library
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 
 // * Others
@@ -7,6 +7,10 @@ import type { GetCategoriesResponse, SearchCategoriesParams, UpdateCategoryRespo
 import { categoriesQueries } from '../const';
 import { updateCategory } from '../services/category.service';
 
+interface UpdateCategoryContext {
+  previousData?: GetCategoriesResponse;
+  currentQueryKey: QueryKey;
+}
 interface UseUpdateCategoryOptions {
   currentParams: SearchCategoriesParams;
   onSuccessCallback?: () => void;
@@ -19,16 +23,17 @@ export const useUpdateCategory = (options: UseUpdateCategoryOptions) => {
   const queryClient = useQueryClient();
 
   const updateCategoryMutation = useMutation({
-    onMutate: async () => {
+    onMutate: async (): Promise<UpdateCategoryContext> => {
       // Marcar el usuario como optimista solo para animación visual
       const currentQueryKey = categoriesQueries.categoryWithFilters(currentParams);
+      await queryClient.cancelQueries({ queryKey: currentQueryKey });
       const previousData = queryClient.getQueryData<GetCategoriesResponse>(currentQueryKey);
 
       if (!previousData) {
         throw new Error('Categoría no encontrada');
       }
 
-      return { previousData };
+      return { previousData, currentQueryKey };
     },
 
     mutationFn: (categoryUpdated: Category,) => updateCategory(categoryUpdated.id!, categoryUpdated),
@@ -68,11 +73,10 @@ export const useUpdateCategory = (options: UseUpdateCategoryOptions) => {
       });
     },
 
-    onError: (error: Error, _originalCategorySubmitted: Category, context) => {
+    onError: (error: Error, _originalCategorySubmitted: Category, context?: UpdateCategoryContext) => {
       // Rollback: restaurar datos anteriores
       if (context?.previousData) {
-        const currentQueryKey = categoriesQueries.categoryWithFilters(currentParams);
-        queryClient.setQueryData(currentQueryKey, context.previousData);
+        queryClient.setQueryData<GetCategoriesResponse>(context.currentQueryKey, context.previousData);
       }
 
       // Cerrar modal también en caso de error

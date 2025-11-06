@@ -1,12 +1,15 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { X } from 'lucide-react';
+import { X, User, Mail, Phone, MapPin, Users, Loader2 } from 'lucide-react';
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useClientStore } from '../store/client.store';
 import { useCreateClient, useUpdateClient } from '../hooks';
 import { createClientSchema, type CreateClientFormData } from '../schemas';
-import { clientTypeOptions } from '../const';
+import { typesOptions } from '../const';
 import { useEffect } from 'react';
+import type { SearchClientsParams } from '../interfaces';
+import { useShallow } from 'zustand/react/shallow';
+import { LabelInputString, LabelSelect, LabelTextarea } from '@/shared/components';
 
 /**
  * Modal para crear/editar cliente
@@ -21,21 +24,42 @@ const initialValues : CreateClientFormData = {
   address: '',
   type: 'Regular',
 }
-export const FormClientModal = () => {
-  const { colors, isDark } = useTheme();
+
+
+interface FormClientModalProps {
+  currentParams : SearchClientsParams;
+  onNewPageCreated? : (newPage: number) => void;
+}
+
+export const FormClientModal = (props: FormClientModalProps) => {
+  const { currentParams, onNewPageCreated } = props;
+  const { isDark } = useTheme();
 
   // * Zustand
-  const { modalMode, clientToUpdate, closeModal } = useClientStore();
+  const setIsMutating = useClientStore(useShallow((state) => state.setIsMutation));
+  const closeModal = useClientStore(useShallow((state) => state.closeModal));
+  const modalMode = useClientStore(useShallow((state) => state.modalMode));
+  const clientToUpdate = useClientStore(useShallow((state) => state.clientToUpdate));
 
   // * TanstackQuery
-  const { useCreateClientMutation } = useCreateClient();
-  const { updateClientMutation } = useUpdateClient();
+  const { useCreateClientMutation, isPending: isCreatingClient } = useCreateClient({
+    currentParams,
+    onNewPageCreated,
+    onSuccessCallback: closeModal,
+    onFinally: () => setIsMutating(false)
+  });
+
+  const { updateClientMutation, isPending: isUpdatingClient } = useUpdateClient({
+    currentParams,
+    onSuccessCallback: closeModal,
+    onFinally: () => setIsMutating(false)
+  });
 
   // * Determinar si es modo editar
   const isUpdateMode = modalMode === 'update';
 
   // * React Hook Form
-  const {  register, handleSubmit, formState: { errors, isSubmitting }, setValue } = useForm<CreateClientFormData>({
+  const { control, handleSubmit, formState: { errors, isValid }, setValue } = useForm<CreateClientFormData>({
     resolver: zodResolver(createClientSchema),
     defaultValues: initialValues,
     mode: "onChange",
@@ -44,6 +68,7 @@ export const FormClientModal = () => {
   // Handler para submit
   const onSubmit : SubmitHandler<CreateClientFormData> = async ( data ) => {
     closeModal();
+    setIsMutating(true);
 
     if (isUpdateMode) {
       updateClientMutation.mutate(data);
@@ -69,195 +94,112 @@ export const FormClientModal = () => {
   }, [modalMode, setValue, clientToUpdate]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className={`
-        relative w-full max-w-2xl max-h-[90vh] overflow-y-auto
-        ${isDark ? 'bg-[#1E293B]' : 'bg-white'}
-        rounded-2xl shadow-2xl
-        border ${isDark ? 'border-[#334155]' : 'border-gray-200'}
-      `}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className={`${isDark ? 'bg-[#1E293B]/95' : 'bg-white/95'} backdrop-blur-md rounded-2xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border ${isDark ? 'border-[#334155]/20' : 'border-white/20'}`}>
         {/* Header */}
-        <div className={`
-          sticky top-0 z-10
-          flex items-center justify-between p-6
-          ${isDark ? 'bg-[#1E293B]' : 'bg-white'}
-          border-b ${isDark ? 'border-[#334155]' : 'border-gray-200'}
-        `}>
-          <h2 className={`text-2xl font-bold ${colors.text.primary}`}>
-            {isUpdateMode ? 'Editar Cliente' : 'Nuevo Cliente'}
-          </h2>
+        <div className={`sticky top-0 ${isDark ? 'bg-[#1E293B]/80' : 'bg-white/80'} backdrop-blur-md p-4 border-b ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'} flex items-center justify-between rounded-t-2xl`}>
+          <div className="flex items-center space-x-3">
+            <div className={`p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
+              <Users className={`w-5 h-5 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+            </div>
+            <h2 className={`text-lg font-bold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+              {isUpdateMode ? 'Editar Cliente' : 'Agregar Cliente'}
+            </h2>
+          </div>
           <button
-            onClick={closeModal}
-            className={`p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+            onClick={() => closeModal()}
+            className={`p-2 ${isDark ? 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#334155]/50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'} rounded-lg transition-all duration-200 cursor-pointer`}
           >
-            <X className={`w-5 h-5 ${colors.text.primary}`} />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
-          {/* Nombre y Apellido */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>
-                Nombre <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                {...register('firstName')}
-                className={`
-                  w-full px-4 py-2 rounded-lg border
-                  ${isDark ? 'border-[#334155] bg-[#0F172A]' : 'border-gray-300 bg-white'}
-                  ${colors.text.primary}
-                  focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${errors.firstName ? 'border-red-500' : ''}
-                `}
-                placeholder="Ej: Juan"
-              />
-              {errors.firstName && (
-                <p className="mt-1 text-sm text-red-500">{errors.firstName.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>
-                Apellido <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                {...register('lastName')}
-                className={`
-                  w-full px-4 py-2 rounded-lg border
-                  ${isDark ? 'border-[#334155] bg-[#0F172A]' : 'border-gray-300 bg-white'}
-                  ${colors.text.primary}
-                  focus:outline-none focus:ring-2 focus:ring-blue-500
-                  ${errors.lastName ? 'border-red-500' : ''}
-                `}
-                placeholder="Ej: Pérez"
-              />
-              {errors.lastName && (
-                <p className="mt-1 text-sm text-red-500">{errors.lastName.message}</p>
-              )}
-            </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4">
+          {/* Primera fila - Nombre y Apellido */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <LabelInputString 
+              label="Nombre" 
+              name="firstName" 
+              control={control}
+              icon={User}
+              placeholder="Ej: Juan"
+              required
+              error={errors.firstName?.message}
+            />
+            <LabelInputString
+              label="Apellido"
+              name="lastName"
+              control={control}
+              icon={User}
+              placeholder="Ej: Pérez"
+              required
+              error={errors.lastName?.message}
+            />
           </div>
 
-          {/* Email */}
-          <div>
-            <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>
-              Email <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              {...register('email')}
-              className={`
-                w-full px-4 py-2 rounded-lg border
-                ${isDark ? 'border-[#334155] bg-[#0F172A]' : 'border-gray-300 bg-white'}
-                ${colors.text.primary}
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-                ${errors.email ? 'border-red-500' : ''}
-              `}
+          {/* Segunda fila - Email y Teléfono */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <LabelInputString 
+              label="Email" 
+              name="email" 
+              control={control}
+              icon={Mail}
               placeholder="ejemplo@correo.com"
+              required
+              error={errors.email?.message}
             />
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
-            )}
-          </div>
-
-          {/* Teléfono */}
-          <div>
-            <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>
-              Teléfono <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="tel"
-              {...register('phone')}
-              className={`
-                w-full px-4 py-2 rounded-lg border
-                ${isDark ? 'border-[#334155] bg-[#0F172A]' : 'border-gray-300 bg-white'}
-                ${colors.text.primary}
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-                ${errors.phone ? 'border-red-500' : ''}
-              `}
+            <LabelInputString 
+              label="Teléfono" 
+              name="phone" 
+              control={control}
+              icon={Phone}
               placeholder="Ej: 71234567"
+              required
+              error={errors.phone?.message}
             />
-            {errors.phone && (
-              <p className="mt-1 text-sm text-red-500">{errors.phone.message}</p>
-            )}
           </div>
 
-          {/* Dirección */}
-          <div>
-            <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>
-              Dirección <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              {...register('address')}
-              rows={3}
-              className={`
-                w-full px-4 py-2 rounded-lg border
-                ${isDark ? 'border-[#334155] bg-[#0F172A]' : 'border-gray-300 bg-white'}
-                ${colors.text.primary}
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-                ${errors.address ? 'border-red-500' : ''}
-              `}
-              placeholder="Ej: Av. Principal #123, Zona Centro"
-            />
-            {errors.address && (
-              <p className="mt-1 text-sm text-red-500">{errors.address.message}</p>
-            )}
-          </div>
+          {/* Tercera fila - Dirección */}
+          <LabelTextarea
+            label="Dirección"
+            name="address"
+            control={control}
+            icon={MapPin}
+            placeholder="Ej: Av. Principal #123, Zona Centro"
+            rows={3}
+            required
+            error={errors.address?.message}
+          />
 
-          {/* Tipo de Cliente */}
-          <div>
-            <label className={`block text-sm font-medium ${colors.text.primary} mb-2`}>
-              Tipo de Cliente <span className="text-red-500">*</span>
-            </label>
-            <select
-              {...register('type')}
-              className={`
-                w-full px-4 py-2 rounded-lg border
-                ${isDark ? 'border-[#334155] bg-[#0F172A]' : 'border-gray-300 bg-white'}
-                ${colors.text.primary}
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-                ${errors.type ? 'border-red-500' : ''}
-              `}
-            >
-              {clientTypeOptions.filter(opt => opt.value !== '').map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {errors.type && (
-              <p className="mt-1 text-sm text-red-500">{errors.type.message}</p>
-            )}
-          </div>
+          {/* Cuarta fila - Tipo de Cliente */}
+          <LabelSelect
+            label="Tipo de Cliente"
+            name="type"
+            control={control}
+            options={typesOptions.filter(opt => opt.value !== '')}
+            icon={Users}
+            placeholder="Selecciona un tipo"
+            required
+            error={errors.type?.message}
+          />
 
           {/* Botones */}
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className={`flex flex-col sm:flex-row gap-3 pt-4 border-t ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'}`}>
             <button
               type="button"
-              onClick={closeModal}
-              className={`
-                px-6 py-2 rounded-lg font-medium
-                ${isDark ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'}
-                ${colors.text.primary}
-                transition-colors
-              `}
+              onClick={() => closeModal()}
+              className={`flex-1 px-4 py-2.5 border ${isDark ? 'border-[#334155] text-[#E2E8F0] hover:bg-[#334155]/50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-lg transition-all duration-200 font-medium text-sm cursor-pointer`}
             >
               Cancelar
             </button>
-            <button
+            <button 
               type="submit"
-              disabled={isSubmitting}
-              className={`
-                px-6 py-2 rounded-lg font-medium
-                bg-blue-600 hover:bg-blue-700 text-white
-                transition-colors
-                disabled:opacity-50 disabled:cursor-not-allowed
-              `}
+              disabled={isCreatingClient || isUpdatingClient || !isValid}
+              className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
             >
-              {isSubmitting ? 'Guardando...' : isUpdateMode ? 'Actualizar' : 'Crear'}
+              {(isCreatingClient || isUpdatingClient) && <Loader2 className="w-4 h-4 animate-spin" />}
+              {(isCreatingClient || isUpdatingClient) ? (isUpdateMode ? 'Actualizando...' : 'Creando...') : (isUpdateMode ? 'Actualizar Cliente' : 'Registrar')}
             </button>
           </div>
         </form>

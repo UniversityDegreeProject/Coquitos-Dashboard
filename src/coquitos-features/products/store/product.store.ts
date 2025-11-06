@@ -8,6 +8,8 @@ interface ProductState {
   modalMode: 'create' | 'update' | 'delete' | null;
   productToUpdate: ProductResponse | null;
   viewMode: 'grid' | 'list';
+  isMutation : boolean;
+  setIsMutation: (value: boolean) => void;  
   setOpenModalCreate: () => void;
   setOpenModalUpdate: (product: ProductResponse) => void;
   closeModal: () => void;
@@ -18,6 +20,9 @@ const productApi: StateCreator<ProductState, [["zustand/devtools", never]], []> 
   modalMode: null,
   productToUpdate: null,
   viewMode: 'grid',
+  isMutation: false,
+  setIsMutation: (value: boolean) => 
+    set((state) => ({ ...state, isMutation: value }), false, `Set isMutation to ${value}`),
   setOpenModalCreate: () => 
     set((state) => ({ ...state, modalMode: 'create' }), false, "Open create product modal"),
   setOpenModalUpdate: (product: ProductResponse) => 

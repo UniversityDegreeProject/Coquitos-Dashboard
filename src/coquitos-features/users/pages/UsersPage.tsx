@@ -1,6 +1,6 @@
 //* Librerias
 import { Plus, Users } from "lucide-react";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 
 //* Others
@@ -22,6 +22,7 @@ const searchDefaultValues: SearchUsersSchema = {
   role: '',
   status: '',
 };
+
 /**
  * Página principal de gestión de usuarios
  * Implementa búsqueda, filtros, estadísticas y CRUD completo
@@ -37,6 +38,8 @@ export const UsersPage = () => {
 
   // * Debounce para la búsqueda (500ms)
   const debouncedSearch = useDebounce(searchFilters.search, 500);
+  const debouncedRole = useDebounce(searchFilters.role, 500);
+  const debouncedStatus = useDebounce(searchFilters.status, 500);
 
   // * Zustand Auth
   const user = useAuthStore(useShallow((state) => state.user));
@@ -46,18 +49,17 @@ export const UsersPage = () => {
   const modalMode = useUserStore(useShallow((state) => state.modalMode));
   const setOpenModalCreate = useUserStore(useShallow((state) => state.setOpenModalCreate));
   const isMutating = useUserStore(useShallow((state) => state.isMutating));
-
   // * Theme
   const { colors, isDark } = useTheme();
 
-  // * Tanstack Query - Hook de búsqueda con todos los filtros
-  const currentParams: SearchUsersParams = {
+  // * Tanstack Query - Hook de búsqueda con todos los filtros (memoizado para estabilidad)
+  const currentParams: SearchUsersParams = useMemo(() => ({
     search: debouncedSearch,
     role: searchFilters.role,
     status: searchFilters.status,
     page,
     limit,
-  };
+  }), [debouncedSearch, searchFilters.role, searchFilters.status, page, limit]);
 
   const { 
     users, 
@@ -67,8 +69,8 @@ export const UsersPage = () => {
     totalPages, 
     nextPage, 
     previousPage, 
-    isLoading, 
-    // isFetching NO se usa - el refetch automático debe ser silencioso
+    isLoading,
+    isFetching, // Necesario para detectar búsquedas activas
   } = useGetUsers(currentParams);
 
   // * Hook para estadísticas globales (todos los usuarios, no solo la página actual)
@@ -109,7 +111,37 @@ export const UsersPage = () => {
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, searchFilters.role, searchFilters.status]);
-  
+
+  // * Detectar si hay cambios pendientes en la búsqueda (usuario escribiendo)
+  const isSearchPending = searchFilters.search !== debouncedSearch || searchFilters.role !== debouncedRole || searchFilters.status !== debouncedStatus;
+
+  // * Ref para rastrear si hay un fetch intencional (usuario busca/filtra)
+  const isIntentionalFetchRef = useRef(false);
+
+  // * ESTRATEGIA: Activar el flag cuando el usuario EMPIEZA a escribir o cambia filtros
+  // Esto sucede ANTES del debounce, asegurando que el flag esté listo cuando el fetch inicie
+  useEffect(() => {
+    // Activar el flag si el usuario tiene algo escrito O cambió filtros de select
+    const userIsSearching = searchFilters.search !== '' || searchFilters.role !== '' || searchFilters.status !== '';
+    if (userIsSearching) {
+      isIntentionalFetchRef.current = true;
+    }
+  }, [searchFilters.search, searchFilters.role, searchFilters.status]);
+
+  // * Resetear el flag cuando el fetch termina exitosamente
+  useEffect(() => {
+    if (!isFetching && isIntentionalFetchRef.current) {
+      // Resetear después de que el fetch complete
+      const timer = setTimeout(() => {
+        isIntentionalFetchRef.current = false;
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFetching]);
+
+  // * Loader para búsquedas/filtros: Solo se muestra para fetches INTENCIONALES
+  const isSearching = isIntentionalFetchRef.current && isFetching && !isSearchPending && !isMutating;
+
 
   // * Validación de autorización
   if ((emailVerified && role === "Cajero") || status === "Inactivo" || status === "Suspendido") {
@@ -151,9 +183,8 @@ export const UsersPage = () => {
       />
 
       {/* Users Grid/Table */}
-      {/* Solo mostrar loader en: carga inicial (isLoading) o mutaciones CRUD (isMutating) */}
-      {/* El refetch automático cada 3s NO debe mostrar loader */}
-      <UserGrid users={users} isPending={isLoading || isMutating} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
+      {/* Loader se muestra cuando: carga inicial, mutaciones CRUD, o búsquedas activas */}
+      <UserGrid users={users} isPending={isLoading || isMutating || isSearching} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
 
       {/* Pagination */}
       {total > 0 && (

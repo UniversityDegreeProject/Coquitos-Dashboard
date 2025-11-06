@@ -1,7 +1,9 @@
 
 
-export const formateDatetime = ( date : Date ) : string => {
-
+export const formateDatetime = ( date : Date | string ) : string => {
+  if (typeof date === "string") {
+    date = new Date(date);
+  }
   const dateFormatted = new Date(date).toLocaleDateString("es-ES", {
     year: "numeric",
     month: "short",

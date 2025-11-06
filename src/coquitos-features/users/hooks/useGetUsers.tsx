@@ -16,7 +16,9 @@ const defaultResponse: GetUsersResponse = {
 
 export const useGetUsers = (params: SearchUsersParams) => {
 
+
   const useQueryUsers = useQuery<GetUsersResponse>({
+    
     queryKey: usersQueries.userWithFilters(params),
     queryFn: () : Promise<GetUsersResponse> => getUsers(params),
     placeholderData: keepPreviousData, // Mantiene datos anteriores durante refetch
@@ -28,11 +30,14 @@ export const useGetUsers = (params: SearchUsersParams) => {
     retryDelay: 1000,
     enabled: true, 
     // Simular socket - refetch cada 3 segundos EN BACKGROUND (sin loader)
-    refetchInterval: 3500,
+    refetchInterval: 4250,
     refetchIntervalInBackground: false,
+    
   })
 
   const { data: users, total, page, limit, totalPages, nextPage, previousPage } = useQueryUsers.data || defaultResponse;
+
+
 
   return {
     ...useQueryUsers,
@@ -43,5 +48,6 @@ export const useGetUsers = (params: SearchUsersParams) => {
     totalPages ,
     nextPage ,
     previousPage ,
+    isFetching: useQueryUsers.isFetching,
   }
 } 

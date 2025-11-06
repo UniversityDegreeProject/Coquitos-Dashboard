@@ -141,7 +141,11 @@ export const useDeleteCategory = (options: UseDeleteCategoryOptions) => {
     onError: (error: Error, _categoryId: string, context?: DeleteCategoryContext) => {
       // 10. ¡Rollback! Restaurar los datos previos
       if (context?.previousData) {
-        queryClient.setQueryData(context.currentQueryKey, context.previousData);
+        queryClient.setQueryData<GetCategoriesResponse>(context.currentQueryKey, context.previousData);
+      }
+
+      if( onFinally ) {
+        onFinally();
       }
 
       // 11. Notificación de error

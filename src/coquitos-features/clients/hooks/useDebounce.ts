@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+
 /**
  * Hook que implementa debounce para optimizar búsquedas
  * @param value - Valor a debounce
@@ -6,10 +7,7 @@ import { useState, useEffect } from "react";
  * @returns Valor debounced
  */
 export const useDebounce = <T>(value: T, delay: number): T => {
-
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-
 
   useEffect(() => {
     const handler = setTimeout(() => {

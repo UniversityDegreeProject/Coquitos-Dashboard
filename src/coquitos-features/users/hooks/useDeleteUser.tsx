@@ -117,12 +117,13 @@ export const useDeleteUser = (options: UseDeleteUserOptions) => {
       // Esperar a que TODAS las páginas se actualicen
       await Promise.all(refetchPromises);
 
+
+      // 10. Desactivar estado de mutación (después de que el usuario cierre el mensaje)
       if( onFinally ) {
         onFinally();
       }
-
-      // 9. Notificación de éxito
-      Swal.fire({
+      // 9. Notificación de éxito (esperar a que el usuario haga clic en OK)
+      await Swal.fire({
         title: '¡Usuario eliminado!',
         text: `${deletedUserResponse.user.username} se eliminó correctamente`,
         icon: 'success',
@@ -133,19 +134,26 @@ export const useDeleteUser = (options: UseDeleteUserOptions) => {
           htmlContainer: 'text-gray-600',
         },
       });
+
+
     },
 
     // ==================================================================
     // onError: Se ejecuta si la API falla
     // ==================================================================
-    onError: (error: Error, _userId: string, context?: DeleteUserContext) => {
+    onError: async (error: Error, _userId: string, context?: DeleteUserContext) => {
       // 10. ¡Rollback! Restaurar los datos previos
       if (context?.previousData) {
-        queryClient.setQueryData(context.currentQueryKey, context.previousData);
+        queryClient.setQueryData<GetUsersResponse>(context.currentQueryKey, context.previousData);
       }
 
-      // 11. Notificación de error
-      Swal.fire({
+
+      // 12. Desactivar estado de mutación (después de que el usuario cierre el mensaje)
+      if( onFinally ) {
+        onFinally();
+      }
+      // 11. Notificación de error (esperar a que el usuario haga clic en OK)
+      await Swal.fire({
         title: 'Error al eliminar',
         text: error.message || 'No se pudo eliminar el usuario',
         icon: 'error',
@@ -156,7 +164,9 @@ export const useDeleteUser = (options: UseDeleteUserOptions) => {
           htmlContainer: 'text-gray-600',
         },
       });
-    },
+
+
+    }
 
 
   });

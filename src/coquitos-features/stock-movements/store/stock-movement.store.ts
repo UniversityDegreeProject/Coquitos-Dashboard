@@ -1,6 +1,6 @@
 import { create, type StateCreator } from "zustand";
 import { devtools } from "zustand/middleware";
-import type { ProductResponse } from "@/coquitos-features/products/interfaces";
+import type { Product } from "@/coquitos-features/products/interfaces";
 
 /**
  * Interface del estado del store de movimientos de stock
@@ -9,10 +9,10 @@ interface StockMovementState {
   /** Modal de formulario abierto/cerrado */
   isModalOpen: boolean;
   /** Producto seleccionado para el movimiento de stock */
-  selectedProduct: ProductResponse | null;
+  selectedProduct: Product | null;
   
   /** Abre el modal con el producto seleccionado */
-  openStockMovementModal: (product: ProductResponse) => void;
+  openStockMovementModal: (product: Product) => void;
   /** Cierra el modal */
   closeModal: () => void;
 }
@@ -21,7 +21,7 @@ interface StockMovementState {
 const useStockMovementApi: StateCreator<StockMovementState, [["zustand/devtools", never]], []> = (set) => ({
   isModalOpen: false,
   selectedProduct: null,
-  openStockMovementModal: (product: ProductResponse) => {
+  openStockMovementModal: (product: Product) => {
     set({ isModalOpen: true, selectedProduct: product }, false, "Open stock movement modal");
   },
   closeModal: () => {

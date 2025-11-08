@@ -64,8 +64,6 @@ export const compressImage = async (file: File): Promise<string> => {
           IMAGE_CONFIG.QUALITY
         );
 
-        // Verificar tamaño final
-        const sizeInKB = Math.round((compressedBase64.length * 3) / 4 / 1024);
         
 
 

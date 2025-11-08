@@ -59,14 +59,14 @@ export const FormStockMovementModal = () => {
     closeModal();
     useCreateStockMovementMutation.mutate({
       ...data,
-      userId,
+      userId: userId!,
     });
   };
 
   // Effect para establecer el productId cuando se abre el modal
   useEffect(() => {
     if (selectedProduct) {
-      setValue('productId', selectedProduct.id);
+      setValue('productId', selectedProduct.id!);
     }
   }, [selectedProduct, setValue]);
 

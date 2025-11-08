@@ -20,7 +20,6 @@ export const useUsersStats = (filters: Pick<SearchUsersParams, 'search' | 'role'
   const { data, isLoading } = useQuery({
     queryKey: [...usersQueries.allUsers, 'stats', filters],
     queryFn: async () => {
-      // Obtener TODOS los usuarios con un límite muy alto para estadísticas
       const response = await getUsers({
         ...filters,
         page: 1,

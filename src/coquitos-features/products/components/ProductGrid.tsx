@@ -4,30 +4,29 @@ import { ProductGridSkeleton } from "./ProductGridSkeleton";
 import { ProductListSkeleton } from "./ProductListSkeleton";
 import { ProductEmptyState } from "./ProductEmptyState";
 import { ProductListItem } from "./ProductListItem";
-import type { ProductResponse } from "../interfaces";
+import type { Product, SearchProductsParams } from "../interfaces";
+import { useProductStore } from "../store/product.store";
+import { useShallow } from "zustand/shallow";
 
 interface ProductGridProps {
-  products: ProductResponse[];
+  products: Product[];
   isLoading?: boolean;
-  viewMode?: 'grid' | 'list';
+  currentParams: SearchProductsParams;
+  onPageEmpty: () => void;
 }
 
 /**
  * Grid responsivo para mostrar productos
  * Soporta vista de grid y lista, refactorizado con componentes reutilizables
  */
-export const ProductGrid = memo(({ 
-  products, 
-  isLoading = false, 
-  viewMode = 'grid'
-}: ProductGridProps) => {
+export const ProductGrid = memo(({ products, isLoading = false, currentParams, onPageEmpty }: ProductGridProps) => {
 
-  // Mostrar skeleton según el modo de vista
+  // * Zustand 
+  const viewMode = useProductStore(useShallow((state) => state.viewMode));
+
   if (isLoading) {
     return viewMode === 'grid' ? <ProductGridSkeleton /> : <ProductListSkeleton />;
   }
-
-  // Mostrar estado vacío
   if (products.length === 0) {
     return <ProductEmptyState />;
   }
@@ -37,7 +36,7 @@ export const ProductGrid = memo(({
     return (
       <div className="space-y-4">
         {products.map((product) => (
-          <ProductListItem key={product.id} product={product} />
+          <ProductListItem key={product.id} product={product} currentParams={currentParams} onPageEmpty={onPageEmpty} />
         ))}
       </div>
     );
@@ -49,6 +48,8 @@ export const ProductGrid = memo(({
         <ProductCard
           key={product.id}
           product={product}
+          currentParams={currentParams}
+          onPageEmpty={onPageEmpty}
         />
       ))}
     </div>

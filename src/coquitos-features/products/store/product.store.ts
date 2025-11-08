@@ -2,16 +2,14 @@
 import { create, type StateCreator } from "zustand";
 import { devtools } from "zustand/middleware";
 // * Interfaces
-import type { ProductResponse } from "../interfaces";
+import type { Product } from "../interfaces";
 
 interface ProductState {
   modalMode: 'create' | 'update' | 'delete' | null;
-  productToUpdate: ProductResponse | null;
+  productToUpdate: Product | null;
   viewMode: 'grid' | 'list';
-  isMutation : boolean;
-  setIsMutation: (value: boolean) => void;  
   setOpenModalCreate: () => void;
-  setOpenModalUpdate: (product: ProductResponse) => void;
+  setOpenModalUpdate: (product: Product) => void;
   closeModal: () => void;
   setViewMode: (mode: 'grid' | 'list') => void;
 }
@@ -20,12 +18,9 @@ const productApi: StateCreator<ProductState, [["zustand/devtools", never]], []> 
   modalMode: null,
   productToUpdate: null,
   viewMode: 'grid',
-  isMutation: false,
-  setIsMutation: (value: boolean) => 
-    set((state) => ({ ...state, isMutation: value }), false, `Set isMutation to ${value}`),
   setOpenModalCreate: () => 
     set((state) => ({ ...state, modalMode: 'create' }), false, "Open create product modal"),
-  setOpenModalUpdate: (product: ProductResponse) => 
+  setOpenModalUpdate: (product: Product) => 
     set((state) => ({ ...state, modalMode: 'update', productToUpdate: product }), false, "Open update product modal"),
   closeModal: () => 
     set((state) => ({ ...state, modalMode: null, productToUpdate: null }), false, "Close modal"),

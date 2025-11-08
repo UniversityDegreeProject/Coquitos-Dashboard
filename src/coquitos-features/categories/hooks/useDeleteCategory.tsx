@@ -79,17 +79,18 @@ export const useDeleteCategory = (options: UseDeleteCategoryOptions) => {
           // Para mayor robustez, la mantenemos.)
           const previousPageParams = { ...currentParams, page: currentParams.page - 1 };
           const previousPageKey = categoriesQueries.categoryWithFilters(previousPageParams);
-          
+
           queryClient.setQueryData<GetCategoriesResponse>(previousPageKey, (oldData) => {
-             if (!oldData) return oldData;
-             return {
-               ...oldData,
-               total: Math.max(0, oldData.total - 1),
-               totalPages: Math.max(1, Math.ceil((oldData.total - 1) / currentParams.limit)),
-             };
+            if (!oldData) return oldData; // Si no hay data en caché, no hagas nada
+
+            return {
+              ...oldData,
+              total: Math.max(0, oldData.total - 1),
+              totalPages: Math.max(1, Math.ceil((oldData.total - 1) / currentParams.limit)),
+            };
           });
 
-          // Llama al callback para que UsersPage cambie de página
+          // Llama al callback para que CategoriesPage cambie de página
           onPageEmpty();
         }
       }

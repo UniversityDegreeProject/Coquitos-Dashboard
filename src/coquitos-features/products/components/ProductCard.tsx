@@ -1,18 +1,20 @@
 import { memo } from "react";
 import { Package, Tag } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { ProductItemActions } from "./ProductItemActions";
-import type { ProductResponse } from "../interfaces";
+import { ProductButtomsActions } from "./ProducButtomsActions";
+import type { Product, SearchProductsParams } from "../interfaces";
 
 interface ProductCardProps {
-  product: ProductResponse;
+  product: Product;
+  currentParams: SearchProductsParams;
+  onPageEmpty?: () => void;
 }
 
 /**
  * Componente de tarjeta para mostrar información de un producto
  * Diseño extraordinario con glassmorphism, gradientes y animaciones fluidas
  */
-export const ProductCard = memo(({ product }: ProductCardProps) => {
+export const ProductCard = memo(({ product, currentParams, onPageEmpty }: ProductCardProps) => {
   const { isDark } = useTheme();
 
   // Formatear precio en bolivianos
@@ -85,11 +87,22 @@ export const ProductCard = memo(({ product }: ProductCardProps) => {
           </div>
         )}
         
-        {/* Badge de estado minimalista */}
-        <div className="absolute top-3 right-3">
+        {/* Badges en la esquina superior derecha */}
+        <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
+          {/* Badge de estado */}
           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusColor(product.status)}`}>
             {product.status}
           </span>
+          
+          {/* Badge de stock bajo */}
+          {product.stock <= product.minStock && product.status !== 'SinStock' && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg shadow-yellow-500/50 animate-pulse">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              Stock Bajo
+            </span>
+          )}
         </div>
       </div>
 
@@ -118,17 +131,22 @@ export const ProductCard = memo(({ product }: ProductCardProps) => {
           </div>
           
           {/* Stock */}
-          <div className="flex items-center space-x-1">
-            <Package className={`w-3 h-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
-            <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-              {product.stock || 0}
+          <div className="flex flex-col items-end">
+            <span className={`text-[10px] font-medium uppercase ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+              Stock
             </span>
+            <div className="flex items-center space-x-1">
+              <Package className={`w-3 h-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
+              <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                {product.stock || 0}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Acciones */}
         <div className="mb-3">
-          <ProductItemActions product={product} />
+          <ProductButtomsActions product={product} currentParams={currentParams} onPageEmpty={onPageEmpty} />
         </div>
 
         {/* SKU */}

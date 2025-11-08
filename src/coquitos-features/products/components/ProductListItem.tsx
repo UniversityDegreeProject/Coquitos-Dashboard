@@ -1,18 +1,16 @@
 import { memo } from "react";
-import { Package } from "lucide-react";
+import { Package, AlertTriangle } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { ProductItemActions } from "./ProductItemActions";
-import type { ProductResponse } from "../interfaces";
+import { ProductButtomsActions } from "./ProducButtomsActions";
+import type { Product, SearchProductsParams } from "../interfaces";
 
 interface ProductListItemProps {
-  product: ProductResponse;
+  product: Product;
+  currentParams: SearchProductsParams;
+  onPageEmpty?: () => void;
 }
 
-/**
- * Componente de item de producto en vista de lista
- * Optimizado con memoización para mejor performance
- */
-export const ProductListItem = memo(({ product }: ProductListItemProps) => {
+export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: ProductListItemProps) => {
   const { isDark } = useTheme();
 
   return (
@@ -55,13 +53,22 @@ export const ProductListItem = memo(({ product }: ProductListItemProps) => {
 
         {/* Información */}
         <div className="flex-1 min-w-0">
-          <h3
-            className={`text-lg font-semibold mb-1 ${
-              isDark ? 'text-[#F8FAFC]' : 'text-gray-800'
-            }`}
-          >
-            {product.name}
-          </h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3
+              className={`text-lg font-semibold ${
+                isDark ? 'text-[#F8FAFC]' : 'text-gray-800'
+              }`}
+            >
+              {product.name}
+            </h3>
+            {/* Badge de stock bajo */}
+            {product.stock <= product.minStock && product.status !== 'SinStock' && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-sm animate-pulse">
+                <AlertTriangle className="w-3 h-3" />
+                Stock Bajo
+              </span>
+            )}
+          </div>
           <p
             className={`text-sm ${
               isDark ? 'text-[#94A3B8]' : 'text-gray-600'
@@ -80,7 +87,7 @@ export const ProductListItem = memo(({ product }: ProductListItemProps) => {
           )}
         </div>
 
-        {/* Precio */}
+        {/* Precio y Stock */}
         <div className="text-right">
           <div
             className={`text-lg font-bold ${
@@ -93,17 +100,22 @@ export const ProductListItem = memo(({ product }: ProductListItemProps) => {
               minimumFractionDigits: 0,
             }).format(product.price)}
           </div>
-          <div
-            className={`text-sm ${
-              isDark ? 'text-[#94A3B8]' : 'text-gray-500'
-            }`}
-          >
-            Stock: {product.stock || 0}
+          <div className="mt-1">
+            <span className={`text-[10px] font-medium uppercase block ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+              Stock
+            </span>
+            <span
+              className={`text-sm font-semibold ${
+                isDark ? 'text-[#94A3B8]' : 'text-gray-600'
+              }`}
+            >
+              {product.stock || 0}
+            </span>
           </div>
         </div>
 
         {/* Acciones */}
-        <ProductItemActions product={product} />
+        <ProductButtomsActions product={product} currentParams={currentParams} onPageEmpty={onPageEmpty} />
       </div>
     </div>
   );

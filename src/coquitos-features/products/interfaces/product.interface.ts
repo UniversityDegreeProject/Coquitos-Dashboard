@@ -1,73 +1,74 @@
 // Interfaces basadas en la documentación del backend
 
+import type { Category } from "@/coquitos-features/categories/interfaces";
+
 export type ProductStatus = "Disponible" | "SinStock" | "Descontinuado";
 
 // * Interfaz para la categoría relacionada
-export interface CategoryRelation {
-  id: string;
-  name: string;
-  description?: string;
-  status: string;
+export interface GetProductsResponse{
+    data:         Product[];
+    total:        number;
+    page:         number;
+    limit:        number;
+    totalPages:   number;
+    nextPage:     string | null;
+    previousPage: string | null;
 }
 
-// * Interfaz del producto según el backend
-export interface ProductResponse {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  sku: string;
-  stock: number;
-  minStock: number;
-  image: string;
-  ingredients: string;
-  status: ProductStatus;
-  categoryId: string;
-  category: CategoryRelation;
-  createdAt: string;
-  updatedAt: string;
+export interface Product {
+    id?:         string;
+    name:        string;
+    description?: string;
+    price:       number;
+    sku:         string;
+    stock:       number;
+    minStock:    number;
+    image:       string;
+    status:      ProductStatus;
+    ingredients?: string;
+    categoryId:  string;
+    category?:    Category;
+    createdAt?:  Date;
+    updatedAt?:  Date;
 }
 
-// * Interfaz para crear/actualizar producto
 export interface ProductFormData {
-  name: string;
-  description?: string;
-  price: number;
-  sku?: string;
-  stock?: number;
-  minStock?: number;
-  image?: string;
-  ingredients?: string;
-  categoryId: string;
-  status?: ProductStatus;
+    id?:         string;
+    name:        string;
+    description?: string;
+    price:      number;
+    sku:        string;
+    stock:      number;
+    minStock:   number;
+    image:      string;
+    status:     ProductStatus;
+    ingredients?: string;
+    categoryId: string;
+    category?:   Category;
+    createdAt?:  Date;
+    updatedAt?:  Date;
 }
 
-// * Interfaz para búsqueda de productos
 export interface SearchProductsParams {
-  search?: string;
-  categoryId?: string;
-  status?: ProductStatus;
-  lowStock?: boolean;
-  page?: number;
-  limit?: number;
+    search?:    string;
+    categoryId?: string;
+    status?:    ProductStatus | "";
+    lowStock?:  boolean;
+    page :    number;
+    limit :   number;
 }
 
-// * Respuesta de la API con productos
-export interface GetProductsResponse {
-  products: ProductResponse[];
+export interface CreateProductResponse {
+    message: string;
+    product: Product;
 }
 
-// * Respuesta de búsqueda con paginación
-export interface SearchProductsResponse {
-  products: ProductResponse[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+export interface UpdateProductResponse {
+    message: string;
+    product: Product;
 }
 
-// * Respuesta al crear/actualizar producto
-export interface ProductMutationResponse {
-  message: string;
-  product: ProductResponse;
+export interface DeleteProductResponse {
+    message: string;
+    product: Product;
 }

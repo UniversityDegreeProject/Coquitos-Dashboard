@@ -8,7 +8,7 @@ import { LabelInputString, LabelSelect, LabelTextarea } from "@/shared/component
 import { useProductStore } from "../store/product.store";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { statusOptions } from "../const";
-import { createProductSchema, type CreateProductSchema } from "../schemas";
+import {  productSchema, type ProductSchema } from "../schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCreateProduct } from "../hooks/useCreateProduct";
 import { useShallow } from "zustand/shallow";
@@ -16,10 +16,12 @@ import { useUpdateProduct } from "../hooks/useUpdateProduct";
 import { useGetCategories } from "@/coquitos-features/categories/hooks/useGetCategories";
 import { compressImage, validateImageSize, getImageInfo, generateSKUWithCategory } from "../helpers";
 import { toast } from "sonner";
+import type { ProductStatus, SearchProductsParams } from "../interfaces";
 
 const onlyStatusOptions = statusOptions;
 
-const initialValues: CreateProductSchema = {
+const initialValues: ProductSchema = {
+  id: undefined,
   name: "",
   description: "",
   price: "",
@@ -32,16 +34,20 @@ const initialValues: CreateProductSchema = {
   status: "Disponible",
 };
 
+
+interface FormProductModalProps {
+  currentParams: SearchProductsParams;
+  onNewPageCreated: (newPage: number) => void;
+}
 /**
  * Modal de formulario para crear/editar productos
  * Implementa validación con React Hook Form y Zod
  */
-export const FormProductModal = () => {
+export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProductModalProps) => {
   // * Zustand
   const closeModal = useProductStore(useShallow((state) => state.closeModal));
   const modalMode = useProductStore(useShallow((state) => state.modalMode));
   const productToUpdate = useProductStore(useShallow((state) => state.productToUpdate));
-  
   // * Theme
   const { isDark } = useTheme();
 
@@ -49,16 +55,26 @@ export const FormProductModal = () => {
   const [imagePreview, setImagePreview] = useState<string>("");
 
   // * TanstackQuery
-  const { useCreateProductMutation, isPending: isCreatingProduct } = useCreateProduct();
-  const { updateProductMutation, isPending: isUpdatingProduct } = useUpdateProduct();
-  const { data: categories = [], isLoading: isLoadingCategories } = useGetCategories();
+  const { useCreateProductMutation, isPending: isCreatingProduct } = useCreateProduct({
+    currentParams,
+    onNewPageCreated,
+  });
+  const { updateProductMutation, isPending: isUpdatingProduct } = useUpdateProduct({
+    currentParams,
+  });
+  const { categories, isLoading: isLoadingCategories } = useGetCategories({
+    search : "",
+    status : "",
+    page : 1,
+    limit : 10000,
+  });
   
   // * Determinar si es modo editar
   const isEditMode = modalMode === 'update';
   
   // * React Hook Form
-  const { control, setValue, handleSubmit, watch, formState: { errors, isValid } } = useForm<CreateProductSchema>({
-    resolver: zodResolver(createProductSchema),
+  const { control, setValue, handleSubmit, watch, formState: { errors, isValid } } = useForm<ProductSchema>({
+    resolver: zodResolver(productSchema),
     defaultValues: initialValues,
     mode: "onChange",
   });
@@ -67,21 +83,22 @@ export const FormProductModal = () => {
   const watchedName = watch("name");
   const watchedCategoryId = watch("categoryId");
 
-  const onSubmit: SubmitHandler<CreateProductSchema> = (data) => {
+  const onSubmit: SubmitHandler<ProductSchema> = (data) => {
     // Convertir strings a números para el backend
     const productData = {
       ...data,
       price: parseFloat(data.price),
       stock: data.stock ? parseInt(data.stock) : 0,
       minStock: data.minStock ? parseInt(data.minStock) : 5,
+      status : data.status as ProductStatus
     };
     
     closeModal();
     
     if (isEditMode && productToUpdate?.id) {
       updateProductMutation.mutate({
-        productId: productToUpdate.id,
-        productData
+        ...productData,
+
       });
       return; 
     }
@@ -92,6 +109,7 @@ export const FormProductModal = () => {
   // Effect para actualizar el modal en modo edición
   useEffect(() => {
     if (modalMode === 'update' && productToUpdate) {
+      setValue('id', productToUpdate.id || '');
       setValue('name', productToUpdate.name || '');
       setValue('description', productToUpdate.description || '');
       setValue('price', productToUpdate.price?.toString() || '');
@@ -101,7 +119,7 @@ export const FormProductModal = () => {
       setValue('image', productToUpdate.image || '');
       setValue('ingredients', productToUpdate.ingredients || '');
       setValue('categoryId', productToUpdate.categoryId || '');
-      setValue('status', productToUpdate.status || 'Disponible');
+      setValue('status', productToUpdate.status as ProductStatus);
       setImagePreview(productToUpdate.image || '');
     } else if (modalMode === 'create') {
       setImagePreview('');
@@ -112,7 +130,7 @@ export const FormProductModal = () => {
   useEffect(() => {
     // Solo generar SKU automático en modo creación
     if (modalMode === 'create' && watchedName && watchedCategoryId) {
-      const selectedCategory = categories.find(cat => cat.id === watchedCategoryId);
+      const selectedCategory = categories?.find(cat => cat.id === watchedCategoryId);
       
       if (selectedCategory) {
         // Generar SKU con categoría y nombre

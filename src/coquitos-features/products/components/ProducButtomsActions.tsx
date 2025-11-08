@@ -4,20 +4,25 @@ import { useProductStore } from "../store/product.store";
 import { useDeleteProduct } from "../hooks/useDeleteProduct";
 import { useShallow } from "zustand/shallow";
 import Swal from "sweetalert2";
-import type { ProductResponse } from "../interfaces";
+import type { Product, SearchProductsParams } from "../interfaces";
 import { useStockMovementStore } from "@/coquitos-features/stock-movements/store/stock-movement.store";
 
-interface ProductItemActionsProps {
-  product: ProductResponse;
+interface ProductButtomsActionsProps {
+  product: Product;
+  currentParams: SearchProductsParams;
+  onPageEmpty?: () => void;
 }
 
 /**
  * Componente de acciones para cada producto
  * Maneja internamente los handlers de editar y eliminar
  */
-export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
+export const ProductButtomsActions = ({ product, currentParams, onPageEmpty }: ProductButtomsActionsProps) => {
   const setOpenModalUpdate = useProductStore(useShallow((state) => state.setOpenModalUpdate));
-  const { deleteProductMutation } = useDeleteProduct();
+  const { deleteProductMutation } = useDeleteProduct({ 
+    currentParams, 
+    onPageEmpty
+  });
   const openStockMovementModal = useStockMovementStore(useShallow((state) => state.openStockMovementModal));
 
   const handleEditProduct = useCallback(() => {
@@ -45,7 +50,7 @@ export const ProductItemActions = ({ product }: ProductItemActionsProps) => {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        deleteProductMutation.mutate(product.id);
+        deleteProductMutation.mutate(product.id as string);
       }
     });
   }, [product, deleteProductMutation]);

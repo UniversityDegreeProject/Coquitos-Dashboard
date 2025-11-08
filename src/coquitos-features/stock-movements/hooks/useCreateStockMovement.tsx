@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createStockMovement } from "../services/stock-movement.service";
-import { useQuerys as stockMovementQuerys } from "../const";
+import { useQuerys } from "../const";
 import type { StockMovementFormData } from "../interfaces";
-import { useQuerys as productQuerys } from "@/coquitos-features/products/const";
+import { productsQueries } from "@/coquitos-features/products/const";
 import Swal from "sweetalert2";
 
 /**
@@ -17,8 +17,8 @@ export const useCreateStockMovement = () => {
     
     onSuccess: (data) => {
       // Invalidar queries para refrescar los datos
-      queryClient.invalidateQueries({ queryKey: stockMovementQuerys.allStockMovements });
-      queryClient.invalidateQueries({ queryKey: productQuerys.allProducts });
+      queryClient.invalidateQueries({ queryKey: useQuerys.allStockMovements });
+      queryClient.invalidateQueries({ queryKey: productsQueries.allProducts });
       
       Swal.fire({
         title: '¡Movimiento de stock registrado exitosamente!',

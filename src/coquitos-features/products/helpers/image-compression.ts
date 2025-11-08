@@ -2,10 +2,10 @@
  * Configuración de compresión de imágenes
  */
 const IMAGE_CONFIG = {
-  MAX_WIDTH: 800,           // Ancho máximo en píxeles
-  MAX_HEIGHT: 800,          // Alto máximo en píxeles
-  QUALITY: 0.7,             // Calidad de compresión (0-1)
-  MAX_SIZE_KB: 200,         // Tamaño máximo en KB
+  MAX_WIDTH: 800,
+  MAX_HEIGHT: 800,
+  QUALITY: 0.7,
+  MAX_SIZE_KB: 200,
   OUTPUT_FORMAT: 'image/jpeg' as const, // Formato de salida
 };
 

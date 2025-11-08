@@ -1,54 +1,93 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { deleteProduct } from '../services/product.service';
-import { useQuerys } from '../const';
-import type { ProductResponse } from '../interfaces';
+import type { DeleteProductResponse, GetProductsResponse, SearchProductsParams } from '../interfaces';
+import { productsQueries } from '../const/products-queries';
 
-interface OptimisticDeleteProduct {
-  deletedProduct: ProductResponse;
+interface DeleteProductContext {
+  previousData?: GetProductsResponse;
+  currentQueryKey : QueryKey
 }
 
+interface DeleteProductOptions{
+  currentParams: SearchProductsParams;
+  onPageEmpty?: () => void;
+}
 /**
  * Hook para eliminar un producto
  * Implementa actualización optimista de la UI
  */
-export const useDeleteProduct = () => {
-  const queryClient = useQueryClient();
+export const useDeleteProduct = (options: DeleteProductOptions ) => {
+
+  const { currentParams, onPageEmpty } = options;
+  const queryClient = useQueryClient(); 
 
   const deleteProductMutation = useMutation({
 
-    onMutate: async (productId: string): Promise<OptimisticDeleteProduct> => {
-      const oldProducts = queryClient.getQueryData<ProductResponse[]>(useQuerys.allProducts);
-      const deletedProduct = oldProducts?.find(product => product.id === productId);
+    onMutate: async (): Promise<DeleteProductContext> => {
 
-      if (!deletedProduct) {
-        throw new Error('Producto no encontrado');
-      }
+      const currentQueryKey = productsQueries.productsWithFilters( currentParams);
 
-      // Actualización optimista: marcar como "en proceso de eliminación"
-      queryClient.setQueryData<ProductResponse[]>(useQuerys.allProducts, (oldProducts): ProductResponse[] => {
-        if (!oldProducts) return [];
-        return oldProducts.filter(product => product.id !== productId);
-      });
+      queryClient.cancelQueries({ queryKey: currentQueryKey });
 
-      return { deletedProduct };
+      const previousData = queryClient.getQueryData<GetProductsResponse>(currentQueryKey)!;
+      
+
+      return { previousData, currentQueryKey}
     },
 
     mutationFn: (productId: string) => deleteProduct(productId),
 
-    onSuccess: (productDeleted: ProductResponse) => {
-      // Confirmación de que el producto fue eliminado
-      queryClient.setQueryData<ProductResponse[]>(useQuerys.allProducts, (oldProducts): ProductResponse[] => {
-        if (!oldProducts) return [];
-        return oldProducts.filter((product: ProductResponse) => product.id !== productDeleted.id);
+    onSuccess: async (productDeleted: DeleteProductResponse, _idSubmitted : string , context : DeleteProductContext) => {
+      const { previousData } = context;
+    
+      if( previousData ){
+        const productsOnPage = previousData.data;
+        const pageWillBeEmpty = productsOnPage.filter( product => product.id !== _idSubmitted).length === 0;
+
+        if ( pageWillBeEmpty && previousData.page > 1 && onPageEmpty ) {
+          const newPage = previousData.page -1;
+          const newParams = { ...currentParams, page : newPage };
+          const previousQueryKey = productsQueries.productsWithFilters( newParams );
+
+          queryClient.setQueryData<GetProductsResponse>( previousQueryKey, ( oldData) =>{
+            if( !oldData ) return previousData;
+            return {
+              ...previousData,
+              total: Math.max(0, previousData.total -1),
+              page: newPage,
+            }
+
+          });
+
+          onPageEmpty();
+
+        }
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: productsQueries.allProducts,
       });
 
-      Swal.fire({
+      const totalPages = Math.max(1, Math.ceil(previousData?.total || 0 / currentParams.limit));
+      const promiseQueryes = [];
+
+      for (let page = 1; page <= totalPages; page++) {
+        const pageParams = { ...currentParams, page };
+        promiseQueryes.push(queryClient.refetchQueries({
+          queryKey: productsQueries.productsWithFilters(pageParams),
+        }));
+      }
+
+      await Promise.all(promiseQueryes);
+
+      await Swal.fire({
         title: 'Producto eliminado exitosamente',
-        text: `El producto ${productDeleted.name} se ha eliminado correctamente`,
+        text: `El producto ${productDeleted.product.name} se ha eliminado correctamente`,
         icon: 'success',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#38bdf8',
+        timer: 1500,
+        // confirmButtonText: 'OK',
+        // confirmButtonColor: '#38bdf8',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',
@@ -57,21 +96,19 @@ export const useDeleteProduct = () => {
       });
     },
 
-    onError: (error, _: string, context?: OptimisticDeleteProduct): void => {
+    onError: async (error : Error, _: string, context?: DeleteProductContext): Promise<void> => {
       // Restaurar el producto eliminado optimistamente
-      queryClient.setQueryData<ProductResponse[]>(useQuerys.allProducts, (oldProducts): ProductResponse[] => {
-        if (!oldProducts) return [];
-        if (!context?.deletedProduct) return oldProducts;
+      if( context?.previousData ){
+        queryClient.setQueryData<GetProductsResponse>( context.currentQueryKey, context.previousData);
+      }
 
-        return [...oldProducts, context.deletedProduct];
-      });
-
-      Swal.fire({
+      await Swal.fire({
         title: 'Error al eliminar producto',
         text: error.message,
         icon: 'error',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#38bdf8',
+        timer: 1500,
+        // confirmButtonText: 'OK',
+        // confirmButtonColor: '#38bdf8',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',

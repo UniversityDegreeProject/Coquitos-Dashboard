@@ -1,81 +1,80 @@
 // * Library
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type QueryKey } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 
 // * Others
-import type { ProductResponse } from '../interfaces';
-import { useQuerys } from '../const';
+// import type { ProductResponse } from '../interfaces';
+// import { useQuerys } from '../const';
 import { updateProduct } from '../services/product.service';
+import type { GetProductsResponse, Product, SearchProductsParams, UpdateProductResponse } from '../interfaces';
+import { productsQueries } from '../const';
 
-interface OptimisticUpdateProduct {
-  optimisticProduct: ProductResponse;
-  originalProduct: ProductResponse;
+interface UpdateProductContext {
+  previousData: GetProductsResponse;
+  currentQueryKey: QueryKey;
 }
 
-interface ProductUpdatePayload {
-  productId: string;
-  productData: Partial<ProductResponse>;
+interface UseUpdateProductOptions {
+  currentParams: SearchProductsParams;
 }
+
 
 /**
  * Hook para actualizar un producto existente
  * Implementa actualización optimista de la UI
  */
-export const useUpdateProduct = () => {
+export const useUpdateProduct = ( options: UseUpdateProductOptions ) => {
+
+  const { currentParams } = options;
+
   const queryClient = useQueryClient();
 
   const updateProductMutation = useMutation({
 
-    onMutate: ({ productId, productData }: ProductUpdatePayload): OptimisticUpdateProduct => {
-      const oldProducts = queryClient.getQueryData<ProductResponse[]>(useQuerys.allProducts);
-      const originalProduct = oldProducts?.find(product => product.id === productId);
+    onMutate: (): UpdateProductContext => {
+      
+      const currentQueryKey = productsQueries.productsWithFilters(currentParams);
 
-      if (!originalProduct) {
-        throw new Error('Producto no encontrado');
-      }
+      queryClient.cancelQueries({ queryKey: currentQueryKey });
 
-      const optimisticProduct: ProductResponse = {
-        ...originalProduct,
-        ...productData,
-        updatedAt: new Date().toISOString(),
-      };
+      const previousData = queryClient.getQueryData<GetProductsResponse>(currentQueryKey);
 
-      // Aplicar la mutación optimista
-      queryClient.setQueryData<ProductResponse[]>(useQuerys.allProducts, (oldProducts): ProductResponse[] => {
-        if (!oldProducts) return [];
+      if( !previousData) throw new Error('Producto no encontrado');
 
-        return oldProducts.map(product =>
-          product.id === productId
-            ? optimisticProduct
-            : product
-        );
-      });
-
-      return { optimisticProduct, originalProduct };
+      return { previousData, currentQueryKey };
     },
 
-    mutationFn: ({ productId, productData }: ProductUpdatePayload) => 
-      updateProduct(productId, productData),
+    mutationFn: (product: Product) => updateProduct(product.id!, product),
 
-    onSuccess: (updatedProduct): void => {
-      queryClient.setQueryData<ProductResponse[]>(useQuerys.allProducts, (oldProducts): ProductResponse[] => {
-        if (!oldProducts) return [updatedProduct];
+    onSuccess: async (updatedProduct: UpdateProductResponse, _productSubmitted: Product, context : UpdateProductContext) => {
 
-        const dataUpdatedSuccess = oldProducts.map((product: ProductResponse) => {
-          if (product.id === updatedProduct.id) {
-            return updatedProduct;
-          }
-          return product;
+      const { previousData } = context;
+
+      if( previousData ){
+        queryClient.setQueryData<GetProductsResponse>(productsQueries.productsWithFilters(currentParams), (oldData) => {
+          if( !oldData ) return previousData;
+          return {
+            ...oldData,
+            products: previousData.data.map((product) => product.id === updatedProduct.product.id ? updatedProduct.product : product),
+          };
         });
-        return dataUpdatedSuccess;
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: productsQueries.allProducts,
       });
 
-      Swal.fire({
+      await queryClient.refetchQueries({
+        queryKey: productsQueries.productsWithFilters(currentParams),
+      });
+
+      await Swal.fire({
         title: 'Producto actualizado exitosamente',
-        text: `El producto ${updatedProduct.name} se ha actualizado correctamente`,
+        text: `El producto ${updatedProduct.product.name} se ha actualizado correctamente`,
         icon: 'success',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#38bdf8',
+        timer: 1500,
+        // confirmButtonText: 'OK',
+        // confirmButtonColor: '#38bdf8',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',
@@ -84,27 +83,23 @@ export const useUpdateProduct = () => {
       });
     },
 
-    onError: (error, { productId }: ProductUpdatePayload, context?: OptimisticUpdateProduct): void => {
-      queryClient.setQueryData<ProductResponse[]>(useQuerys.allProducts, (oldProducts): ProductResponse[] => {
-        if (!oldProducts) return [];
-        if (!context?.originalProduct) return oldProducts;
+    onError: async (error : Error, _productSubmitted: Product, context?: UpdateProductContext): Promise<void> => {
 
-        // Restaurar los datos originales del producto
-        return oldProducts.map((product: ProductResponse) =>
-          product.id === productId
-            ? context.originalProduct
-            : product
-        );
-      });
+      if( context?.previousData ){
+        queryClient.setQueryData<GetProductsResponse>( context.currentQueryKey, context.previousData);
+      }
+
+
 
       const errorMessage = error.message || "Ha ocurrido un error al actualizar el producto.";
 
-      Swal.fire({
+      await Swal.fire({
         title: 'Error al actualizar producto',
         text: errorMessage,
         icon: 'error',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#38bdf8',
+        timer: 1500,
+        // confirmButtonText: 'OK',
+        // confirmButtonColor: '#38bdf8',
         customClass: {
           popup: 'rounded-xl',
           title: 'text-xl font-bold text-gray-800',

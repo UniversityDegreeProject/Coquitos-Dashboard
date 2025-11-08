@@ -1,35 +1,48 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Package, Plus, ClipboardList } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { ProductSearchPage, ProductGrid, ProductStats, FormProductModal } from "../components";
+import { useIsMutating } from '@tanstack/react-query';
+import { ProductGrid, ProductStats, FormProductModal, ProductPagination, ProductSearchPage, ProductToggleFromGridToList } from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "@/coquitos-features/users/hooks/useDebounce";
-import { useGetProducts } from "../hooks";
+import { useGetProducts, useProductsStats } from "../hooks";
 import { useProductStore } from "../store/product.store";
 import { useShallow } from "zustand/shallow";
-import type { ProductStatus } from "../interfaces";
+import type { SearchProductsParams } from "../interfaces";
 import { FormStockMovementModal } from "@/coquitos-features/stock-movements/components";
 import { useStockMovementStore } from "@/coquitos-features/stock-movements/store/stock-movement.store";
 import { paths } from "@/router/paths";
+import type { SearchProductsSchema} from '../schemas';
+import type { ProductStatus } from '../interfaces';
+import { useGetCategories } from "@/coquitos-features/categories/hooks/useGetCategories";
 
-/**
- * Página principal de gestión de productos
- * Implementa búsqueda, filtros y CRUD completo siguiendo el patrón de users
- */
+
+const filtersDefault : SearchProductsSchema = {
+  search: "",
+  categoryId: "",
+  status: "",
+  lowStock: false,
+  page: 1,
+  limit: 6
+}
 export const ProductPage = () => {
   // * Estados locales para filtros
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<ProductStatus | "">("");
+  const [ page, setPage ] = useState<number>(1);
+  const [ limit, setLimit ] = useState<number>(6);
+  const [searchFilters, setSearchFilters] = useState<SearchProductsSchema>(filtersDefault);
 
   // * Debounce para la búsqueda (500ms)
-  const debouncedSearch = useDebounce(searchTerm, 500);
+  const debouncedSearch = useDebounce(searchFilters.search, 500);
+  const debouncedCategoryId = useDebounce(searchFilters.categoryId, 500);
+  const debouncedStatus = useDebounce(searchFilters.status, 500);
+
+  // * Theme
+  const { colors, isDark } = useTheme();
 
   // * Zustand - Optimizado con selectores específicos
   const modalMode = useProductStore(useShallow((state) => state.modalMode));
-  const viewMode = useProductStore(useShallow((state) => state.viewMode));
-  const setViewMode = useProductStore(useShallow((state) => state.setViewMode));
   const setOpenModalCreate = useProductStore(useShallow((state) => state.setOpenModalCreate));
+
 
   // * Stock Movement Modal
   const isStockModalOpen = useStockMovementStore(useShallow((state) => state.isModalOpen));
@@ -37,22 +50,48 @@ export const ProductPage = () => {
   // * Navigation
   const navigate = useNavigate();
 
+  
   // * TanStack Query
-  const { data: products = [], isLoading } = useGetProducts();
+  const currentParams: SearchProductsParams = useMemo(() => ({
+    search: debouncedSearch,
+    categoryId: debouncedCategoryId,
+    status: searchFilters.status,
+    lowStock: searchFilters.lowStock,
+    page: page,
+    limit: limit
+  }), [debouncedSearch, debouncedCategoryId, searchFilters.status, searchFilters.lowStock, page, limit]);
 
-  // * Theme
-  const { colors, isDark } = useTheme();
+  const {
+    products,
+    total,
+    page:
+    currentPage,
+    limit:
+    currentLimit,
+    totalPages,
+    nextPage,
+    previousPage,
+    isLoading,
+    isFetching 
+  } = useGetProducts(currentParams);
 
-  // * Filtrar productos basado en los filtros
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                         product.description?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-                         product.sku?.toLowerCase().includes(debouncedSearch.toLowerCase());
-    
-    const matchesCategory = !categoryFilter || product.categoryId === categoryFilter;
-    const matchesStatus = !statusFilter || product.status === statusFilter;
+    // * Hook para estadísticas globales (todos los usuarios, no solo la página actual)
 
-    return matchesSearch && matchesCategory && matchesStatus;
+  const { productsStats } = useProductsStats({
+    search: debouncedSearch,
+    categoryId: debouncedCategoryId,
+    status: searchFilters.status,
+  });
+
+  // * Detectar mutaciones CRUD activas (create, update, delete)
+  const isMutating = useIsMutating() > 0;
+
+  // * Obtener categorías para el filtro
+  const { categories, isLoading: isLoadingCategories } = useGetCategories({
+    search: "",
+    status: "",
+    page: 1,
+    limit: 100
   });
 
   // * Memoizar callbacks
@@ -65,6 +104,65 @@ export const ProductPage = () => {
   }, [navigate]);
 
 
+  // * Handler cuando cambian los filtros del buscador
+  const handleSearchFiltersChange = useCallback((values: SearchProductsSchema) => {
+    setSearchFilters(values);
+  }, []);
+
+  // * Callback cuando una página queda vacía después de eliminar
+  const handlePageEmpty = useCallback(() => {
+    const newPage = Math.max(1, page - 1);
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
+
+  // * Callback cuando cambia el límite de la página
+  const handleLimitChange = useCallback((newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  // * Callback cuando cambia la página
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  // * Resetear página cuando cambian los filtros
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, debouncedCategoryId, searchFilters.status, searchFilters.lowStock]);
+
+  // * Detectar si hay cambios pendientes en la búsqueda (usuario escribiendo)
+  const isSearchPending = searchFilters.search !== debouncedSearch || searchFilters.categoryId !== debouncedCategoryId || searchFilters.status !== debouncedStatus;
+
+  // * Ref para rastrear si hay un fetch intencional (usuario busca/filtra)
+  const isIntentionalFetchRef = useRef(false);
+
+  // * ESTRATEGIA: Activar el flag cuando el usuario EMPIEZA a escribir o cambia filtros
+  // Esto sucede ANTES del debounce, asegurando que el flag esté listo cuando el fetch inicie
+  useEffect(() => {
+    // Activar el flag si el usuario tiene algo escrito O cambió filtros de select
+    const productIsSearching = searchFilters.search !== '' || searchFilters.categoryId !== '' || searchFilters.status !== '' || searchFilters.lowStock === true;
+    if (productIsSearching) {
+      isIntentionalFetchRef.current = true;
+    }
+  }, [searchFilters.search, searchFilters.categoryId, searchFilters.status, searchFilters.lowStock]);
+
+  // * Resetear el flag cuando el fetch termina exitosamente
+  useEffect(() => {
+    if (!isFetching && isIntentionalFetchRef.current) {
+      // Resetear después de que el fetch complete
+      const timer = setTimeout(() => {
+        isIntentionalFetchRef.current = false;
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFetching]);
+
+  // * Loader para búsquedas/filtros: Solo se muestra para fetches INTENCIONALES
+  const isSearching = isIntentionalFetchRef.current && isFetching && !isSearchPending && !isMutating;
 
 
   return (
@@ -101,34 +199,57 @@ export const ProductPage = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <ProductStats products={products} />
+      <ProductStats productsStats={productsStats} />
 
       {/* Search and Filters */}
       <ProductSearchPage
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        categoryFilter={categoryFilter}
-        onCategoryChange={setCategoryFilter}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
+        searchValue={searchFilters.search || ""}
+        onSearchChange={(value: string) => handleSearchFiltersChange({ ...searchFilters, search: value })}
+        categoryFilter={searchFilters.categoryId || ""}
+        onCategoryChange={(value: string) => handleSearchFiltersChange({ ...searchFilters, categoryId: value })}
+        statusFilter={searchFilters.status as ProductStatus | ""}
+        onStatusChange={(value: ProductStatus | "") => handleSearchFiltersChange({ ...searchFilters, status: value })}
+        lowStockFilter={searchFilters.lowStock || false}
+        onLowStockChange={(value: boolean) => handleSearchFiltersChange({ ...searchFilters, lowStock: value })}
+        categories={categories}
+        isLoadingCategories={isLoadingCategories}
       />
+
+     <ProductToggleFromGridToList products={products} total={total} />
 
       {/* Products Grid */}
       <ProductGrid 
-        products={filteredProducts}
-        viewMode={viewMode}
-        isLoading={isLoading}
+        products={products}
+        isLoading={isLoading || isMutating || isSearching}
+        currentParams={currentParams}
+        onPageEmpty={handlePageEmpty}
       />
+
+      {/* Pagination */}
+      {total > 0 && (
+        <ProductPagination
+          paginationData={{ 
+            total, 
+            page: currentPage, 
+            limit: currentLimit, 
+            totalPages, 
+            nextPage, 
+            previousPage 
+          }}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          currentLimit={limit}
+          isLoading={isLoading}
+        />
+      )}
 
       {/* Create Product Modal */}
       {modalMode === 'create' && (
-        <FormProductModal />
+        <FormProductModal currentParams={currentParams} onNewPageCreated={handlePageChange} />
       )}
       {/* Update Product Modal */}
       {modalMode === 'update' && (
-        <FormProductModal />
+        <FormProductModal currentParams={currentParams} onNewPageCreated={handlePageChange} />
       )}
       
       {/* Stock Movement Modal */}

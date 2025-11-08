@@ -1,23 +1,21 @@
 import { Package, TrendingUp, AlertTriangle, Coins } from 'lucide-react';
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { ProductResponse } from "../interfaces";
+import type { ProductsStatsData } from "../hooks";
 
 interface ProductStatsProps {
-  products: ProductResponse[];
+  productsStats: ProductsStatsData;
 }
 
 /**
  * Componente de estadísticas para productos
  * Muestra: Total, Disponibles, Stock Bajo, Valor Total
  */
-export const ProductStats = ({ products }: ProductStatsProps) => {
+export const ProductStats = ({ productsStats }: ProductStatsProps) => {
+
+  const { totalProducts, availableProducts, lowStockProducts, totalValue } = productsStats;
   const { colors, isDark } = useTheme();
 
-  // * Calcular estadísticas
-  const totalProducts = products.length;
-  const availableProducts = products.filter(p => p.status === 'Disponible').length;
-  const lowStockProducts = products.filter(p => p.stock <= p.minStock).length;
-  const totalValue = products.reduce((sum, product) => sum + (product.price * product.stock), 0);
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

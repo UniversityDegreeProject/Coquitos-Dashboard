@@ -16,12 +16,8 @@ export const productSchema = z.object({
   
   price: z
     .string()
-    .min(1, 'El precio es requerido')
-    .refine((val) => !isNaN(parseFloat(val)), 'El precio debe ser un número válido')
-    .refine((val) => parseFloat(val) > 0, 'El precio debe ser mayor a 0')
-    .refine((val) => /^\d+(\.\d{1,2})?$/.test(val), {
-      message: 'El precio solo puede tener máximo 2 decimales'
-    }),
+    .optional()
+    .default(''),
   
   sku: z
     .string()
@@ -30,10 +26,8 @@ export const productSchema = z.object({
   
   stock: z
     .string()
-    .min(1, 'El stock actual es requerido')
-    .refine((val) => !isNaN(parseInt(val)), 'El stock debe ser un número válido')
-    .refine((val) => parseInt(val) >= 0, 'El stock no puede ser negativo')
-    .refine((val) => Number.isInteger(parseFloat(val)), 'El stock debe ser un número entero'),
+    .optional()
+    .default('0'),
   
   minStock: z
     .string()
@@ -64,7 +58,117 @@ export const productSchema = z.object({
   status: z
     .enum(['Disponible', 'SinStock', 'Descontinuado'])
     .default('Disponible'),
+  
+  isVariableWeight: z
+    .boolean({ error: 'Tipo de producto inválido' })
+    .default(false),
+  
+  pricePerKg: z
+    .string()
+    .optional()
+    .default(''),
+}).superRefine((data, ctx) => {
+  // SI ES PESO VARIABLE: solo validar pricePerKg
+  if (data.isVariableWeight) {
+    if (!data.pricePerKg || data.pricePerKg.trim() === '') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['pricePerKg'],
+        message: 'El precio por kg es requerido',
+      });
+      return;
+    }
     
+    const pricePerKgNum = parseFloat(data.pricePerKg);
+    if (isNaN(pricePerKgNum)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['pricePerKg'],
+        message: 'El precio por kg debe ser un número válido',
+      });
+      return;
+    }
+    
+    if (pricePerKgNum <= 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['pricePerKg'],
+        message: 'El precio por kg debe ser mayor a 0',
+      });
+      return;
+    }
+    
+    if (!/^\d+(\.\d{1,2})?$/.test(data.pricePerKg)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['pricePerKg'],
+        message: 'El precio por kg solo puede tener máximo 2 decimales',
+      });
+    }
+  }
+  
+  // SI NO ES PESO VARIABLE: validar price y stock
+  if (!data.isVariableWeight) {
+    // Validar price
+    if (!data.price || data.price.trim() === '') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['price'],
+        message: 'El precio es requerido',
+      });
+    } else {
+      const priceNum = parseFloat(data.price);
+      if (isNaN(priceNum)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['price'],
+          message: 'El precio debe ser un número válido',
+        });
+      } else if (priceNum <= 0) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['price'],
+          message: 'El precio debe ser mayor a 0',
+        });
+      } else if (!/^\d+(\.\d{1,2})?$/.test(data.price)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['price'],
+          message: 'El precio solo puede tener máximo 2 decimales',
+        });
+      }
+    }
+    
+    // Validar stock
+    if (!data.stock || data.stock.trim() === '') {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['stock'],
+        message: 'El stock es requerido',
+      });
+    } else {
+      const stockNum = parseInt(data.stock);
+      if (isNaN(stockNum)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['stock'],
+          message: 'El stock debe ser un número válido',
+        });
+      } else if (stockNum < 0) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['stock'],
+          message: 'El stock no puede ser negativo',
+        });
+      } else if (!Number.isInteger(stockNum)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['stock'],
+          message: 'El stock debe ser un número entero',
+        });
+      }
+    }
+  }
 });
 
 

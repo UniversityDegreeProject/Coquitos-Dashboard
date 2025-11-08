@@ -41,7 +41,14 @@ export const useProductsStats = ( filters : Pick<SearchProductsParams, 'status' 
     totalProducts: useQueryProductsStats.data?.total ?? 0,
     availableProducts: useQueryProductsStats.data?.data.filter(p => p.status === 'Disponible').length ?? 0,
     lowStockProducts: useQueryProductsStats.data?.data.filter(p => p.stock <= p.minStock && p.status !== 'SinStock').length ?? 0,
-    totalValue: useQueryProductsStats.data?.data.reduce((sum, product) => sum + (product.price * product.stock), 0) ?? 0,
+    totalValue: useQueryProductsStats.data?.data.reduce((sum, product) => {
+      // Para productos de peso variable, price YA incluye el cálculo total (no multiplicar por stock)
+      if (product.isVariableWeight) {
+        return sum + product.price;
+      }
+      // Para productos normales, multiplicar price × stock
+      return sum + (product.price * product.stock);
+    }, 0) ?? 0,
   };
 
   return {

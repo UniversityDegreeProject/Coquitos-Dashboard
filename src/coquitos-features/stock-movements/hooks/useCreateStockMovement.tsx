@@ -15,10 +15,13 @@ export const useCreateStockMovement = () => {
   const useCreateStockMovementMutation = useMutation({
     mutationFn: (stockMovementData: StockMovementFormData) => createStockMovement(stockMovementData),
     
-    onSuccess: (data) => {
-      // Invalidar queries para refrescar los datos
-      queryClient.invalidateQueries({ queryKey: useQuerys.allStockMovements });
-      queryClient.invalidateQueries({ queryKey: productsQueries.allProducts });
+    onSuccess: async (data) => {
+      // Invalidar y refetch INMEDIATO de TODAS las queries de productos
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: useQuerys.allStockMovements }),
+        queryClient.invalidateQueries({ queryKey: productsQueries.allProducts }),
+        queryClient.refetchQueries({ queryKey: productsQueries.allProducts }),
+      ]);
       
       Swal.fire({
         title: '¡Movimiento de stock registrado exitosamente!',

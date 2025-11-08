@@ -1,6 +1,7 @@
 // Interfaces basadas en la documentación del backend
 
 import type { Category } from "@/coquitos-features/categories/interfaces";
+import type { ProductBatch } from "./product-batch.interface";
 
 export type ProductStatus = "Disponible" | "SinStock" | "Descontinuado";
 
@@ -27,7 +28,10 @@ export interface Product {
     status:      ProductStatus;
     ingredients?: string;
     categoryId:  string;
+    isVariableWeight?: boolean;
+    pricePerKg?:      number;
     category?:    Category;
+    batches?:     ProductBatch[];
     createdAt?:  Date;
     updatedAt?:  Date;
 }
@@ -44,6 +48,8 @@ export interface ProductFormData {
     status:     ProductStatus;
     ingredients?: string;
     categoryId: string;
+    isVariableWeight?: boolean;
+    pricePerKg?:      number;
     category?:   Category;
     createdAt?:  Date;
     updatedAt?:  Date;

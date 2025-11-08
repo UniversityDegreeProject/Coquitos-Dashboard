@@ -10,3 +10,5 @@ export * from './ProductPagination';
 export * from './ProductSearchPage';
 export * from './ProductStats';
 export * from './ProductToggleFromGridToList';
+export * from './BatchList';
+export * from './FormBatchModal';

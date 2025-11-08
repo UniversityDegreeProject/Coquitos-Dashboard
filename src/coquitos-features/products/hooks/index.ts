@@ -4,3 +4,7 @@ export * from './useDeleteProduct';
 export * from './useGetProducts';
 export * from './useProductsStats';
 export * from './useUpdateProduct';
+export * from './useGetBatches';
+export * from './useCreateBatch';
+export * from './useUpdateBatchStock';
+export * from './useDeleteBatch';

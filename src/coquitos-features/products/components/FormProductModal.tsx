@@ -1,7 +1,8 @@
 // * Library
-import { useForm, type SubmitHandler } from "react-hook-form";
-import { X, Package, FileText, Coins, Hash, Box, AlertTriangle, Layers, Tag, CheckCircle, Loader2, Image as ImageIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useForm, type SubmitHandler, Controller } from "react-hook-form";
+import { X, Package, FileText, Coins, Hash, Box, AlertTriangle, Layers, Tag, CheckCircle, Loader2, Image as ImageIcon, Weight, Plus } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 // * Others
 import { LabelInputString, LabelSelect, LabelTextarea } from "@/shared/components";
@@ -17,6 +18,9 @@ import { useGetCategories } from "@/coquitos-features/categories/hooks/useGetCat
 import { compressImage, validateImageSize, getImageInfo, generateSKUWithCategory } from "../helpers";
 import { toast } from "sonner";
 import type { ProductStatus, SearchProductsParams } from "../interfaces";
+import { useGetBatches, useDeleteBatch, useUpdateBatchStock } from "../hooks";
+import { BatchList, FormBatchModal } from "./";
+import { productsQueries } from "../const";
 
 const onlyStatusOptions = statusOptions;
 
@@ -32,6 +36,8 @@ const initialValues: ProductSchema = {
   ingredients: "",
   categoryId: "",
   status: "Disponible",
+  isVariableWeight: false,
+  pricePerKg: "",
 };
 
 
@@ -50,9 +56,15 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
   const productToUpdate = useProductStore(useShallow((state) => state.productToUpdate));
   // * Theme
   const { isDark } = useTheme();
+  
+  // * TanStack Query Client para refetch manual
+  const queryClient = useQueryClient();
 
   // * Estado local para preview de imagen
   const [imagePreview, setImagePreview] = useState<string>("");
+  
+  // * Estado local para modal de batch
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState<boolean>(false);
 
   // * TanstackQuery
   const { useCreateProductMutation, isPending: isCreatingProduct } = useCreateProduct({
@@ -79,27 +91,61 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
     mode: "onChange",
   });
 
-  // Observar nombre y categoría para generar SKU automático
+  // Observar nombre, categoría y isVariableWeight
   const watchedName = watch("name");
   const watchedCategoryId = watch("categoryId");
+  const watchedIsVariableWeight = watch("isVariableWeight");
+  
+  // * Obtener batches solo si es modo edición y producto de peso variable
+  const { batches, isLoading: isLoadingBatches } = useGetBatches(
+    productToUpdate?.id || "", 
+    isEditMode && !!productToUpdate?.id && watchedIsVariableWeight
+  );
+  
+  // * Hooks para gestión de batches
+  const { deleteBatchMutation } = useDeleteBatch({ productId: productToUpdate?.id || "" });
+  const { updateBatchStockMutation } = useUpdateBatchStock({ 
+    productId: productToUpdate?.id || "",
+    onSuccessCallback: () => {},
+  });
+  
+  // * Handlers para batches
+  const handleDeleteBatch = useCallback((batchId: string) => {
+    deleteBatchMutation.mutate(batchId);
+  }, [deleteBatchMutation]);
+  
+  const handleUpdateBatchStock = useCallback((
+    batchId: string, 
+    newStock: number, 
+    userId: string,
+    reason?: string,
+    notes?: string
+  ) => {
+    updateBatchStockMutation.mutate({ 
+      batchId, 
+      stock: newStock,
+      userId,
+      reason,
+      notes
+    });
+  }, [updateBatchStockMutation]);
 
   const onSubmit: SubmitHandler<ProductSchema> = (data) => {
     // Convertir strings a números para el backend
     const productData = {
       ...data,
-      price: parseFloat(data.price),
-      stock: data.stock ? parseInt(data.stock) : 0,
+      price: data.isVariableWeight ? 0 : parseFloat(data.price || '0'),
+      stock: data.isVariableWeight ? 0 : (data.stock ? parseInt(data.stock) : 0),
       minStock: data.minStock ? parseInt(data.minStock) : 5,
-      status : data.status as ProductStatus
+      status : data.status as ProductStatus,
+      isVariableWeight: data.isVariableWeight || false,
+      pricePerKg: data.pricePerKg ? parseFloat(data.pricePerKg) : undefined,
     };
     
     closeModal();
     
     if (isEditMode && productToUpdate?.id) {
-      updateProductMutation.mutate({
-        ...productData,
-
-      });
+      updateProductMutation.mutate(productData);
       return; 
     }
 
@@ -120,6 +166,8 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
       setValue('ingredients', productToUpdate.ingredients || '');
       setValue('categoryId', productToUpdate.categoryId || '');
       setValue('status', productToUpdate.status as ProductStatus);
+      setValue('isVariableWeight', productToUpdate.isVariableWeight || false);
+      setValue('pricePerKg', productToUpdate.pricePerKg?.toString() || '');
       setImagePreview(productToUpdate.image || '');
     } else if (modalMode === 'create') {
       setImagePreview('');
@@ -142,6 +190,15 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
       } 
     }
   }, [watchedName, watchedCategoryId, modalMode, categories, setValue]);
+
+  // Effect para manejar cambio de tipo de producto (peso variable)
+  useEffect(() => {
+    if (watchedIsVariableWeight) {
+      // Si es peso variable, establecer stock y price en 0 (el schema ignora estos valores)
+      setValue('stock', '0', { shouldValidate: false });
+      setValue('price', '0', { shouldValidate: false });
+    }
+  }, [watchedIsVariableWeight, setValue]);
 
   // Handler para cambio de imagen con compresión automática
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -213,7 +270,11 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
             </h2>
           </div>
           <button
-            onClick={() => closeModal()}
+            onClick={async () => {
+              // Refrescar productos antes de cerrar (para actualizar tarjeta con cambios de batches)
+              await queryClient.refetchQueries({ queryKey: productsQueries.allProducts });
+              closeModal();
+            }}
             className={`p-2 ${isDark ? 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#334155]/50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'} rounded-lg transition-all duration-200 cursor-pointer`}
           >
             <X className="w-5 h-5" />
@@ -234,19 +295,66 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
             />
           </div>
 
-          {/* Segunda fila - Precio, SKU, Categoría */}
+          {/* Checkbox - Producto de Peso Variable */}
+          <div className="grid grid-cols-1 gap-3">
+            <div className={`flex items-center gap-3 p-3 rounded-lg border ${isDark ? 'bg-[#0F172A]/50 border-[#334155]' : 'bg-gray-50 border-gray-200'}`}>
+              <Controller
+                name="isVariableWeight"
+                control={control}
+                render={({ field }) => (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="isVariableWeight"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                    />
+                    <label
+                      htmlFor="isVariableWeight"
+                      className={`text-sm font-medium cursor-pointer ${isDark ? 'text-[#F8FAFC]' : 'text-gray-700'}`}
+                    >
+                      Producto de Peso Variable
+                    </label>
+                  </div>
+                )}
+              />
+              <Weight className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
+              <p className={`text-xs ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>
+                {watchedIsVariableWeight 
+                  ? "Se gestionará mediante batches con peso/precio individual" 
+                  : "Producto con precio fijo"}
+              </p>
+            </div>
+          </div>
+
+          {/* Segunda fila - Precio o Precio por Kg, SKU, Categoría */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <LabelInputString
-              label="Precio (Bs.)"
-              name="price"
-              control={control}
-              icon={Coins}
-              required
-              placeholder="18.50"
-              error={errors.price?.message}
-              type="text"
-              inputMode="decimal"
-            />
+            {!watchedIsVariableWeight ? (
+              <LabelInputString
+                label="Precio (Bs.)"
+                name="price"
+                control={control}
+                icon={Coins}
+                required
+                placeholder="18.50"
+                error={errors.price?.message}
+                type="text"
+                inputMode="decimal"
+              />
+            ) : (
+              <LabelInputString
+                label="Precio por Kg (Bs.)"
+                name="pricePerKg"
+                control={control}
+                icon={Weight}
+                required
+                placeholder="50.00"
+                error={errors.pricePerKg?.message}
+                type="text"
+                inputMode="decimal"
+              />
+            )}
 
             <LabelInputString
               label="Código del Producto"
@@ -279,11 +387,12 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
               name="stock"
               control={control}
               icon={Box}
-              required
+              required={!watchedIsVariableWeight}
               placeholder="10"
               error={errors.stock?.message}
               type="text"
               inputMode="numeric"
+              disabled={watchedIsVariableWeight}
             />
 
             <LabelInputString
@@ -406,11 +515,46 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
             </div>
           </div>
 
+          {/* Sección de Batches (solo en modo edición y peso variable) */}
+          {isEditMode && watchedIsVariableWeight && productToUpdate?.id && (
+            <div className={`border-t ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'} pt-4 mt-4`}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className={`text-base font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-900'}`}>
+                  Gestión de Batches
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsBatchModalOpen(true)}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Agregar Batch
+                </button>
+              </div>
+              
+              {isLoadingBatches ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className={`w-6 h-6 animate-spin ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
+                </div>
+              ) : (
+                <BatchList
+                  batches={batches}
+                  onDeleteBatch={handleDeleteBatch}
+                  onUpdateStock={handleUpdateBatchStock}
+                />
+              )}
+            </div>
+          )}
+
           {/* Botones */}
           <div className={`flex flex-col sm:flex-row gap-3 pt-4 border-t ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'}`}>
             <button
               type="button"
-              onClick={() => closeModal()}
+              onClick={async () => {
+                // Refrescar productos antes de cerrar
+                await queryClient.refetchQueries({ queryKey: productsQueries.allProducts });
+                closeModal();
+              }}
               className={`flex-1 px-4 py-2.5 border ${isDark ? 'border-[#334155] text-[#E2E8F0] hover:bg-[#334155]/50' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-lg transition-all duration-200 font-medium text-sm cursor-pointer`}
             >
               Cancelar
@@ -428,6 +572,15 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
           </div>
         </form>
       </div>
+
+      {/* Modal de Batch */}
+      {isBatchModalOpen && productToUpdate && (
+        <FormBatchModal
+          isOpen={isBatchModalOpen}
+          onClose={() => setIsBatchModalOpen(false)}
+          product={productToUpdate}
+        />
+      )}
     </div>
   );
 };

@@ -57,15 +57,18 @@ export const ProductButtomsActions = ({ product, currentParams, onPageEmpty }: P
 
   return (
     <div className="flex justify-center space-x-2">
-      <button
-        onClick={handleAdjustStock}
-        className="p-2 rounded-lg bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 transition-colors"
-        aria-label="Ajustar stock"
-        title="Ajustar stock"
-        type="button"
-      >
-        <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
-      </button>
+      {/* Solo mostrar "Ajustar Stock" para productos de peso fijo */}
+      {!product.isVariableWeight && (
+        <button
+          onClick={handleAdjustStock}
+          className="p-2 rounded-lg bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/30 transition-colors"
+          aria-label="Ajustar stock"
+          title="Ajustar stock"
+          type="button"
+        >
+          <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+        </button>
+      )}
       <button
         onClick={handleEditProduct}
         className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 transition-colors"

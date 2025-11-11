@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getCurrentCashRegister } from "../services/cash-register.service";
+import { cashRegisterQueries } from "../const";
 import type { CashRegister } from "../interfaces";
 
 /**
@@ -7,15 +8,16 @@ import type { CashRegister } from "../interfaces";
  */
 export const useGetCurrentCashRegister = (userId: string | undefined) => {
   const query = useQuery({
-    queryKey: ['cash-register', 'current', userId],
+    queryKey: userId ? cashRegisterQueries.currentCashRegister(userId) : ['cash-register-disabled'],
     queryFn: async () => {
       if (!userId) return null;
       const response = await getCurrentCashRegister(userId);
       return response.cashRegister;
     },
     enabled: !!userId,
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 30 * 5, // 5 minutos
     retry: 1,
+    refetchOnWindowFocus: true, // Refetch al volver a la pestaña
   });
 
   return {
@@ -24,4 +26,3 @@ export const useGetCurrentCashRegister = (userId: string | undefined) => {
     error: query.error,
   };
 };
-

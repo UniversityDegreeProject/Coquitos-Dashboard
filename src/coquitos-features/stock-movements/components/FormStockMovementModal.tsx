@@ -15,6 +15,7 @@ import { useShallow } from "zustand/shallow";
 import { useAuthStore } from "@/auth/store/auth.store";
 import type { User } from "@/coquitos-features/users/interfaces";
 import { generateReferenceByType } from "../helpers";
+import type { SearchProductsParams } from "@/coquitos-features/products/interfaces";
 
 const onlyMovementTypeOptions = movementTypeOptions.filter((option) => option.value !== "");
 
@@ -31,7 +32,10 @@ const initialValues: StockMovementSchema = {
   notes: "",
 };
 
-export const FormStockMovementModal = () => {
+interface FormStockMovementModalProps {
+  currentParams : SearchProductsParams
+}
+export const FormStockMovementModal = ({ currentParams }: FormStockMovementModalProps) => {
   // * Zustand
   const closeModal = useStockMovementStore(useShallow((state) => state.closeModal));
   const selectedProduct = useStockMovementStore(useShallow((state) => state.selectedProduct));
@@ -42,7 +46,7 @@ export const FormStockMovementModal = () => {
   const { isDark } = useTheme();
 
   // * TanstackQuery
-  const { useCreateStockMovementMutation, isPending } = useCreateStockMovement();
+  const { useCreateStockMovementMutation, isPending } = useCreateStockMovement({ currentParams });
   
   // * React Hook Form
   const { control, setValue, handleSubmit, watch, formState: { errors, isValid } } = useForm<StockMovementSchema>({

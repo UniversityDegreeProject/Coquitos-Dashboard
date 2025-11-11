@@ -133,24 +133,33 @@ export const ClientsPage = () => {
   
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
-            <Users className={`w-6 h-6 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header - Responsive */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Título con icono y toggle tema */}
+        <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className={`p-1.5 sm:p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
+              <Users className={`w-5 h-5 sm:w-6 sm:h-6 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+            </div>
+            <h3 className={`text-lg sm:text-xl lg:text-2xl font-bold ${colors.text.primary}`}>
+              Clientes del Sistema
+            </h3>
           </div>
-          <h3 className={`text-2xl font-bold ${colors.text.primary}`}>
-            Clientes del Sistema
-          </h3>
         </div>
-        <button
-          onClick={handleOpenModal}
-          className={`flex items-center px-6 py-3 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-xl hover:shadow-xl transition-all duration-200 shadow-lg transform hover:-translate-y-0.5`}
-        >
-          <Plus className="w-5 h-5 mr-2 text-[#2309095c]" />
-          <span className="text-[#08080865] font-bold">Agregar Cliente</span>
-        </button>
+        
+        {/* Botones - Responsive */}
+        <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3">
+                   
+          {/* Botón agregar */}
+          <button
+            onClick={handleOpenModal}
+            className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-2 lg:px-8 lg:py-2.5 xl:px-10 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-lg hover:shadow-xl transition-all duration-200 shadow-md cursor-pointer min-w-[120px] sm:min-w-[140px] lg:min-w-[160px]`}
+          >
+            <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-[#2309095c]" />
+            <span className="text-[#08080865] font-semibold lg:font-bold text-sm lg:text-base ml-1.5 lg:ml-2">Agregar Cliente</span>
+          </button>
+        </div>
       </div>
 
       {/* Statistics */}

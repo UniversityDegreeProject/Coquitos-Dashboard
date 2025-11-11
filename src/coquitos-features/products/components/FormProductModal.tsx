@@ -322,7 +322,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
               <Weight className={`w-4 h-4 ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
               <p className={`text-xs ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`}>
                 {watchedIsVariableWeight 
-                  ? "Se gestionará mediante batches con peso/precio individual" 
+                  ? "Se gestionará mediante lotes de compra con peso/precio individual" 
                   : "Producto con precio fijo"}
               </p>
             </div>

@@ -1,5 +1,11 @@
 import type { Product } from "./product.interface";
 
+
+export interface GetBatchesResponse {
+  batches: ProductBatch[];
+}
+
+
 /**
  * Interface para un batch de producto de peso variable
  */
@@ -7,7 +13,7 @@ export interface ProductBatch {
   id: string;
   productId: string;
   batchCode: string;
-  weight: number; // En kg
+  weight: number; 
   unitPrice: number;
   stock: number;
   createdAt: Date;
@@ -16,11 +22,26 @@ export interface ProductBatch {
 }
 
 /**
- * Response al obtener batches por producto
+ * Form data para crear un batch
  */
-export interface GetBatchesResponse {
-  batches: ProductBatch[];
+export interface CreateBatchFormData {
+  id?: string;
+  productId: string;
+  weight: number;
+  unitPrice: number;
 }
+
+/**
+ * Form data para actualizar stock de batch
+ */
+export interface UpdateBatchStockFormData {
+  batchId: string;
+  stock: number;
+  userId: string;
+  reason?: string;
+  notes?: string;
+}
+
 
 /**
  * Response al crear un batch
@@ -46,23 +67,5 @@ export interface DeleteBatchResponse {
   batch: ProductBatch;
 }
 
-/**
- * Form data para crear un batch
- */
-export interface CreateBatchFormData {
-  productId: string;
-  weight: number;
-  unitPrice: number;
-}
 
-/**
- * Form data para actualizar stock de batch
- */
-export interface UpdateBatchStockFormData {
-  batchId: string;
-  stock: number;
-  userId: string;
-  reason?: string;
-  notes?: string;
-}
 

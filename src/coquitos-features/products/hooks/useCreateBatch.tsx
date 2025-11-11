@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createBatch } from "../services/product-batch.service";
 import { productBatchesQueries, productsQueries } from "../const";
-import type { CreateBatchFormData } from "../interfaces";
+import type { CreateBatchFormData, CreateBatchResponse } from "../interfaces";
 import Swal from "sweetalert2";
 
 interface UseCreateBatchOptions {
@@ -19,7 +19,7 @@ export const useCreateBatch = (options: UseCreateBatchOptions) => {
   const useCreateBatchMutation = useMutation({
     mutationFn: (batchData: CreateBatchFormData) => createBatch(productId, batchData),
 
-    onSuccess: async (response) => {
+    onSuccess: async (batchCreated : CreateBatchResponse) => {
       // Invalidar queries de batches
       await queryClient.invalidateQueries({
         queryKey: productBatchesQueries.batchesByProduct(productId),
@@ -41,24 +41,24 @@ export const useCreateBatch = (options: UseCreateBatchOptions) => {
       }
 
       // Mensaje de éxito (indica si se combinó con batch existente)
-      const wasIncremented = response.batch.stock > 1;
+      const wasIncremented = batchCreated.batch.stock > 1;
       await Swal.fire({
-        title: wasIncremented ? '¡Batch actualizado!' : '¡Batch creado!',
+        title: wasIncremented ? `¡Lote ${batchCreated.batch.batchCode} actualizado!` : `¡Lote ${batchCreated.batch.batchCode} creado exitosamente!`,
         html: wasIncremented 
-          ? `Ya existía un batch con este peso/precio.<br/>Stock incrementado a <strong>${response.batch.stock}</strong> unidades<br/><small class="text-gray-500">${response.batch.batchCode}</small>`
-          : `Código: ${response.batch.batchCode}<br/>Stock: ${response.batch.stock} unidad`,
+          ? `Ya existía un batch con este peso/precio.<br/>Stock incrementado a <strong>${batchCreated.batch.stock}</strong> unidades<br/><small class="text-gray-500">${batchCreated.batch.batchCode}</small>`
+          : `Código: ${batchCreated.batch.batchCode}<br/>Stock: ${batchCreated.batch.stock} unidad`,
         icon: 'success',
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false,
       });
     },
 
     onError: async (error: Error) => {
       await Swal.fire({
-        title: 'Error al crear batch',
+        title: 'Error al crear lote',
         text: error.message,
         icon: 'error',
-        timer: 2000,
+        timer: 1500,
         showConfirmButton: false,
       });
     },

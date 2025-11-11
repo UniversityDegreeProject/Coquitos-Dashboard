@@ -38,9 +38,22 @@ export const updateBatchStockSchema = z.object({
     .uuid({ message: 'ID de batch inválido' }),
   
   stock: z
-    .number({ message: 'Stock es requerido' })
-    .int({ message: 'Stock debe ser un número entero' })
-    .min(0, { message: 'Stock no puede ser negativo' }),
+    .string({ message: 'Stock es requerido' })
+    .min(1, 'El stock es requerido')
+    .refine((val) => !isNaN(parseInt(val)), { message: 'El stock debe ser un número válido' })
+    .refine((val) => parseInt(val) >= 0, { message: 'Stock no puede ser negativo' }),
+  
+  userId: z
+    .string({ message: 'ID de usuario es requerido' })
+    .uuid({ message: 'ID de usuario inválido' }),
+  
+  reason: z
+    .string()
+    .optional(),
+  
+  notes: z
+    .string()
+    .optional(),
 });
 
 /**

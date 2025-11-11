@@ -4,12 +4,17 @@ import { useQuerys } from "../const";
 import type { StockMovementFormData } from "../interfaces";
 import { productsQueries } from "@/coquitos-features/products/const";
 import Swal from "sweetalert2";
+import type { SearchProductsParams } from "@/coquitos-features/products/interfaces";
 
 /**
  * Hook para crear un nuevo movimiento de stock
  * Invalida las queries de stock movements y products al completarse
  */
-export const useCreateStockMovement = () => {
+
+interface CreateStockMovementProps {
+  currentParams : SearchProductsParams
+}
+export const useCreateStockMovement = ({ currentParams }: CreateStockMovementProps) => {
   const queryClient = useQueryClient();
 
   const useCreateStockMovementMutation = useMutation({
@@ -20,7 +25,7 @@ export const useCreateStockMovement = () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: useQuerys.allStockMovements }),
         queryClient.invalidateQueries({ queryKey: productsQueries.allProducts }),
-        queryClient.refetchQueries({ queryKey: productsQueries.allProducts }),
+        queryClient.refetchQueries({ queryKey: productsQueries.productsWithFilters(currentParams) }),
       ]);
       
       Swal.fire({

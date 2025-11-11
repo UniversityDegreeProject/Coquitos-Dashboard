@@ -30,9 +30,13 @@ export const useUserActivity = (options: UseUserActivityOptions = {}) => {
     const now = Date.now();
     lastActivityRef.current = now;
 
+    // 🔍 LOG TEMPORAL: Ver cuando se detecta actividad
+    console.log('🟢 Actividad detectada:', new Date().toLocaleTimeString());
+
     // Si estaba inactivo, ejecutar callback de activación
     if (!isActiveRef.current) {
       isActiveRef.current = true;
+      console.log('✅ Usuario reactivado después de inactividad');
       onActive?.();
     }
 
@@ -44,6 +48,7 @@ export const useUserActivity = (options: UseUserActivityOptions = {}) => {
     // Configurar nuevo timer de inactividad
     inactivityTimerRef.current = setTimeout(() => {
       isActiveRef.current = false;
+      console.log('⚠️ Usuario marcado como INACTIVO después de', inactivityTimeout / 60000, 'minutos');
       onInactive?.();
     }, inactivityTimeout);
   }, [inactivityTimeout, onInactive, onActive]);
@@ -67,10 +72,16 @@ export const useUserActivity = (options: UseUserActivityOptions = {}) => {
     const events = [
       'mousedown',
       'mousemove',
-      'keypress',
+      'keydown',      // ← Detecta presionar cualquier tecla (reemplaza keypress)
+      'keyup',        // ← Detecta soltar teclas
+      'input',        // ← Detecta cambios en inputs (CRÍTICO para formularios)
+      'change',       // ← Detecta cambios en selects, checkboxes, etc.
       'scroll',
       'touchstart',
+      'touchmove',    // ← Detecta movimiento en pantallas táctiles
       'click',
+      'focus',        // ← Detecta cuando haces focus en un campo
+      'blur',         // ← Detecta cuando sales de un campo
     ];
 
     // Agregar listeners a todos los eventos

@@ -11,4 +11,8 @@ export * from './ProductSearchPage';
 export * from './ProductStats';
 export * from './ProductToggleFromGridToList';
 export * from './BatchList';
+export * from './BatchItem';
+export * from './BatchButtonsActions';
+export * from './BatchEmptyState';
 export * from './FormBatchModal';
+export * from './FormUpdateBatchStockModal';

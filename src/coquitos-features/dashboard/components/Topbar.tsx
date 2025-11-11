@@ -63,12 +63,12 @@ export const Topbar = ({  /* title, */ subtitle, onToggleSidebar, isSidebarColla
 
       {/* Sección Derecha - Acciones y Perfil de Usuario */}
       <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4 flex-shrink-0">
-        {/* Botón de cambio de tema - Solo visible en pantallas medianas y grandes */}
+        {/* Botón de cambio de tema - Visible en todas las pantallas */}
         <button
           type="button"
           onClick={toggleTheme}
           aria-label={`Cambiar a tema ${isDark ? 'claro' : 'oscuro'}`}
-          className={`hidden sm:flex relative p-1.5 sm:p-2 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} ${css.interactive.hover} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:ring-offset-2`}
+          className={`flex relative p-1.5 sm:p-2 ${isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'} ${css.interactive.hover} rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F59E0B] focus:ring-offset-2`}
         >
           {isDark ? (
             <Sun className="h-4 w-4 sm:h-5 sm:w-5" />

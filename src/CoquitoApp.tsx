@@ -13,7 +13,7 @@ export const CoquitoApp = () => {
   // - Cierra sesión automáticamente si el usuario está inactivo y el token expira
   useTokenRefresh({
     renewBeforeExpiry: 5,
-    inactivityTimeout: 10,
+    inactivityTimeout: 1,  // ⏱️ 10 minutos de inactividad antes de cerrar sesión
     checkInterval: 1,
   });
 

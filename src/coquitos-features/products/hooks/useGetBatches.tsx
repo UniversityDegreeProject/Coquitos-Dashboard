@@ -5,6 +5,7 @@ import type { ProductBatch } from "../interfaces";
 
 /**
  * Hook para obtener todos los batches de un producto específico
+ * 
  * Solo para productos con isVariableWeight = true
  */
 export const useGetBatches = (productId: string, enabled: boolean = true) => {

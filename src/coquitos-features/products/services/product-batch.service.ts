@@ -9,6 +9,7 @@ import type {
   UpdateBatchStockFormData,
   DeleteBatchResponse,
 } from "../interfaces";
+import { backendBatchesToFrontendBatches } from "../mapper/backendBatchToFrontendBatch";
 
 /**
  * Obtiene todos los batches de un producto
@@ -17,7 +18,9 @@ import type {
 export const getBatchesByProduct = async (productId: string): Promise<ProductBatch[]> => {
   try {
     const response = await CoquitoApi.get<GetBatchesResponse>(`/products/${productId}/batches`);
-    return response.data.batches;
+    const { batches } = response.data;  
+    return batches.map(backendBatchesToFrontendBatches);
+
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       throw new Error(error.response?.data.error || 'Error al obtener batches');
@@ -32,11 +35,12 @@ export const getBatchesByProduct = async (productId: string): Promise<ProductBat
  */
 export const createBatch = async (productId: string, batchData: CreateBatchFormData): Promise<CreateBatchResponse> => {
   try {
-    const response = await CoquitoApi.post<CreateBatchResponse>(
-      `/products/${productId}/batches`,
-      batchData
-    );
-    return response.data;
+    const response = await CoquitoApi.post<CreateBatchResponse>(`/products/${productId}/batches`, batchData );
+    const { message, batch } = response.data;
+    return {
+      message,
+      batch : backendBatchesToFrontendBatches(batch),
+    }
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
       throw new Error(error.response?.data.error || 'Error al crear batch');
@@ -51,9 +55,7 @@ export const createBatch = async (productId: string, batchData: CreateBatchFormD
  */
 export const updateBatchStock = async (data: UpdateBatchStockFormData): Promise<UpdateBatchStockResponse> => {
   try {
-    const response = await CoquitoApi.patch<UpdateBatchStockResponse>(
-      `/products/batches/${data.batchId}`,
-      { 
+    const response = await CoquitoApi.patch<UpdateBatchStockResponse>(`/products/batches/${data.batchId}`,{ 
         stock: data.stock,
         userId: data.userId,
         reason: data.reason,

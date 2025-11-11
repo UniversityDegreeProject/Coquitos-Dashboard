@@ -1,8 +1,9 @@
 import { memo, useCallback, useEffect } from "react";
-import { X, Plus } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
+import { X, Plus, Weight, Coins } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTheme } from "@/shared/hooks/useTheme";
+import { LabelInputString } from "@/shared/components";
 import { createBatchSchema, type CreateBatchSchema } from "../schemas";
 import { useCreateBatch } from "../hooks";
 import type { Product } from "../interfaces";
@@ -111,58 +112,30 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           {/* Peso */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-[#F8FAFC]' : 'text-gray-700'}`}>
-              Peso (kg) <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="weight"
-              control={control}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="Ej: 0.500 o 0.573"
-                  className={`w-full px-4 py-2.5 rounded-lg border transition-colors ${
-                    isDark
-                      ? 'bg-[#0F172A] border-[#334155] text-[#F8FAFC] placeholder-[#64748B]'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                />
-              )}
-            />
-            {errors.weight && (
-              <p className="mt-1 text-sm text-red-500">{errors.weight.message}</p>
-            )}
-          </div>
+          <LabelInputString
+            label="Peso (kg)"
+            name="weight"
+            control={control}
+            icon={Weight}
+            required
+            placeholder="Ej: 0.500 o 0.573"
+            error={errors.weight?.message}
+            type="text"
+            inputMode="decimal"
+          />
 
           {/* Precio Unitario */}
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-[#F8FAFC]' : 'text-gray-700'}`}>
-              Precio Unitario (Bs) <span className="text-red-500">*</span>
-            </label>
-            <Controller
-              name="unitPrice"
-              control={control}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="Ej: 25.50 o 14.33"
-                  className={`w-full px-4 py-2.5 rounded-lg border transition-colors ${
-                    isDark
-                      ? 'bg-[#0F172A] border-[#334155] text-[#F8FAFC] placeholder-[#64748B]'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                  } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                />
-              )}
-            />
-            {errors.unitPrice && (
-              <p className="mt-1 text-sm text-red-500">{errors.unitPrice.message}</p>
-            )}
-          </div>
+          <LabelInputString
+            label="Precio Unitario (Bs)"
+            name="unitPrice"
+            control={control}
+            icon={Coins}
+            required
+            placeholder="Ej: 25.50 o 14.33"
+            error={errors.unitPrice?.message}
+            type="text"
+            inputMode="decimal"
+          />
 
           {/* Info */}
           <div className={`p-3 rounded-lg ${isDark ? 'bg-blue-900/20 border border-blue-800/30' : 'bg-blue-50 border border-blue-200'}`}>

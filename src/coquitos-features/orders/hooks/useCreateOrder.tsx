@@ -4,6 +4,7 @@ import { ordersQueries } from "../const";
 import Swal from "sweetalert2";
 import type { CreateOrderResponse, OrderFormData } from "../interfaces";
 import { productsQueries } from "@/coquitos-features/products/const";
+import { cashRegisterQueries } from "@/coquitos-features/cash-closing/const";
 
 interface UseCreateOrderOptions {
   onSuccessCallback?: () => void;
@@ -32,6 +33,11 @@ export const useCreateOrder = (options?: UseCreateOrderOptions) => {
 
       await queryClient.invalidateQueries({
         queryKey: ['stock-movements'],
+      });
+
+      // Invalidar queries de cash-register para reflejar los cambios en el cierre de caja
+      await queryClient.invalidateQueries({
+        queryKey: cashRegisterQueries.allCashRegisters,
       });
 
       // Ejecutar callback de éxito

@@ -67,3 +67,25 @@ export interface GetCurrentCashRegisterResponse {
   message?: string;
 }
 
+/**
+ * Parámetros para buscar historial de cierres
+ */
+export interface GetCashRegisterHistoryParams {
+  userId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  page: number;
+  limit: number;
+}
+
+/**
+ * Respuesta al obtener historial de cierres
+ */
+export interface GetCashRegisterHistoryResponse {
+  data: CashRegister[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+

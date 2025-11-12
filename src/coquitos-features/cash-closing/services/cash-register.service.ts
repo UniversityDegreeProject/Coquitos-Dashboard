@@ -6,6 +6,8 @@ import type {
   OpenCashRegisterResponse,
   CloseCashRegisterResponse,
   GetCurrentCashRegisterResponse,
+  GetCashRegisterHistoryParams,
+  GetCashRegisterHistoryResponse,
 } from "../interfaces";
 
 /**
@@ -53,6 +55,37 @@ export const getCurrentCashRegister = async (userId: string): Promise<GetCurrent
       throw new Error(error.response?.data.error || 'Error al obtener caja actual');
     }
     throw new Error('Error desconocido al obtener caja actual');
+  }
+};
+
+/**
+ * Obtiene el historial de cierres de caja
+ * GET /api/cash-register/history
+ */
+export const getCashRegisterHistory = async (params: GetCashRegisterHistoryParams): Promise<GetCashRegisterHistoryResponse> => {
+  const clearParams: Partial<GetCashRegisterHistoryParams> = {
+    page: params.page,
+    limit: params.limit,
+  };
+
+  if (params.userId?.trim() !== "") {
+    clearParams.userId = params.userId;
+  }
+  if (params.startDate) {
+    clearParams.startDate = params.startDate;
+  }
+  if (params.endDate) {
+    clearParams.endDate = params.endDate;
+  }
+
+  try {
+    const response = await CoquitoApi.get<GetCashRegisterHistoryResponse>('/cash-register/history', { params: clearParams });
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data.error || 'Error al obtener historial de cierres');
+    }
+    throw new Error('Error desconocido al obtener historial de cierres');
   }
 };
 

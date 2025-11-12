@@ -12,6 +12,7 @@ import {
   CloseCashAction,
   OpenCashAction,
 } from "../components";
+import { CashRegisterHistoryList } from "../components/history";
 import { GenericGridLoader } from "@/shared/components";
 
 /**
@@ -68,6 +69,9 @@ export const CashClosePage = () => {
       {
         !cashRegister || cashRegister.status === "Cerrado" ? <OpenCashAction /> : <CloseCashAction />
       }
+
+      {/* Historial de Cierres */}
+      <CashRegisterHistoryList />
 
       {/* Modales */}
       {isOpenCashModalOpen && <FormOpenCashModal />}

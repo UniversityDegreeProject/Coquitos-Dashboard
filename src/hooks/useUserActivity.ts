@@ -30,8 +30,6 @@ export const useUserActivity = (options: UseUserActivityOptions = {}) => {
     const now = Date.now();
     lastActivityRef.current = now;
 
-    // 🔍 LOG TEMPORAL: Ver cuando se detecta actividad
-    console.log('🟢 Actividad detectada:', new Date().toLocaleTimeString());
 
     // Si estaba inactivo, ejecutar callback de activación
     if (!isActiveRef.current) {
@@ -48,7 +46,6 @@ export const useUserActivity = (options: UseUserActivityOptions = {}) => {
     // Configurar nuevo timer de inactividad
     inactivityTimerRef.current = setTimeout(() => {
       isActiveRef.current = false;
-      console.log('⚠️ Usuario marcado como INACTIVO después de', inactivityTimeout / 60000, 'minutos');
       onInactive?.();
     }, inactivityTimeout);
   }, [inactivityTimeout, onInactive, onActive]);

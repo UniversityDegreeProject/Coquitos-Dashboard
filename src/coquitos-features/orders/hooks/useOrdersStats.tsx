@@ -7,7 +7,7 @@ import { getOrders } from "../services/order.service";
 export interface OrdersStatsData {
   totalOrders: number;
   totalSales: number;
-  pendingOrders: number;
+  // pendingOrders: number;
   completedOrders: number;
   cashOrders: number;
   cardOrders: number;
@@ -40,7 +40,7 @@ export const useOrdersStats = (filters: Pick<SearchOrdersParams, 'paymentMethod'
       return {
         totalOrders: 0,
         totalSales: 0,
-        pendingOrders: 0,
+        // pendingOrders: 0,
         completedOrders: 0,
         cashOrders: 0,
         cardOrders: 0,
@@ -53,7 +53,7 @@ export const useOrdersStats = (filters: Pick<SearchOrdersParams, 'paymentMethod'
     return {
       totalOrders: data.total ?? 0,
       totalSales: orders.reduce((sum, order) => sum + order.total, 0),
-      pendingOrders: orders.filter(order => order.status === 'Pendiente').length,
+      // pendingOrders: orders.filter(order => order.status === 'Pendiente').length,
       completedOrders: orders.filter(order => order.status === 'Completado').length,
       cashOrders: orders.filter(order => order.paymentMethod === 'Efectivo').length,
       cardOrders: orders.filter(order => order.paymentMethod === 'Tarjeta').length,

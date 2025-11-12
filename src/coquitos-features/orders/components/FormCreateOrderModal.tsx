@@ -113,6 +113,19 @@ export const FormCreateOrderModal = () => {
       return;
     }
 
+    // Verificar si el producto ya está en el carrito
+    const existingItem = cartItems.find(
+      (item) => item.productId === product.id && !item.batchId
+    );
+
+    if (existingItem) {
+      // Si ya existe, verificar stock antes de agregar más
+      if (existingItem.quantity >= existingItem.availableStock) {
+        toast.error(`Stock insuficiente. Solo hay ${existingItem.availableStock} disponible${existingItem.availableStock === 1 ? '' : 's'}`);
+        return;
+      }
+    }
+
     const cartItem: CartItem = {
       productId: product.id!,
       productName: product.name,
@@ -121,15 +134,29 @@ export const FormCreateOrderModal = () => {
       unitPrice: product.price,
       total: product.price,
       isVariableWeight: false,
+      availableStock: product.stock,
     };
 
     addToCart(cartItem);
     toast.success(`${product.name} agregado al carrito`);
-  }, [addToCart]);
+  }, [addToCart, cartItems]);
 
   // * Handler para agregar batch al carrito
   const handleAddBatchToCart = useCallback((batch: ProductBatch) => {
     if (!selectedProductForBatch) return;
+
+    // Verificar si el batch ya está en el carrito
+    const existingItem = cartItems.find(
+      (item) => item.productId === selectedProductForBatch.id && item.batchId === batch.id
+    );
+
+    if (existingItem) {
+      // Si ya existe, verificar stock antes de agregar más
+      if (existingItem.quantity >= existingItem.availableStock) {
+        toast.error(`Stock insuficiente. Solo hay ${existingItem.availableStock} disponible${existingItem.availableStock === 1 ? '' : 's'}`);
+        return;
+      }
+    }
 
     const cartItem: CartItem = {
       productId: selectedProductForBatch.id!,
@@ -142,12 +169,13 @@ export const FormCreateOrderModal = () => {
       batchCode: batch.batchCode,
       weight: batch.weight,
       isVariableWeight: true,
+      availableStock: batch.stock,
     };
 
     addToCart(cartItem);
     toast.success(`${selectedProductForBatch.name} (${batch.weight}kg) agregado al carrito`);
     setSelectedProductForBatch(null);
-  }, [selectedProductForBatch, addToCart]);
+  }, [selectedProductForBatch, addToCart, cartItems]);
 
   // * Submit handler
   const onSubmit: SubmitHandler<CreateOrderSchema> = (data) => {

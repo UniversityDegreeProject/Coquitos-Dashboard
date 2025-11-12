@@ -116,5 +116,6 @@ export interface CartItem {
   batchCode?: string;
   weight?: number; // Para productos variables
   isVariableWeight: boolean;
+  availableStock: number; // Stock disponible para validación
 }
 

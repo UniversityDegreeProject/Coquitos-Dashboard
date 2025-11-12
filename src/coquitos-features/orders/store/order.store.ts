@@ -45,12 +45,21 @@ const orderApi: StateCreator<OrderState, [["zustand/devtools", never]], []> = (s
       );
 
       if (existingItemIndex !== -1) {
-        // Incrementar cantidad si ya existe
+        // Incrementar cantidad si ya existe, validando stock disponible
         const updatedItems = [...state.cartItems];
+        const existingItem = updatedItems[existingItemIndex];
+        const newQuantity = existingItem.quantity + item.quantity;
+        
+        // Validar que no exceda el stock disponible
+        if (newQuantity > existingItem.availableStock) {
+          // No hacer nada si excede el stock
+          return state;
+        }
+        
         updatedItems[existingItemIndex] = {
-          ...updatedItems[existingItemIndex],
-          quantity: updatedItems[existingItemIndex].quantity + item.quantity,
-          total: (updatedItems[existingItemIndex].quantity + item.quantity) * item.unitPrice,
+          ...existingItem,
+          quantity: newQuantity,
+          total: newQuantity * item.unitPrice,
         };
         return { cartItems: updatedItems };
       }
@@ -70,6 +79,12 @@ const orderApi: StateCreator<OrderState, [["zustand/devtools", never]], []> = (s
     set((state) => {
       const updatedItems = state.cartItems.map((item) => {
         if (item.productId === productId && item.batchId === batchId) {
+          // Validar que la cantidad no exceda el stock disponible
+          if (quantity > item.availableStock) {
+            // No actualizar si excede el stock disponible
+            return item;
+          }
+          
           return {
             ...item,
             quantity,

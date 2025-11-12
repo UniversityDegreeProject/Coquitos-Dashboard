@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Trash2, Plus, Minus, Weight } from "lucide-react";
+import { toast } from "sonner";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { formatCurrency } from "../helpers";
 import type { CartItem as CartItemType } from "../interfaces";
@@ -69,9 +70,21 @@ export const CartItem = memo(({ item, onRemove, onUpdateQuantity }: CartItemProp
             {item.quantity}
           </span>
           <button
-            onClick={() => onUpdateQuantity(item.productId, item.quantity + 1, item.batchId)}
+            onClick={() => {
+              // Validar que no exceda el stock disponible antes de aumentar
+              if (item.quantity < item.availableStock) {
+                onUpdateQuantity(item.productId, item.quantity + 1, item.batchId);
+              } else {
+                toast.error(`Stock insuficiente. Solo hay ${item.availableStock} disponible${item.availableStock === 1 ? '' : 's'}`);
+              }
+            }}
             type="button"
-            className={`p-1 rounded-lg ${isDark ? 'bg-[#1E293B] hover:bg-[#334155]' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+            disabled={item.quantity >= item.availableStock}
+            className={`p-1 rounded-lg transition-colors ${
+              item.quantity >= item.availableStock
+                ? 'opacity-50 cursor-not-allowed bg-gray-300 dark:bg-gray-700'
+                : isDark ? 'bg-[#1E293B] hover:bg-[#334155]' : 'bg-gray-100 hover:bg-gray-200'
+            }`}
           >
             <Plus className="w-4 h-4" />
           </button>

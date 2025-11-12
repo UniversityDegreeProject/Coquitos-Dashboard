@@ -41,7 +41,7 @@ export const useGetProducts = (params: SearchProductsParams) => {
   return {
     ...useQueryProducts,
     products: filteredProducts,
-    total: filteredProducts.length, // Total de productos filtrados
+    total: filteredProducts.length, 
     page: responseData.page,
     limit: responseData.limit,
     totalPages: Math.ceil(filteredProducts.length / responseData.limit),

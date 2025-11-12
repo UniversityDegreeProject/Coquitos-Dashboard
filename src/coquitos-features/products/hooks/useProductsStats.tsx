@@ -20,13 +20,13 @@ export const useProductsStats = ( filters : Pick<SearchProductsParams, 'status' 
       const response = await getProducts({
         ...filters,
         page : 1,
-        limit : 100, // Límite razonable para estadísticas
+        limit : 100, 
       });
 
       return response;
     },
 
-    staleTime: 0, // Sin tiempo de caché para que se actualice inmediatamente
+    staleTime:30000, // Sin tiempo de caché para que se actualice inmediatamente
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchOnReconnect: false,

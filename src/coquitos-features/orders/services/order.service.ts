@@ -27,10 +27,10 @@ export const getOrders = async (searchParams: SearchOrdersParams): Promise<GetOr
   if (searchParams.cashRegisterId?.trim() !== "") {
     clearParams.cashRegisterId = searchParams.cashRegisterId;
   }
-  if (searchParams.status && searchParams.status !== "") {
+  if (searchParams.status && searchParams.status.trim() !== "") {
     clearParams.status = searchParams.status;
   }
-  if (searchParams.paymentMethod && searchParams.paymentMethod !== "") {
+  if (searchParams.paymentMethod && searchParams.paymentMethod.trim() !== "") {
     clearParams.paymentMethod = searchParams.paymentMethod;
   }
   if (searchParams.startDate) {

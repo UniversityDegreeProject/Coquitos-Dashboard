@@ -1,13 +1,19 @@
-import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import { Plus, ShoppingCart } from 'lucide-react';
+import { useCallback, useState, useMemo } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useOrderStore } from "../store/order.store";
-import { FormCreateOrderModal, OrderStats } from "../components";
-import { useOrdersStats } from "../hooks";
+import { 
+  FormCreateOrderModal, 
+  OrderStats, 
+  OrderGrid, 
+  OrderPagination 
+} from "../components";
+import { useOrdersStats, useGetOrders } from "../hooks";
 import { GenericSearchBar } from "@/shared/components";
 import { searchOrdersSchema, type SearchOrdersSchema } from "../schemas";
 import { ordersSearchFiltersOptions } from "../const";
+import type { SearchOrdersParams } from "../interfaces";
 
 const searchDefaultValues: SearchOrdersSchema = {
   search: '',
@@ -20,7 +26,11 @@ const searchDefaultValues: SearchOrdersSchema = {
  * Permite registrar ventas y ver historial con filtros y estadísticas
  */
 export const OrdersPage = () => {
-  // * Estados locales para filtros
+  // * Paginación
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(5);
+  
+  // * Estado para los filtros
   const [searchFilters, setSearchFilters] = useState<SearchOrdersSchema>(searchDefaultValues);
 
   // * Zustand
@@ -30,8 +40,29 @@ export const OrdersPage = () => {
   // * Theme
   const { colors, isDark } = useTheme();
 
-  // * Hook para estadísticas globales (todas las órdenes)
-  const { stats, isLoading: isLoadingStats } = useOrdersStats({
+  // * TanStack Query - Parámetros de búsqueda memoizados
+  const currentParams: SearchOrdersParams = useMemo(() => ({
+    paymentMethod: searchFilters.paymentMethod,
+    status: searchFilters.status,
+    page,
+    limit,
+  }), [searchFilters.paymentMethod, searchFilters.status, page, limit]);
+
+  // * Hook para obtener órdenes con paginación
+  const {
+    orders,
+    total,
+    page: currentPage,
+    limit: currentLimit,
+    totalPages,
+    nextPage,
+    previousPage,
+    isLoading,
+    isFetching,
+  } = useGetOrders(currentParams);
+
+  // * Hook para estadísticas globales
+  const { stats } = useOrdersStats({
     paymentMethod: searchFilters.paymentMethod,
     status: searchFilters.status,
   });
@@ -41,10 +72,27 @@ export const OrdersPage = () => {
     openCreateOrderModal();
   }, [openCreateOrderModal]);
 
-  // * Handler cuando cambian los filtros del buscador
   const handleSearchFiltersChange = useCallback((values: SearchOrdersSchema) => {
     setSearchFilters(values);
+    setPage(1); // Resetear a página 1 cuando cambian los filtros
   }, []);
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handleLimitChange = useCallback((newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+
+  const handlePageEmpty = useCallback(() => {
+    const newPage = Math.max(1, page - 1);
+    setPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -84,24 +132,31 @@ export const OrdersPage = () => {
         searchLabel="Buscar Ventas"
       />
 
-      {/* Contenido temporal - TODO: Agregar listado de órdenes con tabla */}
-      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'} p-12`}>
-        <div className="text-center">
-          <ShoppingCart className={`w-20 h-20 mx-auto mb-4 ${isDark ? 'text-[#64748B]' : 'text-gray-400'}`} />
-          <h3 className={`text-2xl font-semibold mb-2 ${isDark ? 'text-[#F8FAFC]' : 'text-gray-900'}`}>
-            Historial de Ventas
-          </h3>
-          <p className={`text-base ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'} mb-6`}>
-            Las ventas registradas aparecerán aquí
-          </p>
-          <button
-            onClick={handleOpenModal}
-            className={`px-8 py-3 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B]' : 'from-[#275081] to-[#F9E44E]'} text-white rounded-xl font-semibold hover:shadow-xl transition-all duration-200`}
-          >
-            Registrar Primera Venta
-          </button>
-        </div>
-      </div>
+      {/* Grid de órdenes */}
+      <OrderGrid
+        orders={orders}
+        isPending={isLoading}
+        currentParams={currentParams}
+        onPageEmpty={handlePageEmpty}
+      />
+
+      {/* Paginación */}
+      {!isLoading && orders.length > 0 && (
+        <OrderPagination
+          paginationData={{
+            total,
+            page: currentPage,
+            limit: currentLimit,
+            totalPages,
+            nextPage: nextPage ?? null,
+            previousPage: previousPage ?? null,
+          }}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          currentLimit={currentLimit}
+          isLoading={isFetching}
+        />
+      )}
 
       {/* Modal de crear venta */}
       {isCreateOrderModalOpen && <FormCreateOrderModal />}

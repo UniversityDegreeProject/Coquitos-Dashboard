@@ -1,28 +1,34 @@
-// * Library
-import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { X, ShoppingCart, Search, Package, Loader2, Coins, User, CreditCard, StickyNote, Trash2, Plus, Minus, Weight } from "lucide-react";
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { X, ShoppingCart, AlertTriangle } from "lucide-react";
+import { useState, useCallback } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useShallow } from "zustand/shallow";
+import { toast } from "sonner";
 
-// * Others
+// Hooks y stores
 import { useOrderStore } from "../store/order.store";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { createOrderSchema, type CreateOrderSchema } from "../schemas";
-import { LabelSelect, LabelTextarea } from "@/shared/components";
-import { paymentMethodOptions } from "../const";
-import { useCreateOrder } from "../hooks";
 import { useAuthStore } from "@/auth/store/auth.store";
+import { useCreateOrder } from "../hooks";
 import { useGetClients } from "@/coquitos-features/clients/hooks/useGetClients";
 import { useGetProducts } from "@/coquitos-features/products/hooks/useGetProducts";
-import { formatCurrency } from "../helpers";
-import type { CartItem, PaymentMethod } from "../interfaces";
+import { useGetBatches } from "@/coquitos-features/products/hooks";
+import { useGetCurrentCashRegister } from "@/coquitos-features/cash-closing/hooks";
+
+// Schemas y constantes
+import { createOrderSchema, type CreateOrderSchema } from "../schemas";
+import { paymentMethodOptions } from "../const";
+
+// Tipos
+import type { CartItem } from "../interfaces";
 import type { Product } from "@/coquitos-features/products/interfaces";
 import type { ProductBatch } from "@/coquitos-features/products/interfaces/product-batch.interface";
-import { useGetBatches } from "@/coquitos-features/products/hooks";
-import { toast } from "sonner";
-import { useGetCurrentCashRegister } from "@/coquitos-features/cash-closing/hooks";
-import { AlertTriangle } from "lucide-react";
+
+// Componentes
+import { ProductSearchSection } from "./ProductSearchSection";
+import { CartSection } from "./CartSection";
+import { CheckoutForm } from "./CheckoutForm";
+import { BatchSelectionModal } from "./BatchSelectionModal";
 
 const initialValues: CreateOrderSchema = {
   customerId: "",
@@ -76,7 +82,6 @@ export const FormCreateOrderModal = () => {
     !!selectedProductForBatch?.id
   );
 
-  // Obtener caja abierta del usuario
   const { cashRegister, isLoading: isLoadingCashRegister } = useGetCurrentCashRegister(user?.id);
 
   const { useCreateOrderMutation, isPending } = useCreateOrder({
@@ -99,19 +104,15 @@ export const FormCreateOrderModal = () => {
   const cartTotal = getCartTotal();
   const amountPaidNumber = parseFloat(watchedAmountPaid || "0");
   const change = amountPaidNumber - cartTotal;
-  
-  // * Validar que el pago sea suficiente
   const isPaymentSufficient = amountPaidNumber >= cartTotal && cartTotal > 0;
 
   // * Handler para agregar producto al carrito
   const handleAddProductToCart = useCallback((product: Product) => {
-    // Si es producto de peso variable, primero seleccionar batch
     if (product.isVariableWeight) {
       setSelectedProductForBatch(product);
       return;
     }
 
-    // Producto de precio fijo
     const cartItem: CartItem = {
       productId: product.id!,
       productName: product.name,
@@ -238,387 +239,54 @@ export const FormCreateOrderModal = () => {
         {/* ========== CONTENIDO PRINCIPAL (GRID 2 COLUMNAS) ========== */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden">
           
-          {/* ========== COLUMNA IZQUIERDA: PRODUCTOS (2/3) - CON SCROLL ========== */}
-          <div className="lg:col-span-2 flex flex-col space-y-4 overflow-hidden">
-            
-            {/* Buscador de productos */}
-            <div className="relative">
-              <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'} z-10`} />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar productos..."
-                className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-400 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:border-[#275081]'} focus:ring-4 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
-              />
-            </div>
+          {/* COLUMNA IZQUIERDA: PRODUCTOS */}
+          <ProductSearchSection
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            products={products}
+            isLoading={isLoadingProducts}
+            onAddToCart={handleAddProductToCart}
+          />
 
-            {/* Grid de productos con SCROLL INDEPENDIENTE */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 pr-2">
-              {isLoadingProducts ? (
-                <div className="flex items-center justify-center py-20">
-                  <Loader2 className={`w-10 h-10 animate-spin ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
-                </div>
-              ) : products.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <Package className={`w-16 h-16 ${isDark ? 'text-gray-600' : 'text-gray-400'} mb-4`} />
-                  <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    No se encontraron productos disponibles
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
-                  {products.map((product) => (
-                    <button
-                      key={product.id}
-                      onClick={() => handleAddProductToCart(product)}
-                      type="button"
-                      className={`group relative overflow-hidden rounded-xl border-2 ${isDark ? 'bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-[#334155] hover:border-[#F59E0B]' : 'bg-gradient-to-br from-white to-gray-50 border-gray-200 hover:border-[#275081]'} p-4 transition-all duration-300 hover:shadow-2xl hover:scale-105 cursor-pointer`}
-                    >
-                      {/* Imagen */}
-                      <div className="relative h-32 mb-3 rounded-lg overflow-hidden">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-[#0F172A]' : 'bg-gray-100'}`}>
-                            <Package className={`w-12 h-12 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
-                          </div>
-                        )}
-                        
-                        {/* Badge de peso variable */}
-                        {product.isVariableWeight && (
-                          <div className="absolute top-2 right-2 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
-                            <Weight className="w-3 h-3" />
-                            Peso Variable
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <h3 className={`font-semibold text-sm mb-1 line-clamp-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                        {product.name}
-                      </h3>
-                      <p className={`text-xs mb-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                        {product.category?.name}
-                      </p>
-                      
-                      {/* Precio */}
-                      <div className="flex items-center justify-between">
-                        <span className={`text-lg font-bold ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`}>
-                          {product.isVariableWeight 
-                            ? `${formatCurrency(product.pricePerKg || 0)}/kg` 
-                            : formatCurrency(product.price)
-                          }
-                        </span>
-                        <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>
-                          Stock: {product.stock}
-                        </span>
-                      </div>
-
-                      {/* Efecto de brillo */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ========== COLUMNA DERECHA: CARRITO (1/3) - FIJO (SIN SCROLL) ========== */}
+          {/* COLUMNA DERECHA: CARRITO + CHECKOUT */}
           <div className={`lg:col-span-1 flex flex-col ${isDark ? 'bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-2 border-[#334155]' : 'bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200'} rounded-2xl p-6 shadow-2xl overflow-hidden`}>
             
-            {/* Header del carrito */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <ShoppingCart className={`w-5 h-5 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
-                <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Carrito
-                </h3>
-              </div>
-              <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'}
-              </span>
-            </div>
+            <CartSection
+              cartItems={cartItems}
+              onRemoveItem={removeFromCart}
+              onUpdateQuantity={updateCartItemQuantity}
+            />
 
-            {/* Items del carrito con SCROLL INDEPENDIENTE */}
-            <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 pr-2 mb-4 min-h-0">
-              {cartItems.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full py-8">
-                  <ShoppingCart className={`w-16 h-16 ${isDark ? 'text-gray-700' : 'text-gray-300'} mb-4`} />
-                  <p className={`text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
-                    El carrito está vacío
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cartItems.map((item, index) => (
-                    <div
-                      key={`${item.productId}-${item.batchId || index}`}
-                      className={`${isDark ? 'bg-[#0F172A] border-[#334155]' : 'bg-white border-gray-200'} border-2 rounded-xl p-3 transition-all duration-200 hover:shadow-lg`}
-                    >
-                      {/* Info del producto */}
-                      <div className="flex items-start gap-3 mb-2">
-                        <img
-                          src={item.productImage}
-                          alt={item.productName}
-                          className="w-12 h-12 rounded-lg object-contain"
-                        />
-                        <div className="flex-1">
-                          <h4 className={`font-medium text-sm line-clamp-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                            {item.productName}
-                          </h4>
-                          {item.isVariableWeight && (
-                            <p className={`text-xs ${isDark ? 'text-purple-400' : 'text-purple-600'} flex items-center gap-1`}>
-                              <Weight className="w-3 h-3" />
-                              {item.weight}kg - {item.batchCode}
-                            </p>
-                          )}
-                          <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {formatCurrency(item.unitPrice)} c/u
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(item.productId, item.batchId)}
-                          type="button"
-                          className="text-red-500 hover:text-red-600 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* Controles de cantidad y total */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              if (item.quantity > 1) {
-                                updateCartItemQuantity(item.productId, item.quantity - 1, item.batchId);
-                              }
-                            }}
-                            type="button"
-                            className={`p-1 rounded-lg ${isDark ? 'bg-[#1E293B] hover:bg-[#334155]' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className={`font-bold min-w-[40px] text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateCartItemQuantity(item.productId, item.quantity + 1, item.batchId)}
-                            type="button"
-                            className={`p-1 rounded-lg ${isDark ? 'bg-[#1E293B] hover:bg-[#334155]' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <span className={`font-bold ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`}>
-                          {formatCurrency(item.total)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Formulario FIJO en la parte inferior */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 flex-shrink-0">
-              
-              {/* Resumen de totales */}
-              <div className={`${isDark ? 'bg-[#0F172A] border-[#334155]' : 'bg-gray-50 border-gray-200'} border-2 rounded-xl p-4`}>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Subtotal:</span>
-                    <span className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                      {formatCurrency(cartTotal)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold border-t-2 ${isDark ? 'border-[#334155]' : 'border-gray-300'} pt-2">
-                    <span className={isDark ? 'text-white' : 'text-gray-900'}>Total:</span>
-                    <span className={isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}>
-                      {formatCurrency(cartTotal)}
-                    </span>
-                  </div>
-                  {amountPaidNumber > 0 && (
-                    <div className={`flex justify-between text-sm pt-2 border-t ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
-                      <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>Vuelto:</span>
-                      <span className={`font-bold ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {formatCurrency(Math.max(0, change))}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Selector de cliente */}
-              <LabelSelect
-                label="Cliente"
-                name="customerId"
-                control={control}
-                options={clientOptions}
-                icon={User}
-                placeholder={isLoadingClients ? "Cargando..." : "Selecciona un cliente"}
-                required
-                error={errors.customerId?.message}
-                disabled={isLoadingClients}
-              />
-
-              {/* Selector de método de pago */}
-              <LabelSelect
-                label="Método de Pago"
-                name="paymentMethod"
-                control={control}
-                options={paymentMethodOptions}
-                icon={CreditCard}
-                placeholder="Selecciona método de pago"
-                required
-                error={errors.paymentMethod?.message}
-              />
-
-              {/* Monto pagado */}
-              <div className="space-y-2">
-                <label className={`block text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Monto Pagado (Bs.)
-                  <span className="text-red-500 ml-1">*</span>
-                </label>
-                <div className="relative">
-                  <Coins className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'} z-10`} />
-                  <Controller
-                    name="amountPaid"
-                    control={control}
-                    render={({ field }) => (
-                      <input
-                        {...field}
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="0.00"
-                        className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]'} focus:ring-4 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
-                      />
-                    )}
-                  />
-                </div>
-                {errors.amountPaid && (
-                  <p className="text-red-500 text-xs font-medium">{errors.amountPaid.message}</p>
-                )}
-              </div>
-
-              {/* Notas (opcional) */}
-              <LabelTextarea
-                label="Notas (Opcional)"
-                name="notes"
-                control={control}
-                icon={StickyNote}
-                placeholder="Observaciones de la venta..."
-                rows={2}
-                error={errors.notes?.message}
-              />
-
-              {/* Botón de confirmar venta */}
-              <button
-                type="submit"
-                disabled={isPending || !isValid || !isPaymentSufficient || cartItems.length === 0 || !cashRegister}
-                className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
-                  isPending || !isValid || !isPaymentSufficient || cartItems.length === 0 || !cashRegister
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : isDark
-                    ? 'bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B] hover:shadow-2xl hover:shadow-[#F59E0B]/50'
-                    : 'bg-gradient-to-r from-[#275081] via-blue-600 to-[#F9E44E] hover:shadow-2xl hover:shadow-[#275081]/50'
-                } text-white shadow-xl`}
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Procesando...
-                  </>
-                ) : !cashRegister ? (
-                  <>
-                    <AlertTriangle className="w-5 h-5" />
-                    Caja Cerrada
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart className="w-5 h-5" />
-                    Confirmar Venta
-                  </>
-                )}
-              </button>
-            </form>
+            <CheckoutForm
+              control={control}
+              errors={errors}
+              isValid={isValid}
+              isPending={isPending}
+              cartTotal={cartTotal}
+              amountPaid={amountPaidNumber}
+              change={change}
+              isPaymentSufficient={isPaymentSufficient}
+              cartItemsCount={cartItems.length}
+              hasCashRegister={!!cashRegister}
+              clientOptions={clientOptions}
+              isLoadingClients={isLoadingClients}
+              paymentMethodOptions={paymentMethodOptions}
+              onSubmit={handleSubmit(onSubmit)}
+            />
           </div>
         </div>
       </div>
 
-      {/* Modal de selección de batch (para productos variables) */}
+      {/* Modal de selección de batch */}
       {selectedProductForBatch && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-          <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-2xl w-full max-w-2xl shadow-2xl border-2 ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
-            <div className={`p-6 border-b ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
-              <div className="flex items-center justify-between">
-                <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Selecciona un Lote
-                </h3>
-                <button
-                  onClick={() => setSelectedProductForBatch(null)}
-                  type="button"
-                  className={`p-2 ${isDark ? 'hover:bg-[#334155]' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                {selectedProductForBatch.name}
-              </p>
-            </div>
-
-            <div className="p-6 max-h-96 overflow-y-auto">
-              {isLoadingBatches ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className={`w-8 h-8 animate-spin ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
-                </div>
-              ) : batches.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    No hay lotes disponibles para este producto
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-3">
-                  {batches
-                    .filter((batch) => batch.stock > 0)
-                    .map((batch) => (
-                      <button
-                        key={batch.id}
-                        onClick={() => handleAddBatchToCart(batch)}
-                        type="button"
-                        className={`${isDark ? 'bg-[#0F172A] border-[#334155] hover:border-[#F59E0B]' : 'bg-gray-50 border-gray-200 hover:border-[#275081]'} border-2 rounded-xl p-4 transition-all duration-200 hover:shadow-lg cursor-pointer`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="text-left">
-                            <p className={`font-bold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                              {batch.batchCode}
-                            </p>
-                            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                              Peso: {batch.weight}kg | Stock: {batch.stock}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className={`font-bold text-lg ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`}>
-                              {formatCurrency(batch.unitPrice)}
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <BatchSelectionModal
+          product={selectedProductForBatch}
+          batches={batches}
+          isLoading={isLoadingBatches}
+          onClose={() => setSelectedProductForBatch(null)}
+          onSelectBatch={handleAddBatchToCart}
+        />
       )}
     </div>
   );
 };
-

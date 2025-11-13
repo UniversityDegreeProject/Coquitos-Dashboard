@@ -18,11 +18,27 @@ interface TopProduct {
 export const TopProductsSection = memo(() => {
   const { isDark } = useTheme();
 
-  // Obtener órdenes completadas (máximo 100 según limitación del backend)
+  // Calcular fechas del día actual
+  const todayDates = useMemo(() => {
+    const today = new Date();
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    return {
+      startDate: startOfDay,
+      endDate: endOfDay,
+    };
+  }, []);
+
+  // Obtener órdenes completadas del día actual (máximo 100 según limitación del backend)
   const { orders, isLoading } = useGetOrders({
     page: 1,
     limit: 100, // Máximo permitido por el backend
     status: "Completado",
+    startDate: todayDates.startDate,
+    endDate: todayDates.endDate,
   });
 
   // Calcular productos más vendidos

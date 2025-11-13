@@ -12,11 +12,27 @@ import type { Order } from "@/coquitos-features/orders/interfaces";
 export const RecentOrdersTable = memo(() => {
   const { isDark } = useTheme();
 
-  // Obtener últimas órdenes completadas
+  // Calcular fechas del día actual
+  const todayDates = useMemo(() => {
+    const today = new Date();
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(today);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    return {
+      startDate: startOfDay,
+      endDate: endOfDay,
+    };
+  }, []);
+
+  // Obtener últimas órdenes completadas del día actual
   const { orders, isLoading } = useGetOrders({
     page: 1,
     limit: 5,
     status: "Completado",
+    startDate: todayDates.startDate,
+    endDate: todayDates.endDate,
   });
 
   // Formatear órdenes para la tabla

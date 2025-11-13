@@ -1,205 +1,196 @@
-import { useState } from 'react';
-import { Download, TrendingUp, PieChart, Users, CreditCard } from 'lucide-react';
+import { useState, useMemo } from "react";
+import { useTheme } from "@/shared/hooks/useTheme";
+import {
+  useGetSalesReport,
+  useGetProductsReport,
+  useGetCustomersReport,
+} from "../hooks";
+import {
+  ReportFilters,
+  ReportSummaryCards,
+  PaymentMethodsChart,
+  SalesByHourChart,
+  TopProductsList,
+  TopCustomersList,
+  ReportLoader,
+} from "../components";
 
+/**
+ * Página principal de Reportes
+ * Muestra reportes de ventas, productos y clientes usando datos reales
+ */
 export const ReportPage = () => {
-  const [dateRange, setDateRange] = useState('today');
+  const { isDark } = useTheme();
+  const [dateRange, setDateRange] = useState<"today" | "week" | "month" | "custom">("today");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
-  const salesData = {
-    total: 1250000,
-    orders: 87,
-    avgTicket: 14367,
-    growth: 12
+  // Función helper para formatear fecha local a YYYY-MM-DD sin problemas de zona horaria
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
   };
 
-  const paymentMethods = [
-    { method: 'Efectivo', amount: 650000, percentage: 52 },
-    { method: 'Tarjeta', amount: 425000, percentage: 34 },
-    { method: 'Transferencia', amount: 175000, percentage: 14 }
-  ];
+  // Calcular fechas según el rango seleccionado
+  const dateParams = useMemo(() => {
+    const today = new Date();
+    const start = new Date();
+    const end = new Date();
 
-  const topProducts = [
-    { name: 'Combo Familiar', sales: 45, revenue: 675000 },
-    { name: 'Pollo Broaster', sales: 38, revenue: 418000 },
-    { name: 'Alitas BBQ', sales: 32, revenue: 288000 },
-    { name: 'Nuggets Kids', sales: 24, revenue: 192000 }
-  ];
+    switch (dateRange) {
+      case "today":
+        // Usar la fecha de hoy en hora local
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "week":
+        start.setDate(today.getDate() - 7);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "month":
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "custom":
+        if (startDate && endDate) {
+          return {
+            startDate: startDate,
+            endDate: endDate,
+          };
+        }
+        return null;
+    }
 
-  const topCustomers = [
-    { name: 'Ana Martínez', orders: 22, total: 650000 },
-    { name: 'María González', orders: 15, total: 425000 },
-    { name: 'Luis Pérez', orders: 12, total: 320000 },
-    { name: 'Carlos Rodríguez', orders: 8, total: 180000 }
-  ];
+    return {
+      startDate: formatLocalDate(start),
+      endDate: formatLocalDate(end),
+    };
+  }, [dateRange, startDate, endDate]);
+
+  // Hooks para obtener reportes
+  const {
+    report: salesReport,
+    isLoading: isLoadingSales,
+    error: salesError,
+  } = useGetSalesReport(
+    dateParams || { startDate: "", endDate: "" },
+    !!dateParams
+  );
+
+  const {
+    report: productsReport,
+    isLoading: isLoadingProducts,
+  } = useGetProductsReport(
+    dateParams ? { ...dateParams, limit: 10 } : { startDate: "", endDate: "", limit: 10 },
+    !!dateParams
+  );
+
+  const {
+    report: customersReport,
+    isLoading: isLoadingCustomers,
+  } = useGetCustomersReport(
+    dateParams ? { ...dateParams, limit: 10 } : { startDate: "", endDate: "", limit: 10 },
+    !!dateParams
+  );
+
+  const isLoading = isLoadingSales || isLoadingProducts || isLoadingCustomers;
+
+  // Verificar si hay datos reales en el reporte
+  const hasData = useMemo(() => {
+    if (!salesReport) return false;
+    // Considerar que hay datos si hay ventas o órdenes
+    return salesReport.totalSales > 0 || salesReport.totalOrders > 0;
+  }, [salesReport]);
+
+  // Inicializar fechas personalizadas si no están definidas
+  if (dateRange === "custom" && !startDate && !endDate) {
+    const today = new Date();
+    const weekAgo = new Date();
+    weekAgo.setDate(today.getDate() - 7);
+    setStartDate(weekAgo.toISOString().split("T")[0]);
+    setEndDate(today.toISOString().split("T")[0]);
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Reportes y Análisis</h1>
-        <div className="flex items-center space-x-3">
-          <select 
-            value={dateRange}
-            onChange={(e) => setDateRange(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          >
-            <option value="today">Hoy</option>
-            <option value="week">Esta Semana</option>
-            <option value="month">Este Mes</option>
-            <option value="custom">Rango Personalizado</option>
-          </select>
-          <button className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-            <Download className="w-5 h-5 mr-2" />
-            Exportar
-          </button>
-        </div>
+        <h1 className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-800"}`}>
+          Reportes y Análisis
+        </h1>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="p-2 rounded-lg bg-green-50">
-              <TrendingUp className="w-6 h-6 text-green-600" />
-            </div>
-            <span className="text-sm font-medium text-green-600">+{salesData.growth}%</span>
-          </div>
-          <div className="mt-4">
-            <p className="text-sm font-medium text-gray-600">Ventas Totales</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">${salesData.total.toLocaleString()}</p>
-          </div>
-        </div>
+      {/* Filtros y Exportación */}
+      <ReportFilters
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+        salesReport={salesReport}
+        productsReport={productsReport}
+        customersReport={customersReport}
+      />
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="p-2 rounded-lg bg-blue-50">
-              <PieChart className="w-6 h-6 text-blue-600" />
-            </div>
-            <span className="text-sm font-medium text-blue-600">+8%</span>
-          </div>
-          <div className="mt-4">
-            <p className="text-sm font-medium text-gray-600">Total Órdenes</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">{salesData.orders}</p>
-          </div>
-        </div>
+      {/* Loading State */}
+      {isLoading && <ReportLoader />}
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="p-2 rounded-lg bg-orange-50">
-              <CreditCard className="w-6 h-6 text-orange-600" />
-            </div>
-            <span className="text-sm font-medium text-orange-600">+3%</span>
-          </div>
-          <div className="mt-4">
-            <p className="text-sm font-medium text-gray-600">Ticket Promedio</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">${salesData.avgTicket.toLocaleString()}</p>
-          </div>
+      {/* Error State */}
+      {salesError && (
+        <div
+          className={`p-4 rounded-lg ${
+            isDark ? "bg-red-900/20 border-red-800" : "bg-red-50 border-red-200"
+          } border`}
+        >
+          <p className={isDark ? "text-red-400" : "text-red-600"}>
+            Error al cargar reportes: {salesError instanceof Error ? salesError.message : "Error desconocido"}
+          </p>
         </div>
+      )}
 
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="p-2 rounded-lg bg-purple-50">
-              <Users className="w-6 h-6 text-purple-600" />
-            </div>
-            <span className="text-sm font-medium text-purple-600">+25%</span>
-          </div>
-          <div className="mt-4">
-            <p className="text-sm font-medium text-gray-600">Nuevos Clientes</p>
-            <p className="text-2xl font-bold text-gray-900 mt-1">12</p>
-          </div>
-        </div>
-      </div>
+      {/* Content */}
+      {!isLoading && salesReport && hasData && (
+        <>
+          {/* Summary Cards */}
+          <ReportSummaryCards report={salesReport} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Sales Chart */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Ventas por Hora</h2>
-          <div className="h-64 flex items-end justify-between space-x-2">
-            {[8, 12, 15, 22, 28, 35, 42, 38, 45, 52, 48, 41].map((value, index) => (
-              <div key={index} className="flex flex-col items-center flex-1">
-                <div className="flex flex-col items-center mb-2">
-                  <span className="text-xs text-gray-500">${(value * 15000).toLocaleString()}</span>
-                </div>
-                <div 
-                  className="w-full bg-gradient-to-t from-orange-400 to-orange-300 rounded-t-sm"
-                  style={{ height: `${(value / 52) * 200}px` }}
-                ></div>
-                <span className="text-xs text-gray-500 mt-2">{8 + index}:00</span>
-              </div>
-            ))}
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <SalesByHourChart report={salesReport} />
+            <PaymentMethodsChart report={salesReport} />
           </div>
-        </div>
 
-        {/* Payment Methods */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Métodos de Pago</h2>
-          <div className="space-y-4">
-            {paymentMethods.map((method, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-4 h-4 rounded-full ${
-                    index === 0 ? 'bg-green-500' : 
-                    index === 1 ? 'bg-blue-500' : 'bg-orange-500'
-                  }`}></div>
-                  <span className="font-medium text-gray-800">{method.method}</span>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-800">${method.amount.toLocaleString()}</p>
-                  <p className="text-sm text-gray-500">{method.percentage}%</p>
-                </div>
-              </div>
-            ))}
+          {/* Products and Customers Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {productsReport && productsReport.products.length > 0 && (
+              <TopProductsList report={productsReport} />
+            )}
+            {customersReport && customersReport.customers.length > 0 && (
+              <TopCustomersList report={customersReport} />
+            )}
           </div>
-          <div className="mt-4 pt-4 border-t">
-            <div className="flex justify-between items-center font-semibold text-lg">
-              <span>Total:</span>
-              <span className="text-green-600">${salesData.total.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Products */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Productos Más Vendidos</h2>
-          <div className="space-y-3">
-            {topProducts.map((product, index) => (
-              <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                    <span className="text-orange-600 font-semibold text-sm">{index + 1}</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-800">{product.name}</p>
-                    <p className="text-sm text-gray-500">{product.sales} unidades</p>
-                  </div>
-                </div>
-                <span className="font-semibold text-green-600">${product.revenue.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
+      {/* Empty State */}
+      {!isLoading && (!salesReport || !hasData) && !salesError && (
+        <div
+          className={`p-8 rounded-lg text-center ${
+            isDark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
+          } border`}
+        >
+          <p className={isDark ? "text-gray-400" : "text-gray-500"}>
+            {dateRange === "today"
+              ? "No hay datos disponibles para el día de hoy. Abre la caja y registra ventas para ver los reportes."
+              : "No hay datos disponibles para el rango de fechas seleccionado"}
+          </p>
         </div>
-
-        {/* Top Customers */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Mejores Clientes</h2>
-          <div className="space-y-3">
-            {topCustomers.map((customer, index) => (
-              <div key={index} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold text-sm">{index + 1}</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-800">{customer.name}</p>
-                    <p className="text-sm text-gray-500">{customer.orders} órdenes</p>
-                  </div>
-                </div>
-                <span className="font-semibold text-green-600">${customer.total.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

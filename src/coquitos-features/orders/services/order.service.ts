@@ -34,10 +34,16 @@ export const getOrders = async (searchParams: SearchOrdersParams): Promise<GetOr
     clearParams.paymentMethod = searchParams.paymentMethod;
   }
   if (searchParams.startDate) {
-    clearParams.startDate = searchParams.startDate;
+    // Convertir Date a string ISO si es necesario
+    clearParams.startDate = searchParams.startDate instanceof Date 
+      ? new Date(searchParams.startDate.toISOString().split('T')[0])
+      : searchParams.startDate;
   }
   if (searchParams.endDate) {
-    clearParams.endDate = searchParams.endDate;
+    // Convertir Date a string ISO si es necesario
+    clearParams.endDate = searchParams.endDate instanceof Date 
+      ? new Date(searchParams.endDate.toISOString().split('T')[0])
+      : searchParams.endDate;
   }
 
   try {

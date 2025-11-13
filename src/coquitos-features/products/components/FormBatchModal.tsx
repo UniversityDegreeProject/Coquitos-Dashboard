@@ -161,7 +161,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2.5 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className={`flex-1 px-4 py-2.5 rounded-lg font-medium bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
               disabled={useCreateBatchMutation.isPending}
             >
               {useCreateBatchMutation.isPending ? (

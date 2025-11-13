@@ -3,7 +3,7 @@ import { TrendingUp, ShoppingBag, Users, DollarSign } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useOrdersStats } from "@/coquitos-features/orders/hooks/useOrdersStats";
 import { formatCurrency } from "@/coquitos-features/orders/helpers/format-currency";
-import { GenericGridLoader } from "@/shared/components";
+
 
 /**
  * Componente de tarjetas KPI del dashboard
@@ -13,10 +13,15 @@ export const KPICards = memo(() => {
   const { isDark } = useTheme();
 
   // Obtener estadísticas de órdenes del día
-  const { stats, isLoading } = useOrdersStats({
-    paymentMethod: "",
-    status: "",
-  });
+  const { stats, isLoading } = useOrdersStats(
+    {
+      paymentMethod: "",
+      status: "",
+    },
+    {
+      filterByToday: true, // Filtrar por el día actual en el dashboard
+    }
+  );
 
   // Calcular ticket promedio
   const averageTicket = useMemo(() => {

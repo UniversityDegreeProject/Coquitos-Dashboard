@@ -23,38 +23,71 @@ export interface OrdersStatsData {
  */
 export const useOrdersStats = (
   filters: Pick<SearchOrdersParams, 'paymentMethod' | 'status'>,
-  options?: { filterByToday?: boolean }
+  options?: { filterByToday?: boolean; startDate?: Date; endDate?: Date }
 ) => {
-  const { filterByToday = true } = options || {};
+  const { filterByToday = false, startDate, endDate } = options || {};
 
-  // Calcular fechas del día actual si se requiere filtrar por hoy
-  const todayDates = useMemo(() => {
-    if (!filterByToday) return undefined;
+  // Calcular fechas según los parámetros recibidos
+  const dateRange = useMemo(() => {
+    // Si hay fechas personalizadas explícitas, usarlas (tienen prioridad)
+    if (startDate && endDate) {
+      return {
+        startDate,
+        endDate,
+      };
+    }
     
-    const today = new Date();
-    const startOfDay = new Date(today);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(today);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Si se requiere filtrar por hoy y no hay fechas personalizadas
+    if (filterByToday) {
+      const today = new Date();
+      const startOfDay = new Date(today);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(today);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      return {
+        startDate: startOfDay,
+        endDate: endOfDay,
+      };
+    }
     
-    return {
-      startDate: startOfDay,
-      endDate: endOfDay,
-    };
-  }, [filterByToday]);
+    // Si no hay filtro de fecha, retornar undefined para obtener todas las órdenes
+    return undefined;
+  }, [filterByToday, startDate, endDate]);
+
+  // Query key estable - serializar fechas a strings para evitar problemas con objetos Date
+  const queryKey = useMemo(() => {
+    const key: unknown[] = [...ordersQueries.allOrders, 'stats', filters];
+    if (dateRange) {
+      // Serializar fechas a strings ISO para el queryKey
+      key.push(
+        `startDate:${dateRange.startDate.toISOString()}`,
+        `endDate:${dateRange.endDate.toISOString()}`
+      );
+    } else {
+      key.push('all-dates'); // Marcador para "todas las fechas"
+    }
+    return key;
+  }, [filters, dateRange]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: [...ordersQueries.allOrders, 'stats', filters, todayDates],
+    queryKey,
     queryFn: async () => {
-      const response = await getOrders({
+      // Obtener todas las órdenes para calcular stats precisos
+      // Usar un límite alto para obtener todas las órdenes que coincidan con los filtros
+      const params: SearchOrdersParams = {
         ...filters,
-        ...(todayDates && {
-          startDate: todayDates.startDate,
-          endDate: todayDates.endDate,
-        }),
         page: 1,
-        limit: 100, 
-      });
+        limit: 1000, // Aumentar límite para obtener más órdenes en stats
+      };
+      
+      // Solo agregar fechas si dateRange está definido
+      if (dateRange) {
+        params.startDate = dateRange.startDate;
+        params.endDate = dateRange.endDate;
+      }
+      
+      const response = await getOrders(params);
       return response;
     },
     staleTime: 30000, 

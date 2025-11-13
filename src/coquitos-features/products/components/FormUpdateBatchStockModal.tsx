@@ -1,9 +1,9 @@
 import { memo, useEffect, useState } from "react";
 import { X, TrendingUp } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { LabelInputString, LabelTextarea } from "@/shared/components";
+import { LabelInputNumber, LabelTextarea } from "@/shared/components";
 import { updateBatchStockSchema, type UpdateBatchStockSchema } from "../schemas";
 import type { ProductBatch } from "../interfaces";
 
@@ -14,6 +14,7 @@ interface FormUpdateBatchStockModalProps {
   batches: ProductBatch[];
   onSubmit: (batchId: string, newStock: number, userId: string, reason?: string, notes?: string) => void;
   userId: string;
+  isPending?: boolean;
 }
 
 /**
@@ -26,7 +27,8 @@ export const FormUpdateBatchStockModal = memo(({
   batch, 
   batches, 
   onSubmit,
-  userId 
+  userId,
+  isPending = false
 }: FormUpdateBatchStockModalProps) => {
   const { isDark } = useTheme();
   
@@ -58,7 +60,7 @@ export const FormUpdateBatchStockModal = memo(({
 
   // Actualizar preview cuando cambia el stock
   useEffect(() => {
-    const newBatchStock = parseInt(watchedStock) || 0;
+    const newBatchStock = typeof watchedStock === 'string' ? parseInt(watchedStock) || 0 : (watchedStock || 0);
     const difference = newBatchStock - batch.stock;
     const newTotalStock = currentTotalStock + difference;
     setPreviewTotalStock(newTotalStock);
@@ -79,7 +81,7 @@ export const FormUpdateBatchStockModal = memo(({
   }, [isOpen, batch, userId, currentTotalStock, reset]);
 
   const handleFormSubmit = (data: UpdateBatchStockSchema) => {
-    const newStock = parseInt(data.stock);
+    const newStock = typeof data.stock === 'string' ? parseInt(data.stock) : (data.stock || 0);
     onSubmit(
       batch.id,
       newStock,
@@ -87,7 +89,7 @@ export const FormUpdateBatchStockModal = memo(({
       data.reason || undefined,
       data.notes || undefined
     );
-    onClose();
+    // No cerrar aquí, el hook se encargará de cerrar después del éxito
   };
 
   if (!isOpen) return null;
@@ -102,12 +104,13 @@ export const FormUpdateBatchStockModal = memo(({
 
       {/* Modal */}
       <div
-        className={`relative w-full max-w-md mx-4 rounded-xl shadow-2xl ${
+        className={`relative w-full max-w-md mx-4 rounded-xl shadow-2xl max-h-[90vh] flex flex-col ${
           isDark ? 'bg-[#1E293B]' : 'bg-white'
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
+        <div className={`flex items-center justify-between p-6 border-b flex-shrink-0 ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
           <div>
             <h2 className={`text-xl font-bold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-900'}`}>
               Reasignar Stock
@@ -127,8 +130,15 @@ export const FormUpdateBatchStockModal = memo(({
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-4">
+        {/* Form - Contenido con scroll */}
+        <form 
+          id="update-batch-stock-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit(handleFormSubmit)(e);
+          }} 
+          className="flex-1 overflow-y-auto p-6 space-y-4"
+        >
           {/* Información del batch */}
           <div className={`p-3 rounded-lg ${isDark ? 'bg-[#0F172A]/50 border border-[#334155]' : 'bg-gray-50 border border-gray-200'}`}>
             <div className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
@@ -154,16 +164,46 @@ export const FormUpdateBatchStockModal = memo(({
           </div>
 
           {/* Nuevo Stock */}
-          <LabelInputString
-            label="Nuevo Stock del Batch"
+          <Controller
             name="stock"
             control={control}
-            icon={TrendingUp}
-            required
-            placeholder="Ej: 5"
-            error={errors.stock?.message}
-            type="text"
-            inputMode="numeric"
+            render={({ field: { onChange, value, ...field } }) => (
+              <div className="space-y-2">
+                <label htmlFor="stock" className={`block text-sm font-medium ${isDark ? 'text-[#E2E8F0]' : 'text-gray-700'}`}>
+                  Nuevo Stock del Batch <span className="text-red-500 ml-1">*</span>
+                </label>
+                <div className="relative group">
+                  <TrendingUp className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-[#94A3B8] group-focus-within:text-[#F59E0B]' : 'text-gray-400 group-focus-within:text-[#275081]'} transition-colors`} />
+                  <input
+                    {...field}
+                    id="stock"
+                    type="number"
+                    value={typeof value === 'string' ? value : (value?.toString() || '')}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      onChange(val === '' ? '' : val);
+                    }}
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${
+                      errors.stock
+                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
+                        : isDark
+                        ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/10 bg-[#0F172A] text-[#F8FAFC]'
+                        : 'border-gray-200 focus:border-[#275081] focus:ring-[#275081]/10 bg-white text-gray-800'
+                    } focus:ring-4 outline-none transition-all placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
+                    placeholder="Ej: 5"
+                    min={0}
+                    step={1}
+                    aria-invalid={errors.stock ? 'true' : 'false'}
+                    aria-describedby={errors.stock ? 'stock-error' : undefined}
+                  />
+                </div>
+                {errors.stock && (
+                  <p id="stock-error" className="text-red-600 text-xs mt-1" role="alert">
+                    {errors.stock.message}
+                  </p>
+                )}
+              </div>
+            )}
           />
 
           {/* Motivo */}
@@ -176,28 +216,45 @@ export const FormUpdateBatchStockModal = memo(({
             error={errors.reason?.message}
           />
 
-          {/* Botones */}
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors ${
-                isDark
-                  ? 'bg-[#334155] text-[#F8FAFC] hover:bg-[#475569]'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-2.5 rounded-lg font-medium bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <TrendingUp className="w-4 h-4" />
-              Actualizar
-            </button>
-          </div>
         </form>
+
+        {/* Footer con botones - Fixed */}
+        <div className={`flex gap-3 p-6 border-t flex-shrink-0 ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isPending}
+            className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+              isDark
+                ? 'bg-[#334155] text-[#F8FAFC] hover:bg-[#475569]'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            form="update-batch-stock-form"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSubmit(handleFormSubmit)(e);
+            }}
+            disabled={isPending}
+            className={`flex-1 px-4 py-2.5 rounded-lg font-medium bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {isPending ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Actualizando...
+              </>
+            ) : (
+              <>
+                <TrendingUp className="w-4 h-4" />
+                Actualizar
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

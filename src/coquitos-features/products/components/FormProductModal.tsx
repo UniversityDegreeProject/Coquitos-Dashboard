@@ -74,9 +74,10 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
   const { updateProductMutation, isPending: isUpdatingProduct } = useUpdateProduct({
     currentParams,
   });
+  // Solo obtener categorías activas para el formulario
   const { categories, isLoading: isLoadingCategories } = useGetCategories({
     search : "",
-    status : "",
+    status : "Activo",
     page : 1,
     limit : 10000,
   });
@@ -104,7 +105,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
   
   // * Hooks para gestión de batches
   const { deleteBatchMutation } = useDeleteBatch({ productId: productToUpdate?.id || "" });
-  const { updateBatchStockMutation } = useUpdateBatchStock({ 
+  const { updateBatchStockMutation, isPending: isUpdatingBatchStock } = useUpdateBatchStock({ 
     productId: productToUpdate?.id || "",
     onSuccessCallback: () => {},
   });
@@ -539,6 +540,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
               ) : (
                 <BatchList
                   batches={batches}
+                  productId={productToUpdate?.id || ""}
                   onDeleteBatch={handleDeleteBatch}
                   onUpdateStock={handleUpdateBatchStock}
                 />

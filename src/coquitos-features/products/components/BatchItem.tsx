@@ -6,6 +6,7 @@ import type { ProductBatch } from "../interfaces";
 interface BatchItemProps {
   batch: ProductBatch;
   batches: ProductBatch[];
+  productId: string;
   onDeleteBatch: (batchId: string) => void;
   onUpdateStock: (batchId: string, newStock: number, userId: string, reason?: string, notes?: string) => void;
 }
@@ -14,7 +15,7 @@ interface BatchItemProps {
  * Componente de item individual para mostrar información de un batch
  * Muestra código, peso, precio, stock y acciones
  */
-export const BatchItem = memo(({ batch, batches, onDeleteBatch, onUpdateStock }: BatchItemProps) => {
+export const BatchItem = memo(({ batch, batches, productId, onDeleteBatch, onUpdateStock }: BatchItemProps) => {
   const { isDark } = useTheme();
 
   return (
@@ -48,6 +49,7 @@ export const BatchItem = memo(({ batch, batches, onDeleteBatch, onUpdateStock }:
       <BatchButtonsActions
         batch={batch}
         batches={batches}
+        productId={productId}
         onDeleteBatch={onDeleteBatch}
         onUpdateStock={onUpdateStock}
       />

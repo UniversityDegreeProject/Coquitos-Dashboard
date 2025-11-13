@@ -22,11 +22,16 @@ interface PaymentMethodData {
 export const PaymentMethodsSummary = memo(() => {
   const { isDark } = useTheme();
 
-  // Obtener estadísticas de órdenes
-  const { stats, isLoading } = useOrdersStats({
-    paymentMethod: "",
-    status: "",
-  });
+  // Obtener estadísticas de órdenes del día
+  const { stats, isLoading } = useOrdersStats(
+    {
+      paymentMethod: "",
+      status: "",
+    },
+    {
+      filterByToday: true, // Filtrar por el día actual en el dashboard
+    }
+  );
 
   // Calcular totales por método de pago
   const paymentMethods = useMemo(() => {

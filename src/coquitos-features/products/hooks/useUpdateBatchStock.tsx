@@ -30,10 +30,8 @@ export const useUpdateBatchStock = (options: UseUpdateBatchStockOptions) => {
         queryKey: productsQueries.allProducts,
       });
 
-      // Refetch inmediato para actualizar la UI
-      await queryClient.refetchQueries({
-        queryKey: productsQueries.allProducts,
-      });
+      // No hacer refetch inmediato para evitar recarga de página
+      // Los queries se invalidaron arriba y se actualizarán automáticamente
 
       // Callback de éxito
       if (onSuccessCallback) {

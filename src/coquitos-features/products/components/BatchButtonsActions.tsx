@@ -2,12 +2,14 @@ import { memo, useCallback, useState } from "react";
 import { Trash2, TrendingUp } from "lucide-react";
 import { useAuthStore } from "@/auth/store/auth.store";
 import { FormUpdateBatchStockModal } from "./FormUpdateBatchStockModal";
+import { useUpdateBatchStock } from "../hooks";
 import type { ProductBatch } from "../interfaces";
 import Swal from "sweetalert2";
 
 interface BatchButtonsActionsProps {
   batch: ProductBatch;
   batches: ProductBatch[];
+  productId: string;
   onDeleteBatch: (batchId: string) => void;
   onUpdateStock: (batchId: string, newStock: number, userId: string, reason?: string, notes?: string) => void;
 }
@@ -16,9 +18,17 @@ interface BatchButtonsActionsProps {
  * Componente de acciones para cada batch
  * Maneja internamente los handlers de reasignar stock y eliminar
  */
-export const BatchButtonsActions = memo(({ batch, batches, onDeleteBatch, onUpdateStock }: BatchButtonsActionsProps) => {
+export const BatchButtonsActions = memo(({ batch, batches, productId, onDeleteBatch, onUpdateStock }: BatchButtonsActionsProps) => {
   const user = useAuthStore((state) => state.user);
   const [isUpdateStockModalOpen, setIsUpdateStockModalOpen] = useState(false);
+  
+  // Hook para actualizar stock con callback para cerrar modal
+  const { updateBatchStockMutation, isPending } = useUpdateBatchStock({
+    productId,
+    onSuccessCallback: () => {
+      setIsUpdateStockModalOpen(false);
+    },
+  });
 
   // Handler para eliminar batch
   const handleDeleteBatch = useCallback(() => {
@@ -62,6 +72,25 @@ export const BatchButtonsActions = memo(({ batch, batches, onDeleteBatch, onUpda
     setIsUpdateStockModalOpen(true);
   }, [user]);
 
+  // Handler para actualizar stock que usa el hook interno
+  const handleUpdateStock = useCallback((
+    batchId: string,
+    newStock: number,
+    userId: string,
+    reason?: string,
+    notes?: string
+  ) => {
+    updateBatchStockMutation.mutate({
+      batchId,
+      stock: newStock,
+      userId,
+      reason,
+      notes,
+    });
+    // También llamar al callback externo para mantener compatibilidad
+    onUpdateStock(batchId, newStock, userId, reason, notes);
+  }, [updateBatchStockMutation, onUpdateStock]);
+
   return (
     <>
       <div className="flex items-center gap-2">
@@ -94,8 +123,9 @@ export const BatchButtonsActions = memo(({ batch, batches, onDeleteBatch, onUpda
           onClose={() => setIsUpdateStockModalOpen(false)}
           batch={batch}
           batches={batches}
-          onSubmit={onUpdateStock}
+          onSubmit={handleUpdateStock}
           userId={user.id}
+          isPending={isPending}
         />
       )}
     </>

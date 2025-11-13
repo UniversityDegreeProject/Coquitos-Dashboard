@@ -13,7 +13,7 @@ import type {
  * GET /api/orders
  */
 export const getOrders = async (searchParams: SearchOrdersParams): Promise<GetOrdersResponse> => {
-  const clearParams: Partial<SearchOrdersParams> = {
+  const clearParams: Record<string, unknown> = {
     page: searchParams.page,
     limit: searchParams.limit,
   };
@@ -34,16 +34,26 @@ export const getOrders = async (searchParams: SearchOrdersParams): Promise<GetOr
     clearParams.paymentMethod = searchParams.paymentMethod;
   }
   if (searchParams.startDate) {
-    // Convertir Date a string ISO si es necesario
-    clearParams.startDate = searchParams.startDate instanceof Date 
-      ? new Date(searchParams.startDate.toISOString().split('T')[0])
-      : searchParams.startDate;
+    // Convertir Date a string YYYY-MM-DD para evitar problemas de timezone
+    if (searchParams.startDate instanceof Date) {
+      const year = searchParams.startDate.getFullYear();
+      const month = String(searchParams.startDate.getMonth() + 1).padStart(2, '0');
+      const day = String(searchParams.startDate.getDate()).padStart(2, '0');
+      clearParams.startDate = `${year}-${month}-${day}`;
+    } else {
+      clearParams.startDate = searchParams.startDate;
+    }
   }
   if (searchParams.endDate) {
-    // Convertir Date a string ISO si es necesario
-    clearParams.endDate = searchParams.endDate instanceof Date 
-      ? new Date(searchParams.endDate.toISOString().split('T')[0])
-      : searchParams.endDate;
+    // Convertir Date a string YYYY-MM-DD para evitar problemas de timezone
+    if (searchParams.endDate instanceof Date) {
+      const year = searchParams.endDate.getFullYear();
+      const month = String(searchParams.endDate.getMonth() + 1).padStart(2, '0');
+      const day = String(searchParams.endDate.getDate()).padStart(2, '0');
+      clearParams.endDate = `${year}-${month}-${day}`;
+    } else {
+      clearParams.endDate = searchParams.endDate;
+    }
   }
 
   try {

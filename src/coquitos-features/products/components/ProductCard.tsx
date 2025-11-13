@@ -124,10 +124,50 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
         {/* Precio y Stock - diseño minimalista */}
         <div className="flex items-center justify-between mb-4">
           {/* Precio */}
-          <div className="flex items-center space-x-1">
-            <span className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {formatPrice(product.price)}
-            </span>
+          <div className="flex flex-col">
+            {product.isVariableWeight ? (
+              <>
+                {/* Producto variable: mostrar total y precio por kg */}
+                <div className="flex items-center space-x-1">
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Total:
+                  </span>
+                  <span className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {formatPrice(product.price)}
+                  </span>
+                </div>
+                {product.pricePerKg && (
+                  <div className="flex items-center space-x-1 mt-0.5">
+                    <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Precio:
+                    </span>
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {formatPrice(product.pricePerKg)}
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {/* Producto normal: mostrar total (precio * stock) y precio unitario */}
+                <div className="flex items-center space-x-1">
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Total:
+                  </span>
+                  <span className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    {formatPrice(product.price * (product.stock || 0))}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1 mt-0.5">
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Precio:
+                  </span>
+                  <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    {formatPrice(product.price)}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
           
           {/* Stock */}

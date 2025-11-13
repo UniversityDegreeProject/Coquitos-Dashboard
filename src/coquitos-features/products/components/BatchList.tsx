@@ -5,6 +5,7 @@ import type { ProductBatch } from "../interfaces";
 
 interface BatchListProps {
   batches: ProductBatch[];
+  productId: string;
   onDeleteBatch: (batchId: string) => void;
   onUpdateStock: (batchId: string, newStock: number, userId: string, reason?: string, notes?: string) => void;
 }
@@ -13,7 +14,7 @@ interface BatchListProps {
  * Componente contenedor para mostrar lista de batches de un producto de peso variable
  * Sigue el mismo patrón de ProductGrid con separación de responsabilidades
  */
-export const BatchList = memo(({ batches, onDeleteBatch, onUpdateStock }: BatchListProps) => {
+export const BatchList = memo(({ batches, productId, onDeleteBatch, onUpdateStock }: BatchListProps) => {
   
   // Estado vacío
   if (batches.length === 0) {
@@ -28,6 +29,7 @@ export const BatchList = memo(({ batches, onDeleteBatch, onUpdateStock }: BatchL
           key={batch.id}
           batch={batch}
           batches={batches}
+          productId={productId}
           onDeleteBatch={onDeleteBatch}
           onUpdateStock={onUpdateStock}
         />

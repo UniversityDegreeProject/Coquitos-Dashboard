@@ -1,4 +1,5 @@
 import { CoquitoApi } from '@/config/axios.adapter';
+import { AxiosError } from 'axios';
 import type {
   GetClientsResponse,
   ClientFormData,
@@ -60,8 +61,11 @@ export const createClient = async (clientData: ClientFormData): Promise<CreateCl
       message: response.data.message,
       customer: backendClientToFrontendClient(customer),
     };
-  } catch (error) {
-    throw new Error(`Error al crear cliente: ${error}`);
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data?.error || 'Error al crear cliente');
+    }
+    throw new Error('Error desconocido al crear cliente');
   }
 };
 
@@ -73,8 +77,11 @@ export const updateClient = async (id: string, clientData: ClientFormData): Prom
       message: response.data.message,
       customer: backendClientToFrontendClient(customer),
     };
-  } catch (error) {
-    throw new Error(`Error al actualizar cliente: ${error}`);
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data?.error || 'Error al actualizar cliente');
+    }
+    throw new Error('Error desconocido al actualizar cliente');
   }
 };
 
@@ -86,7 +93,10 @@ export const deleteClient = async (id: string): Promise<DeleteClientResponse> =>
       message: response.data.message,
       customer: backendClientToFrontendClient(customer),
     };
-  } catch (error) {
-    throw new Error(`Error al eliminar cliente: ${error}`);
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw new Error(error.response?.data?.error || 'Error al eliminar cliente');
+    }
+    throw new Error('Error desconocido al eliminar cliente');
   }
 };

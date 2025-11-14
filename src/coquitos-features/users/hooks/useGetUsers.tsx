@@ -30,7 +30,7 @@ export const useGetUsers = (params: SearchUsersParams) => {
     retryDelay: 1000,
     enabled: true, 
     // Simular socket - refetch cada 3 segundos EN BACKGROUND (sin loader)
-    refetchInterval: 4250,
+    refetchInterval: 4500,
     refetchIntervalInBackground: false,
     
   })

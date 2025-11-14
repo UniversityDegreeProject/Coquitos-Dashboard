@@ -22,13 +22,16 @@ export const useGetProducts = (params: SearchProductsParams) => {
     queryKey: productsQueries.productsWithFilters(params),
     queryFn: () => getProducts(params),
     placeholderData: keepPreviousData, // Mantiene datos anteriores durante refetch
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 0, // 5 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: true,
     refetchOnReconnect: false,
     retry: 2,
     retryDelay: 1000,
     enabled: true,
+    // Simular socket - refetch cada 3 segundos EN BACKGROUND (sin loader)
+    refetchInterval: 4500,
+    refetchIntervalInBackground: false,
   });
 
   const responseData = useQueryProducts.data || defaultResponse;

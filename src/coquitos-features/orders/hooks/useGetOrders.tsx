@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ordersQueries } from "../const/orders-queries";
 import { getOrders } from "../services/order.service";
@@ -8,10 +9,33 @@ import type { SearchOrdersParams } from "../interfaces";
  * Retorna lista de órdenes, datos de paginación y estados de carga
  */
 export const useGetOrders = (searchParams: SearchOrdersParams) => {
+  // Serializar searchParams para el queryKey, especialmente las fechas
+  const serializedParams = useMemo(() => {
+    const serialized: Record<string, unknown> = {
+      ...searchParams,
+    };
+    
+    // Serializar fechas a strings ISO para evitar problemas de comparación
+    if (searchParams.startDate instanceof Date) {
+      const year = searchParams.startDate.getFullYear();
+      const month = String(searchParams.startDate.getMonth() + 1).padStart(2, '0');
+      const day = String(searchParams.startDate.getDate()).padStart(2, '0');
+      serialized.startDate = `${year}-${month}-${day}`;
+    }
+    if (searchParams.endDate instanceof Date) {
+      const year = searchParams.endDate.getFullYear();
+      const month = String(searchParams.endDate.getMonth() + 1).padStart(2, '0');
+      const day = String(searchParams.endDate.getDate()).padStart(2, '0');
+      serialized.endDate = `${year}-${month}-${day}`;
+    }
+    
+    return serialized;
+  }, [searchParams]);
+
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: [...ordersQueries.allOrders, searchParams],
+    queryKey: [...ordersQueries.allOrders, serializedParams],
     queryFn: () => getOrders(searchParams),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 0, // Refrescar inmediatamente cuando se invalida (mejor para órdenes recién creadas)
     refetchOnWindowFocus: false,
   });
 

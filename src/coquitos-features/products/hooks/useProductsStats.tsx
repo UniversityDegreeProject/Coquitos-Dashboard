@@ -42,12 +42,24 @@ export const useProductsStats = ( filters : Pick<SearchProductsParams, 'status' 
     availableProducts: useQueryProductsStats.data?.data.filter(p => p.status === 'Disponible').length ?? 0,
     lowStockProducts: useQueryProductsStats.data?.data.filter(p => p.stock <= p.minStock && p.status !== 'SinStock').length ?? 0,
     totalValue: useQueryProductsStats.data?.data.reduce((sum, product) => {
-      // Para productos de peso variable, price YA incluye el cálculo total (no multiplicar por stock)
+      // Para productos de peso variable, calcular desde batches si están disponibles
       if (product.isVariableWeight) {
-        return sum + product.price;
+        // Si hay batches, calcular la suma de unitPrice * stock de cada batch
+        if (product.batches && product.batches.length > 0) {
+          const calculatedTotal = product.batches.reduce((batchSum, batch) => {
+            const unitPrice = Number(batch.unitPrice) || 0;
+            const stock = Number(batch.stock) || 0;
+            return batchSum + (unitPrice * stock);
+          }, 0);
+          return sum + calculatedTotal;
+        }
+        // Fallback al precio del producto si no hay batches
+        return sum + (Number(product.price) || 0);
       }
       // Para productos normales, multiplicar price × stock
-      return sum + (product.price * product.stock);
+      const price = Number(product.price) || 0;
+      const stock = Number(product.stock) || 0;
+      return sum + (price * stock);
     }, 0) ?? 0,
   };
 

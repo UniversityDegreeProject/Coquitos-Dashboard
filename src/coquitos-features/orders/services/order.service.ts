@@ -45,12 +45,17 @@ export const getOrders = async (searchParams: SearchOrdersParams): Promise<GetOr
     }
   }
   if (searchParams.endDate) {
-    // Convertir Date a string YYYY-MM-DD para evitar problemas de timezone
+    // Convertir Date a string YYYY-MM-DD HH:mm:ss para incluir todo el día
+    // El backend usa <= endDate, así que necesitamos enviar el día con hora 23:59:59.999
+    // Usar formato ISO completo para que el backend lo parse correctamente
     if (searchParams.endDate instanceof Date) {
+      // Usar los componentes locales de la fecha para evitar problemas de zona horaria
       const year = searchParams.endDate.getFullYear();
       const month = String(searchParams.endDate.getMonth() + 1).padStart(2, '0');
       const day = String(searchParams.endDate.getDate()).padStart(2, '0');
-      clearParams.endDate = `${year}-${month}-${day}`;
+      // Enviar como ISO string con hora 23:59:59.999 en zona horaria local
+      // El backend debería parsearlo correctamente con zod.coerce.date()
+      clearParams.endDate = `${year}-${month}-${day}T23:59:59.999`;
     } else {
       clearParams.endDate = searchParams.endDate;
     }

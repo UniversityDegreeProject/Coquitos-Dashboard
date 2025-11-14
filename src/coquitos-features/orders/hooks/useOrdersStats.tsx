@@ -39,11 +39,14 @@ export const useOrdersStats = (
     
     // Si se requiere filtrar por hoy y no hay fechas personalizadas
     if (filterByToday) {
+      // Usar componentes locales para evitar problemas de zona horaria
       const today = new Date();
-      const startOfDay = new Date(today);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(today);
-      endOfDay.setHours(23, 59, 59, 999);
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const day = today.getDate();
+      
+      const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
+      const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
       
       return {
         startDate: startOfDay,

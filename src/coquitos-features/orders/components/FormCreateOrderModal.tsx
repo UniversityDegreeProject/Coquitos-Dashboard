@@ -1,6 +1,6 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { X, ShoppingCart, AlertTriangle } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useShallow } from "zustand/shallow";
 import { toast } from "sonner";
@@ -68,7 +68,7 @@ export const FormCreateOrderModal = () => {
     limit: 1000,
   });
   
-  const { products, isLoading: isLoadingProducts } = useGetProducts({
+  const { products: allProducts, isLoading: isLoadingProducts } = useGetProducts({
     search: searchTerm,
     categoryId: "",
     status: "Disponible",
@@ -76,6 +76,18 @@ export const FormCreateOrderModal = () => {
     page: 1,
     limit: 100,
   });
+
+  // Filtrar productos que tienen stock > 0
+  const products = useMemo(() => {
+    return allProducts.filter((product) => {
+      // Para productos de peso variable, verificar si tienen batches con stock > 0
+      if (product.isVariableWeight) {
+        return product.batches && product.batches.some((batch) => batch.stock > 0);
+      }
+      // Para productos fijos, verificar stock directo
+      return product.stock > 0;
+    });
+  }, [allProducts]);
 
   const { batches, isLoading: isLoadingBatches } = useGetBatches(
     selectedProductForBatch?.id || "",
@@ -309,7 +321,7 @@ export const FormCreateOrderModal = () => {
       {selectedProductForBatch && (
         <BatchSelectionModal
           product={selectedProductForBatch}
-          batches={batches}
+          batches={batches.filter((batch) => batch.stock > 0)}
           isLoading={isLoadingBatches}
           onClose={() => setSelectedProductForBatch(null)}
           onSelectBatch={handleAddBatchToCart}

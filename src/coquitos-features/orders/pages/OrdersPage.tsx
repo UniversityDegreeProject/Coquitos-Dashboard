@@ -43,25 +43,36 @@ export const OrdersPage = () => {
   // * Theme
   const { colors, isDark } = useTheme();
 
+  // Helper para formatear fecha local a YYYY-MM-DD (evita problemas de zona horaria)
+  const formatLocalDate = useCallback((date: Date): Date => {
+    // Crear una nueva fecha usando los componentes locales para evitar problemas de zona horaria
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    return new Date(year, month, day);
+  }, []);
+
   // Calcular fechas según el rango seleccionado
   const dateParams = useMemo(() => {
     // Si no hay filtro de fecha o está vacío, retornar undefined para no filtrar
-    if (!searchFilters.dateRange || searchFilters.dateRange === '') {
+    const dateRange = searchFilters.dateRange;
+    if (!dateRange || (dateRange !== 'today' && dateRange !== 'week' && dateRange !== 'month' && dateRange !== 'custom')) {
       return { startDate: undefined, endDate: undefined };
     }
 
-    const today = new Date();
+    const today = formatLocalDate(new Date());
     today.setHours(0, 0, 0, 0);
 
-    switch (searchFilters.dateRange) {
-      case 'today':
+    switch (dateRange) {
+      case 'today': {
         const endOfToday = new Date(today);
         endOfToday.setHours(23, 59, 59, 999);
         return {
           startDate: today,
           endDate: endOfToday,
         };
-      case 'week':
+      }
+      case 'week': {
         const startOfWeek = new Date(today);
         startOfWeek.setDate(today.getDate() - today.getDay()); // Domingo
         const endOfWeek = new Date(startOfWeek);
@@ -71,7 +82,8 @@ export const OrdersPage = () => {
           startDate: startOfWeek,
           endDate: endOfWeek,
         };
-      case 'month':
+      }
+      case 'month': {
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         endOfMonth.setHours(23, 59, 59, 999);
@@ -79,11 +91,12 @@ export const OrdersPage = () => {
           startDate: startOfMonth,
           endDate: endOfMonth,
         };
-      case 'custom':
+      }
+      case 'custom': {
         if (searchFilters.startDate && searchFilters.endDate) {
-          const start = new Date(searchFilters.startDate);
+          const start = formatLocalDate(new Date(searchFilters.startDate));
           start.setHours(0, 0, 0, 0);
-          const end = new Date(searchFilters.endDate);
+          const end = formatLocalDate(new Date(searchFilters.endDate));
           end.setHours(23, 59, 59, 999);
           return {
             startDate: start,
@@ -91,10 +104,11 @@ export const OrdersPage = () => {
           };
         }
         return { startDate: undefined, endDate: undefined };
+      }
       default:
         return { startDate: undefined, endDate: undefined };
     }
-  }, [searchFilters.dateRange, searchFilters.startDate, searchFilters.endDate]);
+  }, [searchFilters.dateRange, searchFilters.startDate, searchFilters.endDate, formatLocalDate]);
 
   // * TanStack Query - Parámetros de búsqueda memoizados
   const currentParams: SearchOrdersParams = useMemo(() => {
@@ -130,15 +144,19 @@ export const OrdersPage = () => {
   } = useGetOrders(currentParams);
 
   // * Hook para estadísticas globales
-  const { stats } = useOrdersStats({
-    paymentMethod: searchFilters.paymentMethod,
-    status: searchFilters.status,
-    // Si dateRange es 'today', filtrar por hoy; si está vacío, no filtrar (mostrar todas)
-    filterByToday: searchFilters.dateRange === 'today',
-    // Si hay fechas definidas en dateParams, usarlas
-    startDate: dateParams.startDate,
-    endDate: dateParams.endDate,
-  });
+  const { stats } = useOrdersStats(
+    {
+      paymentMethod: searchFilters.paymentMethod,
+      status: searchFilters.status,
+    },
+    {
+      // Si dateRange es 'today', filtrar por hoy; si está vacío, no filtrar (mostrar todas)
+      filterByToday: searchFilters.dateRange === 'today',
+      // Si hay fechas definidas en dateParams, usarlas
+      startDate: dateParams.startDate,
+      endDate: dateParams.endDate,
+    }
+  );
 
   // * Handlers
   const handleOpenModal = useCallback(() => {

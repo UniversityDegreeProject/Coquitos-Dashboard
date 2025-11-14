@@ -127,25 +127,46 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
           <div className="flex flex-col">
             {product.isVariableWeight ? (
               <>
-                {/* Producto variable: mostrar total y precio por kg */}
-                <div className="flex items-center space-x-1">
-                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                    Total:
-                  </span>
-                  <span className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                    {formatPrice(product.price)}
-                  </span>
-                </div>
-                {product.pricePerKg && (
-                  <div className="flex items-center space-x-1 mt-0.5">
-                    <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                      Precio:
-                    </span>
-                    <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                      {formatPrice(product.pricePerKg)}
-                    </span>
-                  </div>
-                )}
+                {/* Producto variable: calcular total desde batches si están disponibles */}
+                {(() => {
+                  // Calcular precio total desde batches si están disponibles
+                  let calculatedTotal = 0;
+                  
+                  if (product.batches && product.batches.length > 0) {
+                    // Sumar unitPrice * stock de cada batch
+                    calculatedTotal = product.batches.reduce((sum, batch) => {
+                      const unitPrice = Number(batch.unitPrice) || 0;
+                      const stock = Number(batch.stock) || 0;
+                      return sum + (unitPrice * stock);
+                    }, 0);
+                  } else {
+                    // Si no hay batches, usar el precio del producto como fallback
+                    calculatedTotal = Number(product.price) || 0;
+                  }
+                  
+                  return (
+                    <>
+                      <div className="flex items-center space-x-1">
+                        <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          Total:
+                        </span>
+                        <span className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {formatPrice(calculatedTotal)}
+                        </span>
+                      </div>
+                      {product.pricePerKg && (
+                        <div className="flex items-center space-x-1 mt-0.5">
+                          <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                            Precio:
+                          </span>
+                          <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                            {formatPrice(product.pricePerKg)}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </>
             ) : (
               <>

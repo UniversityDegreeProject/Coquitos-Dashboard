@@ -22,23 +22,34 @@ export const useCreateOrder = (options?: UseCreateOrderOptions) => {
     mutationFn: (orderData: OrderFormData) => createOrder(orderData),
 
     onSuccess: async (response: CreateOrderResponse) => {
-      // Invalidar queries relacionadas
-      await queryClient.invalidateQueries({
-        queryKey: ordersQueries.allOrders,
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: productsQueries.allProducts,
-      });
-
-      await queryClient.invalidateQueries({
-        queryKey: ['stock-movements'],
-      });
-
-      // Invalidar queries de cash-register para reflejar los cambios en el cierre de caja
-      await queryClient.invalidateQueries({
-        queryKey: cashRegisterQueries.allCashRegisters,
-      });
+      // Invalidar y refrescar queries relacionadas inmediatamente
+      await Promise.all([
+        // Invalidar y refrescar órdenes
+        queryClient.invalidateQueries({
+          queryKey: ordersQueries.allOrders,
+          refetchType: 'active',
+        }),
+        // Invalidar y refrescar productos - forzar refetch inmediato
+        queryClient.invalidateQueries({
+          queryKey: productsQueries.allProducts,
+          refetchType: 'all', // Refrescar todas las queries de productos (activas e inactivas)
+        }),
+        // Refrescar productos activos inmediatamente
+        queryClient.refetchQueries({
+          queryKey: productsQueries.allProducts,
+          type: 'active',
+        }),
+        // Invalidar y refrescar movimientos de stock
+        queryClient.invalidateQueries({
+          queryKey: ['stock-movements'],
+          refetchType: 'active',
+        }),
+        // Invalidar y refrescar caja
+        queryClient.invalidateQueries({
+          queryKey: cashRegisterQueries.allCashRegisters,
+          refetchType: 'active',
+        }),
+      ]);
 
       // Ejecutar callback de éxito
       if (onSuccessCallback) {

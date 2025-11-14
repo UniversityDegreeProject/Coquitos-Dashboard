@@ -28,8 +28,8 @@ export const useGetCategories = (params: SearchCategoriesParams) => {
     retryDelay: 1000,
     enabled: true, 
     // Simular socket - refetch cada 3 segundos EN BACKGROUND (sin loader)
-    // refetchInterval: 3500,
-    // refetchIntervalInBackground: false,
+    refetchInterval: 4500,
+    refetchIntervalInBackground: false,
   })
 
   const { data: categories, total, page, limit, totalPages, nextPage, previousPage } = useQueryCategories.data || defaultResponse;

@@ -235,84 +235,86 @@ export const FormCreateOrderModal = () => {
       <div className={`${isDark ? 'bg-[#0F172A]' : 'bg-white'} rounded-3xl w-full max-w-7xl h-[90vh] shadow-2xl border-2 ${isDark ? 'border-[#1E3A8A]/30' : 'border-[#275081]/20'} flex flex-col overflow-hidden`}>
         
         {/* ========== HEADER FIJO ========== */}
-        <div className={`${isDark ? 'bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081] via-white to-[#F9E44E]/30'} p-6 border-b ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className={`p-3 rounded-2xl ${isDark ? 'bg-[#F59E0B]/20 border border-[#F59E0B]/30' : 'bg-[#F9E44E]/30 border border-[#275081]/20'} shadow-lg`}>
-                <ShoppingCart className={`w-7 h-7 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+        <div className={`flex-shrink-0 ${isDark ? 'bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081] via-white to-[#F9E44E]/30'} p-3 border-b ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center space-x-3 flex-1 min-w-0">
+              <div className={`p-2 rounded-xl ${isDark ? 'bg-[#F59E0B]/20 border border-[#F59E0B]/30' : 'bg-[#F9E44E]/30 border border-[#275081]/20'}`}>
+                <ShoppingCart className={`w-5 h-5 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
               </div>
-              <div>
-                <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  Registrar Venta
-                </h2>
-                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Registrar Venta
+                  </h2>
+                  {/* Alerta compacta inline si no hay caja abierta */}
+                  {!isLoadingCashRegister && !cashRegister && (
+                    <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500 rounded-md px-2 py-1">
+                      <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                      <span className="text-red-500 font-semibold text-[10px] whitespace-nowrap">
+                        Caja cerrada
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                   Selecciona productos y completa la venta
                 </p>
               </div>
             </div>
             <button
               onClick={closeCreateOrderModal}
-              className={`p-3 ${isDark ? 'text-gray-400 hover:text-white hover:bg-[#1E293B]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'} rounded-xl transition-all duration-200 cursor-pointer`}
+              className={`p-2 ${isDark ? 'text-gray-400 hover:text-white hover:bg-[#1E293B]' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'} rounded-lg transition-all duration-200 cursor-pointer flex-shrink-0`}
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
-
-          {/* Alerta si no hay caja abierta */}
-          {!isLoadingCashRegister && !cashRegister && (
-            <div className="mt-4 bg-red-500/10 border-2 border-red-500 rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="w-6 h-6 text-red-500" />
-                <div>
-                  <p className="text-red-500 font-bold text-sm">
-                    ⚠️ No hay caja abierta
-                  </p>
-                  <p className="text-red-400 text-xs mt-1">
-                    Debes abrir la caja antes de poder registrar ventas
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* ========== CONTENIDO PRINCIPAL (GRID 2 COLUMNAS) ========== */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden">
+        {/* ========== CONTENIDO PRINCIPAL (GRID 2 COLUMNAS) CON SCROLL ========== */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 min-h-0">
           
           {/* COLUMNA IZQUIERDA: PRODUCTOS */}
-          <ProductSearchSection
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            products={products}
-            isLoading={isLoadingProducts}
-            onAddToCart={handleAddProductToCart}
-          />
+          <div className="lg:col-span-2">
+            <ProductSearchSection
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              products={products}
+              isLoading={isLoadingProducts}
+              onAddToCart={handleAddProductToCart}
+            />
+          </div>
 
           {/* COLUMNA DERECHA: CARRITO + CHECKOUT */}
-          <div className={`lg:col-span-1 flex flex-col ${isDark ? 'bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-2 border-[#334155]' : 'bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200'} rounded-2xl p-6 shadow-2xl overflow-hidden`}>
+          <div className={`lg:col-span-1 flex flex-col ${isDark ? 'bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-2 border-[#334155]' : 'bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200'} rounded-2xl p-4 shadow-2xl`}>
             
-            <CartSection
-              cartItems={cartItems}
-              onRemoveItem={removeFromCart}
-              onUpdateQuantity={updateCartItemQuantity}
-            />
+            {/* Carrito con altura limitada */}
+            <div className="flex-shrink-0 mb-4">
+              <CartSection
+                cartItems={cartItems}
+                onRemoveItem={removeFromCart}
+                onUpdateQuantity={updateCartItemQuantity}
+              />
+            </div>
 
-            <CheckoutForm
-              control={control}
-              errors={errors}
-              isValid={isValid}
-              isPending={isPending}
-              cartTotal={cartTotal}
-              amountPaid={amountPaidNumber}
-              change={change}
-              isPaymentSufficient={isPaymentSufficient}
-              cartItemsCount={cartItems.length}
-              hasCashRegister={!!cashRegister}
-              clientOptions={clientOptions}
-              isLoadingClients={isLoadingClients}
-              paymentMethodOptions={paymentMethodOptions}
-              onSubmit={handleSubmit(onSubmit)}
-            />
+            {/* Checkout siempre visible */}
+            <div className={`flex-shrink-0 border-t-2 pt-4 ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
+              <CheckoutForm
+                control={control}
+                errors={errors}
+                isValid={isValid}
+                isPending={isPending}
+                cartTotal={cartTotal}
+                amountPaid={amountPaidNumber}
+                change={change}
+                isPaymentSufficient={isPaymentSufficient}
+                cartItemsCount={cartItems.length}
+                hasCashRegister={!!cashRegister}
+                clientOptions={clientOptions}
+                isLoadingClients={isLoadingClients}
+                paymentMethodOptions={paymentMethodOptions}
+                onSubmit={handleSubmit(onSubmit)}
+              />
+            </div>
           </div>
         </div>
       </div>

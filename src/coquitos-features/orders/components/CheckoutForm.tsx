@@ -48,7 +48,7 @@ export const CheckoutForm = memo(({
   const { isDark } = useTheme();
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-4 flex-shrink-0">
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-4">
       
       {/* Resumen de totales */}
       <div className={`${isDark ? 'bg-[#0F172A] border-[#334155]' : 'bg-gray-50 border-gray-200'} border-2 rounded-xl p-4`}>

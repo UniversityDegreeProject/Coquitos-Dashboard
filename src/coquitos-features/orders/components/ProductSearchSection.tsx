@@ -26,9 +26,9 @@ export const ProductSearchSection = memo(({
   const { isDark } = useTheme();
 
   return (
-    <div className="lg:col-span-2 flex flex-col space-y-4 overflow-hidden">
+    <div className="flex flex-col space-y-4">
       {/* Buscador de productos */}
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'} z-10`} />
         <input
           type="text"
@@ -39,31 +39,29 @@ export const ProductSearchSection = memo(({
         />
       </div>
 
-      {/* Grid de productos con SCROLL INDEPENDIENTE */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800 pr-2">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className={`w-10 h-10 animate-spin ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
-          </div>
-        ) : products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Package className={`w-16 h-16 ${isDark ? 'text-gray-600' : 'text-gray-400'} mb-4`} />
-            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              No se encontraron productos disponibles
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={onAddToCart}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Grid de productos */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className={`w-10 h-10 animate-spin ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+        </div>
+      ) : products.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Package className={`w-16 h-16 ${isDark ? 'text-gray-600' : 'text-gray-400'} mb-4`} />
+          <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            No se encontraron productos disponibles
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={onAddToCart}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 });

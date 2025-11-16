@@ -13,6 +13,17 @@ interface ProductListItemProps {
 export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: ProductListItemProps) => {
   const { isDark } = useTheme();
 
+  // Determinar el estado real del producto (si stock = 0, forzar "SinStock")
+  const getEffectiveStatus = (product: Product): string => {
+    // Si el stock es 0, el estado debe ser "SinStock" independientemente del status del backend
+    if (product.stock === 0) {
+      return 'SinStock';
+    }
+    return product.status;
+  };
+
+  const effectiveStatus = getEffectiveStatus(product);
+
   return (
     <div
       className={`${
@@ -61,8 +72,18 @@ export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: Pr
             >
               {product.name}
             </h3>
-            {/* Badge de stock bajo */}
-            {product.stock <= product.minStock && product.status !== 'SinStock' && (
+            {/* Badge de estado */}
+            <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-md ${
+              effectiveStatus === 'Disponible' 
+                ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm'
+                : effectiveStatus === 'SinStock'
+                ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-sm'
+                : 'bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-sm'
+            }`}>
+              {effectiveStatus === 'SinStock' ? 'Sin Stock' : effectiveStatus}
+            </span>
+            {/* Badge de stock bajo - solo mostrar si stock > 0 y stock <= minStock */}
+            {product.stock > 0 && product.stock <= product.minStock && effectiveStatus !== 'SinStock' && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-sm animate-pulse">
                 <AlertTriangle className="w-3 h-3" />
                 Stock Bajo

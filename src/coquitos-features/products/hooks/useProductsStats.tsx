@@ -39,8 +39,8 @@ export const useProductsStats = ( filters : Pick<SearchProductsParams, 'status' 
     // * Calcular estadísticas
   const productsStats: ProductsStatsData = {
     totalProducts: useQueryProductsStats.data?.total ?? 0,
-    availableProducts: useQueryProductsStats.data?.data.filter(p => p.status === 'Disponible').length ?? 0,
-    lowStockProducts: useQueryProductsStats.data?.data.filter(p => p.stock <= p.minStock && p.status !== 'SinStock').length ?? 0,
+    availableProducts: useQueryProductsStats.data?.data.filter(p => p.status === 'Disponible' && p.stock > 0).length ?? 0,
+    lowStockProducts: useQueryProductsStats.data?.data.filter(p => p.stock > 0 && p.stock <= p.minStock && p.status !== 'SinStock').length ?? 0,
     totalValue: useQueryProductsStats.data?.data.reduce((sum, product) => {
       // Para productos de peso variable, calcular desde batches si están disponibles
       if (product.isVariableWeight) {

@@ -1,5 +1,5 @@
 import { memo, /* useCallback, useMemo */ } from "react";
-import { Search, Users, Tag, AlertTriangle } from "lucide-react";
+import { Search, Users, Tag, AlertTriangle, Clock } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { statusOptions } from "../const/status-options";
 import type { ProductStatus } from "../interfaces";
@@ -14,6 +14,8 @@ interface ProductSearchPageProps {
   onCategoryChange: (value: string) => void;
   lowStockFilter: boolean;
   onLowStockChange: (value: boolean) => void;
+  nearExpirationFilter: boolean;
+  onNearExpirationChange: (value: boolean) => void;
   categories: Category[];
   isLoadingCategories: boolean;
 }
@@ -27,6 +29,8 @@ export const ProductSearchPage = memo(({
   onCategoryChange,
   lowStockFilter,
   onLowStockChange,
+  nearExpirationFilter,
+  onNearExpirationChange,
   categories,
   isLoadingCategories,
 }: ProductSearchPageProps) => {
@@ -137,12 +141,13 @@ export const ProductSearchPage = memo(({
             </div>
           </div>
 
-          {/* Filtro de Stock Bajo (Checkbox) */}
-          <div className="min-w-[160px]">
+          {/* Filtros Especiales (Checkboxes) */}
+          <div className="flex flex-col gap-2 min-w-[160px]">
             <div className="space-y-2">
               <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
-                Filtro Especial
+                Filtros Especiales
               </label>
+              {/* Filtro de Stock Bajo */}
               <label className={`flex items-center px-4 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm transition-all duration-200 cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'} ${lowStockFilter ? isDark ? 'border-[#F59E0B] ring-4 ring-[#F59E0B]/20' : 'border-[#275081] ring-4 ring-[#275081]/20' : ''}`}>
                 <input
                   type="checkbox"
@@ -153,6 +158,19 @@ export const ProductSearchPage = memo(({
                 <AlertTriangle className={`w-4 h-4 ml-2 mr-1 ${lowStockFilter ? 'text-orange-500' : isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'}`} />
                 <span className={`text-sm font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
                   Solo Stock Bajo
+                </span>
+              </label>
+              {/* Filtro de Próximos a Vencer */}
+              <label className={`flex items-center px-4 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-[#E5E7EB]'} backdrop-blur-sm shadow-sm transition-all duration-200 cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'} ${nearExpirationFilter ? isDark ? 'border-[#F59E0B] ring-4 ring-[#F59E0B]/20' : 'border-[#275081] ring-4 ring-[#275081]/20' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={nearExpirationFilter}
+                  onChange={(e) => onNearExpirationChange(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+                />
+                <Clock className={`w-4 h-4 ml-2 mr-1 ${nearExpirationFilter ? 'text-red-500' : isDark ? 'text-[#94A3B8]' : 'text-[#6B7280]'}`} />
+                <span className={`text-sm font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+                  Próximos a Vencer
                 </span>
               </label>
             </div>

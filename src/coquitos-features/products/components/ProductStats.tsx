@@ -12,13 +12,13 @@ interface ProductStatsProps {
  */
 export const ProductStats = ({ productsStats }: ProductStatsProps) => {
 
-  const { totalProducts, availableProducts, lowStockProducts, totalValue } = productsStats;
+  const { totalProducts, availableProducts, lowStockProducts, nearExpirationProducts, totalValue } = productsStats;
   const { colors, isDark } = useTheme();
 
 
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
       {/* Total Productos */}
       <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
         <div className="flex items-center justify-between">
@@ -61,6 +61,21 @@ export const ProductStats = ({ productsStats }: ProductStatsProps) => {
             </p>
           </div>
           <AlertTriangle className={`w-8 h-8 text-red-600`} />
+        </div>
+      </div>
+
+      {/* Próximos a Vencer */}
+      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-4 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className={`text-sm font-medium ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
+              Próximos a Vencer
+            </p>
+            <p className={`text-2xl font-bold text-orange-600`}>
+              {nearExpirationProducts}
+            </p>
+          </div>
+          <AlertTriangle className={`w-8 h-8 text-orange-600`} />
         </div>
       </div>
 

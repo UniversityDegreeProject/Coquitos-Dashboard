@@ -1,7 +1,8 @@
 import { memo } from "react";
-import { Package, Tag } from "lucide-react";
+import { Package, Tag, Clock, Layers } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { ProductButtomsActions } from "./ProducButtomsActions";
+import { isProductNearExpiration, getDaysUntilExpiration, getNearestExpirationDate, formatExpirationDate } from "../helpers";
 import type { Product, SearchProductsParams } from "../interfaces";
 
 interface ProductCardProps {
@@ -47,6 +48,11 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
   };
 
   const effectiveStatus = getEffectiveStatus(product);
+  
+  // Verificar si el producto está próximo a vencer
+  const isNearExpiration = isProductNearExpiration(product);
+  const nearestExpirationDate = getNearestExpirationDate(product);
+  const daysUntilExpiration = getDaysUntilExpiration(nearestExpirationDate as Date | string);
 
   // Obtener color del estado para badges
   const getStatusColor = (status: string) => {
@@ -114,15 +120,48 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
               Stock Bajo
             </span>
           )}
+          
+          {/* Badge de próximo a vencer - mostrar si faltan 4, 3 o 2 días */}
+          {isNearExpiration && product.stock > 0 && effectiveStatus !== 'SinStock' && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/50 animate-pulse">
+              <Clock className="w-3 h-3" />
+              Próximo a vencer
+            </span>
+          )}
+          
+          {/* Badge de vence mañana - mostrar solo si falta 1 día */}
+          {daysUntilExpiration === 1 && product.stock > 0 && effectiveStatus !== 'SinStock' && !isNearExpiration && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/50 animate-pulse">
+              <Clock className="w-3 h-3" />
+              Vence Mañana
+            </span>
+          )}
+          
+          {/* Badge de vence hoy - mostrar solo si es el día exacto */}
+          {daysUntilExpiration === 0 && product.stock > 0 && effectiveStatus !== 'SinStock' && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg shadow-red-600/50 animate-pulse">
+              <Clock className="w-3 h-3" />
+              Vence Hoy
+            </span>
+          )}
         </div>
       </div>
 
       {/* Contenido principal - minimalista */}
       <div className="p-4">
-        {/* Nombre del producto */}
-        <h3 className={`text-lg font-semibold mb-2 line-clamp-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-          {product.name}
-        </h3>
+        {/* Nombre del producto y tipo */}
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className={`text-lg font-semibold line-clamp-1 flex-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            {product.name}
+          </h3>
+          {/* Badge de producto variable - solo para productos con gestión por lotes */}
+          {product.isVariableWeight && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm flex-shrink-0">
+              <Layers className="w-3 h-3" />
+              Por Lotes
+            </span>
+          )}
+        </div>
         
         {/* Categoría */}
         <div className="flex items-center space-x-1 mb-3">
@@ -223,12 +262,49 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
 
         {/* SKU */}
         {product.sku && (
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center justify-between text-xs mb-2">
             <span className={`${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
               Código
             </span>
             <span className={`font-mono ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
               {product.sku}
+            </span>
+          </div>
+        )}
+        
+        {/* Fecha de Vencimiento - siempre mostrar la fecha original */}
+        {nearestExpirationDate && (
+          <div className={`flex items-center gap-1.5 text-xs ${
+            daysUntilExpiration === 0 
+              ? 'text-red-600 font-semibold' 
+              : daysUntilExpiration === 1 
+              ? 'text-orange-500 font-semibold'
+              : isNearExpiration 
+              ? 'text-red-500 font-semibold' 
+              : isDark 
+              ? 'text-gray-400' 
+              : 'text-gray-600'
+          }`}>
+            <Clock className={`w-3.5 h-3.5 ${
+              daysUntilExpiration === 0 
+                ? 'text-red-600' 
+                : daysUntilExpiration === 1 
+                ? 'text-orange-500'
+                : isNearExpiration 
+                ? 'text-red-500' 
+                : ''
+            }`} />
+            <span>
+              Vence: {formatExpirationDate(nearestExpirationDate)}
+              {daysUntilExpiration !== null && daysUntilExpiration <= 1 && (
+                <span className={`ml-1 font-bold ${
+                  daysUntilExpiration === 0 
+                    ? 'text-red-600' 
+                    : 'text-orange-500'
+                }`}>
+                  {daysUntilExpiration === 0 ? '(Hoy)' : '(Mañana)'}
+                </span>
+              )}
             </span>
           </div>
         )}

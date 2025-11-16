@@ -1,7 +1,8 @@
 import { memo } from "react";
-import { Package, AlertTriangle } from "lucide-react";
+import { Package, AlertTriangle, Clock, Layers } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { ProductButtomsActions } from "./ProducButtomsActions";
+import { isProductNearExpiration, getDaysUntilExpiration, getNearestExpirationDate, formatExpirationDate } from "../helpers";
 import type { Product, SearchProductsParams } from "../interfaces";
 
 interface ProductListItemProps {
@@ -23,6 +24,11 @@ export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: Pr
   };
 
   const effectiveStatus = getEffectiveStatus(product);
+  
+  // Verificar si el producto está próximo a vencer
+  const isNearExpiration = isProductNearExpiration(product);
+  const nearestExpirationDate = getNearestExpirationDate(product);
+  const daysUntilExpiration = getDaysUntilExpiration(nearestExpirationDate as Date | string);
 
   return (
     <div
@@ -64,7 +70,7 @@ export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: Pr
 
         {/* Información */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3
               className={`text-lg font-semibold ${
                 isDark ? 'text-[#F8FAFC]' : 'text-gray-800'
@@ -72,6 +78,13 @@ export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: Pr
             >
               {product.name}
             </h3>
+            {/* Badge de producto variable - solo para productos con gestión por lotes */}
+            {product.isVariableWeight && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm">
+                <Layers className="w-3 h-3" />
+                Por Lotes
+              </span>
+            )}
             {/* Badge de estado */}
             <span className={`inline-flex px-2 py-0.5 text-xs font-medium rounded-md ${
               effectiveStatus === 'Disponible' 
@@ -87,6 +100,29 @@ export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: Pr
               <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-sm animate-pulse">
                 <AlertTriangle className="w-3 h-3" />
                 Stock Bajo
+              </span>
+            )}
+            {/* Badge de próximo a vencer - mostrar si faltan 4, 3 o 2 días */}
+            {isNearExpiration && product.stock > 0 && effectiveStatus !== 'SinStock' && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-sm animate-pulse">
+                <Clock className="w-3 h-3" />
+                Próximo a vencer
+              </span>
+            )}
+            
+            {/* Badge de vence mañana - mostrar solo si falta 1 día */}
+            {daysUntilExpiration === 1 && product.stock > 0 && effectiveStatus !== 'SinStock' && !isNearExpiration && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-sm animate-pulse">
+                <Clock className="w-3 h-3" />
+                Vence Mañana
+              </span>
+            )}
+            
+            {/* Badge de vence hoy - mostrar solo si es el día exacto */}
+            {daysUntilExpiration === 0 && product.stock > 0 && effectiveStatus !== 'SinStock' && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-md bg-gradient-to-r from-red-600 to-red-800 text-white shadow-sm animate-pulse">
+                <Clock className="w-3 h-3" />
+                Vence Hoy
               </span>
             )}
           </div>
@@ -105,6 +141,42 @@ export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: Pr
             >
               {product.description}
             </p>
+          )}
+          {/* Fecha de Vencimiento - siempre mostrar la fecha original */}
+          {nearestExpirationDate && (
+            <div className={`flex items-center gap-1.5 mt-1 text-xs ${
+              daysUntilExpiration === 0 
+                ? 'text-red-600 font-semibold' 
+                : daysUntilExpiration === 1 
+                ? 'text-orange-500 font-semibold'
+                : isNearExpiration 
+                ? 'text-red-500 font-semibold' 
+                : isDark 
+                ? 'text-gray-400' 
+                : 'text-gray-600'
+            }`}>
+              <Clock className={`w-3 h-3 ${
+                daysUntilExpiration === 0 
+                  ? 'text-red-600' 
+                  : daysUntilExpiration === 1 
+                  ? 'text-orange-500'
+                  : isNearExpiration 
+                  ? 'text-red-500' 
+                  : ''
+              }`} />
+              <span>
+                Vence: {formatExpirationDate(nearestExpirationDate)}
+                {daysUntilExpiration !== null && daysUntilExpiration <= 1 && (
+                  <span className={`ml-1 font-bold ${
+                    daysUntilExpiration === 0 
+                      ? 'text-red-600' 
+                      : 'text-orange-500'
+                  }`}>
+                    {daysUntilExpiration === 0 ? '(Hoy)' : '(Mañana)'}
+                  </span>
+                )}
+              </span>
+            </div>
           )}
         </div>
 

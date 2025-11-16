@@ -22,6 +22,7 @@ const filtersDefault : SearchProductsSchema = {
   categoryId: "",
   status: "",
   lowStock: false,
+  nearExpiration: false,
   page: 1,
   limit: 6
 }
@@ -57,9 +58,10 @@ export const ProductPage = () => {
     categoryId: debouncedCategoryId,
     status: searchFilters.status,
     lowStock: searchFilters.lowStock,
+    nearExpiration: searchFilters.nearExpiration,
     page: page,
     limit: limit
-  }), [debouncedSearch, debouncedCategoryId, searchFilters.status, searchFilters.lowStock, page, limit]);
+  }), [debouncedSearch, debouncedCategoryId, searchFilters.status, searchFilters.lowStock, searchFilters.nearExpiration, page, limit]);
 
   const {
     products,
@@ -215,6 +217,8 @@ export const ProductPage = () => {
         onStatusChange={(value: ProductStatus | "") => handleSearchFiltersChange({ ...searchFilters, status: value })}
         lowStockFilter={searchFilters.lowStock || false}
         onLowStockChange={(value: boolean) => handleSearchFiltersChange({ ...searchFilters, lowStock: value })}
+        nearExpirationFilter={searchFilters.nearExpiration || false}
+        onNearExpirationChange={(value: boolean) => handleSearchFiltersChange({ ...searchFilters, nearExpiration: value })}
         categories={categories}
         isLoadingCategories={isLoadingCategories}
       />

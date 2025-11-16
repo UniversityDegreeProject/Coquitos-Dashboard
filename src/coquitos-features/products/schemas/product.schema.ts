@@ -67,6 +67,17 @@ export const productSchema = z.object({
     .string()
     .optional()
     .default(''),
+  
+  expirationDate: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === '') return true; // Opcional
+      const date = new Date(val);
+      return !isNaN(date.getTime());
+    }, {
+      message: 'La fecha de vencimiento debe ser una fecha válida'
+    }),
 }).superRefine((data, ctx) => {
   // SI ES PESO VARIABLE: solo validar pricePerKg
   if (data.isVariableWeight) {

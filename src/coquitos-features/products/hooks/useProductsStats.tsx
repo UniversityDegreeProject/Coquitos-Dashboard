@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { productsQueries } from "../const";
+import { isProductNearExpiration } from "../helpers";
 import type { SearchProductsParams } from "../interfaces";
 import { getProducts } from "../services/product.service";
 
@@ -8,6 +9,7 @@ export interface ProductsStatsData {
   totalProducts: number;
   availableProducts: number;
   lowStockProducts: number;
+  nearExpirationProducts: number;
   totalValue: number;
 }
 
@@ -41,6 +43,7 @@ export const useProductsStats = ( filters : Pick<SearchProductsParams, 'status' 
     totalProducts: useQueryProductsStats.data?.total ?? 0,
     availableProducts: useQueryProductsStats.data?.data.filter(p => p.status === 'Disponible' && p.stock > 0).length ?? 0,
     lowStockProducts: useQueryProductsStats.data?.data.filter(p => p.stock > 0 && p.stock <= p.minStock && p.status !== 'SinStock').length ?? 0,
+    nearExpirationProducts: useQueryProductsStats.data?.data.filter(p => p.stock > 0 && p.status !== 'SinStock' && isProductNearExpiration(p)).length ?? 0,
     totalValue: useQueryProductsStats.data?.data.reduce((sum, product) => {
       // Para productos de peso variable, calcular desde batches si están disponibles
       if (product.isVariableWeight) {

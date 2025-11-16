@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { productsQueries } from "../const";
+import { isProductExpiringSoon } from "../helpers";
 import type { GetProductsResponse, SearchProductsParams } from "../interfaces";
 import { getProducts } from "../services/product.service";
 
@@ -36,10 +37,26 @@ export const useGetProducts = (params: SearchProductsParams) => {
 
   const responseData = useQueryProducts.data || defaultResponse;
   
-  // Aplicar filtro de stock bajo en el frontend
-  const filteredProducts = params.lowStock === true 
-    ? responseData.data.filter(product => product.stock <= product.minStock && product.status !== 'SinStock')
-    : responseData.data;
+  // Aplicar filtros en el frontend
+  let filteredProducts = responseData.data;
+  
+  // Filtro de stock bajo
+  if (params.lowStock === true) {
+    filteredProducts = filteredProducts.filter(product => 
+      product.stock > 0 && 
+      product.stock <= product.minStock && 
+      product.status !== 'SinStock'
+    );
+  }
+  
+  // Filtro de productos próximos a vencer (incluye 4, 3, 2, 1 días y hoy)
+  if (params.nearExpiration === true) {
+    filteredProducts = filteredProducts.filter(product => 
+      product.stock > 0 && 
+      product.status !== 'SinStock' && 
+      isProductExpiringSoon(product)
+    );
+  }
 
   return {
     ...useQueryProducts,

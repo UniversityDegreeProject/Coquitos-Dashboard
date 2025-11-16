@@ -1,6 +1,6 @@
 // * Library
 import { useForm, type SubmitHandler, Controller } from "react-hook-form";
-import { X, Package, FileText, Coins, Hash, Box, AlertTriangle, Layers, Tag, CheckCircle, Loader2, Image as ImageIcon, Weight, Plus } from "lucide-react";
+import { X, Package, FileText, Coins, Hash, Box, AlertTriangle, Layers, Tag, CheckCircle, Loader2, Image as ImageIcon, Weight, Plus, Clock } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -38,6 +38,7 @@ const initialValues: ProductSchema = {
   status: "Disponible",
   isVariableWeight: false,
   pricePerKg: "",
+  expirationDate: "",
 };
 
 
@@ -105,7 +106,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
   
   // * Hooks para gestión de batches
   const { deleteBatchMutation } = useDeleteBatch({ productId: productToUpdate?.id || "" });
-  const { updateBatchStockMutation, isPending: isUpdatingBatchStock } = useUpdateBatchStock({ 
+  const { updateBatchStockMutation } = useUpdateBatchStock({ 
     productId: productToUpdate?.id || "",
     onSuccessCallback: () => {},
   });
@@ -133,7 +134,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
 
   const onSubmit: SubmitHandler<ProductSchema> = (data) => {
     // Convertir strings a números para el backend
-    const productData = {
+    const productData: any = {
       ...data,
       price: data.isVariableWeight ? 0 : parseFloat(data.price || '0'),
       stock: data.isVariableWeight ? 0 : (data.stock ? parseInt(data.stock) : 0),
@@ -142,6 +143,15 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
       isVariableWeight: data.isVariableWeight || false,
       pricePerKg: data.pricePerKg ? parseFloat(data.pricePerKg) : undefined,
     };
+    
+    // Eliminar expirationDate del objeto si está vacío o es producto variable
+    // Los productos variables no tienen fecha a nivel de producto (la tienen en batches)
+    if (data.isVariableWeight || !data.expirationDate || data.expirationDate.trim() === '') {
+      delete productData.expirationDate;
+    } else {
+      // Solo incluir expirationDate si tiene valor y NO es producto variable
+      productData.expirationDate = new Date(data.expirationDate).toISOString();
+    }
     
     closeModal();
     
@@ -169,6 +179,33 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
       setValue('status', productToUpdate.status as ProductStatus);
       setValue('isVariableWeight', productToUpdate.isVariableWeight || false);
       setValue('pricePerKg', productToUpdate.pricePerKg?.toString() || '');
+      // Formatear fecha de vencimiento para input type="date" (YYYY-MM-DD)
+      // Usar solo los componentes de fecha sin considerar zona horaria para evitar cambios de día
+      if (productToUpdate.expirationDate) {
+        const expirationDateStr = typeof productToUpdate.expirationDate === 'string' 
+          ? productToUpdate.expirationDate 
+          : productToUpdate.expirationDate.toISOString();
+        
+        // Extraer año, mes y día directamente del string ISO (YYYY-MM-DD o YYYY-MM-DDTHH:mm:ss)
+        const dateMatch = expirationDateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (dateMatch) {
+          const [, year, month, day] = dateMatch;
+          setValue('expirationDate', `${year}-${month}-${day}`);
+        } else {
+          // Fallback: usar Date si el formato no es ISO
+          const expirationDate = typeof productToUpdate.expirationDate === 'string' 
+            ? new Date(productToUpdate.expirationDate) 
+            : productToUpdate.expirationDate;
+          if (!isNaN(expirationDate.getTime())) {
+            const year = expirationDate.getFullYear();
+            const month = String(expirationDate.getMonth() + 1).padStart(2, '0');
+            const day = String(expirationDate.getDate()).padStart(2, '0');
+            setValue('expirationDate', `${year}-${month}-${day}`);
+          }
+        }
+      } else {
+        setValue('expirationDate', '');
+      }
       setImagePreview(productToUpdate.image || '');
     } else if (modalMode === 'create') {
       setImagePreview('');
@@ -384,7 +421,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
           {/* Tercera fila - Stock y Stock Mínimo */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <LabelInputString
-              label="Stock Actual"
+              label="Unidades en stock"
               name="stock"
               control={control}
               icon={Box}
@@ -397,7 +434,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
             />
 
             <LabelInputString
-              label="Stock Mínimo"
+              label="Unidades mínimas para alerta de stock"
               name="minStock"
               control={control}
               icon={AlertTriangle}
@@ -445,6 +482,35 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
               error={errors.ingredients?.message}
             />
           </div>
+
+          {/* Fila - Fecha de Vencimiento (solo para productos sin batches) */}
+          {!watchedIsVariableWeight && (
+            <div className="grid grid-cols-1 gap-3">
+              <div className="space-y-2">
+                <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+                  Fecha de Vencimiento (Opcional)
+                </label>
+                <div className="relative">
+                  <Clock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'} z-10`} />
+                  <Controller
+                    name="expirationDate"
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        type="date"
+                        min={new Date().toISOString().split('T')[0]}
+                        className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]'} focus:ring-4 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
+                      />
+                    )}
+                  />
+                </div>
+                {errors.expirationDate && (
+                  <p className="text-red-500 text-xs font-medium">{errors.expirationDate.message}</p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Sexta fila - Subir Imagen */}
           <div className="grid grid-cols-1 gap-3">
@@ -516,12 +582,12 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
             </div>
           </div>
 
-          {/* Sección de Batches (solo en modo edición y peso variable) */}
+          {/* Sección de Lotes (solo en modo edición y peso variable) */}
           {isEditMode && watchedIsVariableWeight && productToUpdate?.id && (
             <div className={`border-t ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'} pt-4 mt-4`}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className={`text-base font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-900'}`}>
-                  Gestión de Batches
+                  Gestión de Lotes
                 </h3>
                 <button
                   type="button"
@@ -529,7 +595,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
                   className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  Agregar Batch
+                  Agregar Lote
                 </button>
               </div>
               

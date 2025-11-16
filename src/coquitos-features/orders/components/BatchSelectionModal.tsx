@@ -1,7 +1,8 @@
 import { memo } from "react";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Clock } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { formatCurrency } from "../helpers";
+import { formatExpirationDate, getDaysUntilExpiration } from "@/coquitos-features/products/helpers";
 import type { Product } from "@/coquitos-features/products/interfaces";
 import type { ProductBatch } from "@/coquitos-features/products/interfaces/product-batch.interface";
 
@@ -72,15 +73,37 @@ export const BatchSelectionModal = memo(({
                     className={`${isDark ? 'bg-[#0F172A] border-[#334155] hover:border-[#F59E0B]' : 'bg-gray-50 border-gray-200 hover:border-[#275081]'} border-2 rounded-xl p-4 transition-all duration-200 hover:shadow-lg cursor-pointer`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="text-left">
+                      <div className="text-left flex-1">
                         <p className={`font-bold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
                           {batch.batchCode}
                         </p>
                         <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                           Peso: {batch.weight}kg | Stock: {batch.stock}
                         </p>
+                        {batch.expirationDate && (() => {
+                          const daysUntilExpiration = getDaysUntilExpiration(batch.expirationDate);
+                          const isNearExpiration = daysUntilExpiration !== null && daysUntilExpiration <= 4 && daysUntilExpiration >= 0;
+                          return (
+                            <div className={`flex items-center gap-1 mt-1 ${isNearExpiration ? 'text-red-500' : isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                              <Clock className="w-3 h-3" />
+                              <span className="text-xs font-medium">
+                                Vence: {formatExpirationDate(batch.expirationDate)}
+                                {daysUntilExpiration !== null && (
+                                  <span className={isNearExpiration ? ' text-red-500 font-bold' : ''}>
+                                    {daysUntilExpiration === 0 
+                                      ? ' (Hoy)' 
+                                      : daysUntilExpiration === 1 
+                                      ? ' (Mañana)' 
+                                      : ` (${daysUntilExpiration} días)`
+                                    }
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </div>
-                      <div className="text-right">
+                      <div className="text-right ml-4">
                         <p className={`font-bold text-lg ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`}>
                           {formatCurrency(batch.unitPrice)}
                         </p>

@@ -27,6 +27,17 @@ export const createBatchSchema = z.object({
     .refine((val) => /^\d+(\.\d{1,2})?$/.test(val), {
       message: 'El precio solo puede tener máximo 2 decimales'
     }),
+  
+  expirationDate: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (!val || val.trim() === '') return true; // Opcional
+      const date = new Date(val);
+      return !isNaN(date.getTime());
+    }, {
+      message: 'La fecha de vencimiento debe ser una fecha válida'
+    }),
 });
 
 /**

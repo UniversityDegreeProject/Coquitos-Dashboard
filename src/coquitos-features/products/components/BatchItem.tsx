@@ -1,6 +1,8 @@
 import { memo } from "react";
+import { Clock } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { BatchButtonsActions } from "./BatchButtonsActions";
+import { formatExpirationDate, getDaysUntilExpiration } from "../helpers";
 import type { ProductBatch } from "../interfaces";
 
 interface BatchItemProps {
@@ -17,6 +19,11 @@ interface BatchItemProps {
  */
 export const BatchItem = memo(({ batch, batches, productId, onDeleteBatch, onUpdateStock }: BatchItemProps) => {
   const { isDark } = useTheme();
+  
+  const daysUntilExpiration = getDaysUntilExpiration(batch.expirationDate);
+  const isNearExpiration = daysUntilExpiration !== null && daysUntilExpiration >= 2 && daysUntilExpiration <= 4;
+  const isExpiringTomorrow = daysUntilExpiration === 1;
+  const isExpiringToday = daysUntilExpiration === 0;
 
   return (
     <div
@@ -42,6 +49,38 @@ export const BatchItem = memo(({ batch, batches, productId, onDeleteBatch, onUpd
           <span>Precio: Bs {batch.unitPrice.toFixed(2)}</span>
           <span>•</span>
           <span className="font-semibold">Stock: {batch.stock} ud.</span>
+          {batch.expirationDate && (
+            <>
+              <span>•</span>
+              <span className={`flex items-center gap-1 ${
+                isExpiringToday 
+                  ? 'text-red-600 font-semibold' 
+                  : isExpiringTomorrow 
+                  ? 'text-orange-500 font-semibold'
+                  : isNearExpiration 
+                  ? 'text-red-500 font-semibold' 
+                  : ''
+              }`}>
+                <Clock className={`w-3 h-3 ${
+                  isExpiringToday 
+                    ? 'text-red-600' 
+                    : isExpiringTomorrow 
+                    ? 'text-orange-500'
+                    : isNearExpiration 
+                    ? 'text-red-500' 
+                    : ''
+                }`} />
+                Vence: {formatExpirationDate(batch.expirationDate)}
+                {daysUntilExpiration !== null && daysUntilExpiration <= 1 && (
+                  <span className={`font-bold ${
+                    isExpiringToday ? 'text-red-600' : 'text-orange-500'
+                  }`}>
+                    {isExpiringToday ? ' (Hoy)' : ' (Mañana)'}
+                  </span>
+                )}
+              </span>
+            </>
+          )}
         </div>
       </div>
 

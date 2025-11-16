@@ -15,6 +15,12 @@ const convertBatch = (batch: any): ProductBatch => {
       ? batch.weight.toNumber()
       : Number(batch.weight),
     stock: Number(batch.stock),
+    // expirationDate se mantiene como Date o string según venga del backend
+    expirationDate: batch.expirationDate 
+      ? (batch.expirationDate instanceof Date 
+          ? batch.expirationDate.toISOString() 
+          : batch.expirationDate)
+      : undefined,
   };
 };
 
@@ -36,6 +42,12 @@ export const backendProductToFrontendProduct = (backendProduct: any): Product =>
       ? (typeof backendProduct.pricePerKg === 'object' && 'toNumber' in backendProduct.pricePerKg
           ? backendProduct.pricePerKg.toNumber()
           : Number(backendProduct.pricePerKg))
+      : undefined,
+    // expirationDate se mantiene como Date o string según venga del backend
+    expirationDate: backendProduct.expirationDate 
+      ? (backendProduct.expirationDate instanceof Date 
+          ? backendProduct.expirationDate.toISOString() 
+          : backendProduct.expirationDate)
       : undefined,
   };
 };

@@ -14,6 +14,7 @@ import { useGetClients } from "@/coquitos-features/clients/hooks/useGetClients";
 import { useGetProducts } from "@/coquitos-features/products/hooks/useGetProducts";
 import { useGetBatches } from "@/coquitos-features/products/hooks";
 import { useGetCurrentCashRegister } from "@/coquitos-features/cash-closing/hooks";
+import { isProductExpiredOrExpiringToday } from "@/coquitos-features/products/helpers";
 
 // Schemas y constantes
 import { createOrderSchema, type CreateOrderSchema } from "../schemas";
@@ -77,9 +78,14 @@ export const FormCreateOrderModal = () => {
     limit: 100,
   });
 
-  // Filtrar productos que tienen stock > 0
+  // Filtrar productos que tienen stock > 0 y no están vencidos ni vencen hoy
   const products = useMemo(() => {
     return allProducts.filter((product) => {
+      // Excluir productos vencidos o que vencen hoy
+      if (isProductExpiredOrExpiringToday(product)) {
+        return false;
+      }
+      
       // Para productos de peso variable, verificar si tienen batches con stock > 0
       if (product.isVariableWeight) {
         return product.batches && product.batches.some((batch) => batch.stock > 0);

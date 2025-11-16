@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect } from "react";
-import { X, Plus, Weight, Coins } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { X, Plus, Weight, Coins, Clock } from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { LabelInputString } from "@/shared/components";
@@ -32,6 +32,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
       productId: product.id || "",
       weight: "",
       unitPrice: "",
+      expirationDate: "",
     },
   });
 
@@ -53,11 +54,16 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
   // Handler asíncrono para submit
   const onSubmit = useCallback(async (data: CreateBatchSchema) => {
     // Convertir strings a números para el backend
-    const batchData = {
+    const batchData: any = {
       productId: data.productId,
       weight: parseFloat(data.weight),
       unitPrice: parseFloat(data.unitPrice),
     };
+    
+    // Solo incluir expirationDate si tiene valor
+    if (data.expirationDate && data.expirationDate.trim() !== '') {
+      batchData.expirationDate = new Date(data.expirationDate).toISOString();
+    }
     useCreateBatchMutation.mutate(batchData);
   }, [useCreateBatchMutation]);
 
@@ -68,6 +74,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
         productId: product.id,
         weight: "",
         unitPrice: "",
+        expirationDate: "",
       });
     }
   }, [isOpen, product.id, reset]);
@@ -113,7 +120,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           {/* Peso */}
           <LabelInputString
-            label="Peso (kg)"
+            label="Peso por unidad en kilogramos (kg)"
             name="weight"
             control={control}
             icon={Weight}
@@ -126,7 +133,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
 
           {/* Precio Unitario */}
           <LabelInputString
-            label="Precio Unitario (Bs)"
+            label="Precio por unidad en Bolivianos (Bs)"
             name="unitPrice"
             control={control}
             icon={Coins}
@@ -137,11 +144,36 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
             inputMode="decimal"
           />
 
+          {/* Fecha de Vencimiento */}
+          <div className="space-y-2">
+            <label className={`block text-sm font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'}`}>
+              Fecha de Vencimiento (Opcional)
+            </label>
+            <div className="relative">
+              <Clock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'} z-10`} />
+              <Controller
+                name="expirationDate"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    type="date"
+                    min={new Date().toISOString().split('T')[0]}
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]'} focus:ring-4 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
+                  />
+                )}
+              />
+            </div>
+            {errors.expirationDate && (
+              <p className="text-red-500 text-xs font-medium">{errors.expirationDate.message}</p>
+            )}
+          </div>
+
           {/* Info */}
           <div className={`p-3 rounded-lg ${isDark ? 'bg-blue-900/20 border border-blue-800/30' : 'bg-blue-50 border border-blue-200'}`}>
             <p className={`text-xs ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>
-              <strong>Nota:</strong> El batch se creará con stock inicial de 1 unidad.
-              Precio por kg: Bs {product.pricePerKg ? product.pricePerKg.toFixed(2) : '0.00'}
+              <strong>Nota:</strong> El lote se creará con stock inicial de 1 unidad.
+              Precio por unidad: Bs {product.pricePerKg ? product.pricePerKg.toFixed(2) : '0.00'}
             </p>
           </div>
 

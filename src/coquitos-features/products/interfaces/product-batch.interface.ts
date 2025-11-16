@@ -16,6 +16,7 @@ export interface ProductBatch {
   weight: number; 
   unitPrice: number;
   stock: number;
+  expirationDate?: Date | string;
   createdAt: Date;
   updatedAt: Date;
   product?: Product;
@@ -29,6 +30,7 @@ export interface CreateBatchFormData {
   productId: string;
   weight: number;
   unitPrice: number;
+  expirationDate?: Date | string;
 }
 
 /**

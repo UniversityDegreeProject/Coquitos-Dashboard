@@ -30,6 +30,7 @@ export interface Product {
     categoryId:  string;
     isVariableWeight?: boolean;
     pricePerKg?:      number;
+    expirationDate?:  Date | string;
     category?:    Category;
     batches?:     ProductBatch[];
     createdAt?:  Date;
@@ -50,6 +51,7 @@ export interface ProductFormData {
     categoryId: string;
     isVariableWeight?: boolean;
     pricePerKg?:      number;
+    expirationDate?:  Date | string;
     category?:   Category;
     createdAt?:  Date;
     updatedAt?:  Date;
@@ -60,6 +62,7 @@ export interface SearchProductsParams {
     categoryId?: string;
     status?:    ProductStatus | "";
     lowStock?:  boolean;
+    nearExpiration?: boolean;
     page :    number;
     limit :   number;
 }

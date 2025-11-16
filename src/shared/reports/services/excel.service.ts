@@ -8,6 +8,7 @@ import type {
   CashRegisterSummaryReport,
 } from "../types/report.types";
 import { formatCurrency, formatDateShort, formatDateRange } from "../utils";
+import type { CompleteDashboardReport } from "./pdf.service";
 
 /**
  * Servicio para generar reportes en formato Excel
@@ -374,6 +375,283 @@ export const generateCashRegisterSummaryExcel = async (report: CashRegisterSumma
   saveAs(
     blob,
     `Resumen_Cierres_${formatDateShort(report.startDate).replace(/\//g, "_")}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
+  );
+};
+
+/**
+ * Genera un archivo Excel completo del dashboard con todos los datos
+ * Incluye: KPIs, ventas por hora, métodos de pago, productos más vendidos, mejores clientes y ventas por día
+ */
+export const generateCompleteDashboardExcel = async (report: CompleteDashboardReport): Promise<void> => {
+  const workbook = new ExcelJS.Workbook();
+  const { salesReport, productsReport, customersReport } = report;
+
+  // Calcular número de métodos de pago utilizados
+  const paymentMethodsCount = [
+    salesReport.salesByPaymentMethod.cash > 0,
+    salesReport.salesByPaymentMethod.card > 0,
+    salesReport.salesByPaymentMethod.qr > 0,
+  ].filter(Boolean).length;
+
+  // Cargar logo de la empresa
+  let logoId: number | undefined;
+  try {
+    // Intentar cargar el logo desde la ruta pública
+    const logoResponse = await fetch("/imagen-corporativa.jpg");
+    if (logoResponse.ok) {
+      const logoBuffer = await logoResponse.arrayBuffer();
+      // Convertir ArrayBuffer a Uint8Array para ExcelJS (compatible con navegador)
+      const buffer = new Uint8Array(logoBuffer);
+      logoId = workbook.addImage({
+        // @ts-expect-error - ExcelJS acepta Uint8Array en navegador aunque el tipo es Buffer
+        buffer,
+        extension: "jpeg",
+      });
+    }
+  } catch (error) {
+    console.warn("No se pudo cargar el logo:", error);
+  }
+
+  // Hoja 1: Resumen General
+  const summarySheet = workbook.addWorksheet("Resumen General");
+  summarySheet.columns = [{ width: 30 }, { width: 20 }, { width: 20 }];
+
+  let currentRow = 1;
+
+  // Agregar logo si está disponible
+  if (logoId !== undefined) {
+    summarySheet.addImage(logoId, {
+      tl: { col: 0, row: currentRow - 1 },
+      ext: { width: 200, height: 100 },
+    });
+    currentRow += 5; // Espacio después del logo
+  }
+
+  summarySheet.mergeCells(`A${currentRow}:B${currentRow}`);
+  const titleCell = summarySheet.getCell(`A${currentRow}`);
+  titleCell.value = `Reporte Completo de Ventas - ${formatDateRange(salesReport.startDate, salesReport.endDate)}`;
+  titleCell.font = { size: 16, bold: true };
+  titleCell.alignment = { horizontal: "center", vertical: "middle" };
+  currentRow += 2;
+
+  // Resumen General (KPIs)
+  summarySheet.getCell(`A${currentRow}`).value = "Resumen General";
+  summarySheet.getCell(`A${currentRow}`).font = { bold: true, size: 12 };
+  currentRow++;
+
+  summarySheet.getCell(`A${currentRow}`).value = "Total de Ventas:";
+  summarySheet.getCell(`B${currentRow}`).value = formatCurrency(salesReport.totalSales);
+  summarySheet.getCell(`B${currentRow}`).font = { bold: true };
+  currentRow++;
+
+  summarySheet.getCell(`A${currentRow}`).value = "Total de Órdenes:";
+  summarySheet.getCell(`B${currentRow}`).value = salesReport.totalOrders;
+  currentRow++;
+
+  summarySheet.getCell(`A${currentRow}`).value = "Ticket Promedio:";
+  summarySheet.getCell(`B${currentRow}`).value = formatCurrency(salesReport.averageTicket);
+  currentRow++;
+
+  summarySheet.getCell(`A${currentRow}`).value = "Métodos de Pago:";
+  summarySheet.getCell(`B${currentRow}`).value = paymentMethodsCount;
+  currentRow += 2;
+
+  // Ventas por Método de Pago con Gráfico
+  summarySheet.getCell(`A${currentRow}`).value = "Ventas por Método de Pago";
+  summarySheet.getCell(`A${currentRow}`).font = { bold: true, size: 12 };
+  currentRow++;
+
+  summarySheet.getCell(`A${currentRow}`).value = "Efectivo";
+  summarySheet.getCell(`B${currentRow}`).value = Number(salesReport.salesByPaymentMethod.cash);
+  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(salesReport.salesByPaymentMethod.cash);
+  currentRow++;
+
+  summarySheet.getCell(`A${currentRow}`).value = "Tarjeta";
+  summarySheet.getCell(`B${currentRow}`).value = Number(salesReport.salesByPaymentMethod.card);
+  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(salesReport.salesByPaymentMethod.card);
+  currentRow++;
+
+  summarySheet.getCell(`A${currentRow}`).value = "QR";
+  summarySheet.getCell(`B${currentRow}`).value = Number(salesReport.salesByPaymentMethod.qr);
+  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(salesReport.salesByPaymentMethod.qr);
+  currentRow++;
+
+  // Nota: Los gráficos de ExcelJS requieren configuración adicional en el navegador
+  // Por ahora, los datos están disponibles para que el usuario pueda crear gráficos manualmente en Excel
+
+  // Hoja 2: Ventas por Hora con Gráfico
+  const hoursWithSales = salesReport.salesByHour.filter((h) => h.total > 0);
+  if (hoursWithSales.length > 0) {
+    const hourSheet = workbook.addWorksheet("Ventas por Hora");
+    hourSheet.columns = [{ width: 15 }, { width: 20 }, { width: 15 }];
+
+    let hourRow = 1;
+
+    // Agregar logo si está disponible
+    if (logoId !== undefined) {
+      hourSheet.addImage(logoId, {
+        tl: { col: 0, row: hourRow - 1 },
+        ext: { width: 200, height: 100 },
+      });
+      hourRow += 5;
+    }
+
+    hourSheet.mergeCells(`A${hourRow}:C${hourRow}`);
+    const hourTitleCell = hourSheet.getCell(`A${hourRow}`);
+    hourTitleCell.value = `Ventas por Hora - ${formatDateRange(salesReport.startDate, salesReport.endDate)}`;
+    hourTitleCell.font = { size: 14, bold: true };
+    hourTitleCell.alignment = { horizontal: "center", vertical: "middle" };
+    hourRow += 2;
+
+    hourSheet.getCell(`A${hourRow}`).value = "Hora";
+    hourSheet.getCell(`B${hourRow}`).value = "Total";
+    hourSheet.getCell(`C${hourRow}`).value = "Órdenes";
+    hourSheet.getRow(hourRow).font = { bold: true };
+    hourRow++;
+
+    hoursWithSales.forEach((hour) => {
+      hourSheet.getCell(`A${hourRow}`).value = `${hour.hour}:00`;
+      hourSheet.getCell(`B${hourRow}`).value = Number(hour.total); // Valor numérico para el gráfico
+      hourSheet.getCell(`C${hourRow}`).value = hour.orders;
+      hourRow++;
+    });
+
+    // Nota: Los gráficos de ExcelJS requieren configuración adicional en el navegador
+    // Los datos están disponibles para crear gráficos manualmente en Excel
+  }
+
+  // Hoja 3: Productos Más Vendidos con Gráfico
+  if (productsReport && productsReport.products.length > 0) {
+    const productsSheet = workbook.addWorksheet("Productos Más Vendidos");
+    productsSheet.columns = [{ width: 40 }, { width: 15 }, { width: 20 }, { width: 15 }];
+
+    let productsRow = 1;
+
+    // Agregar logo si está disponible
+    if (logoId !== undefined) {
+      productsSheet.addImage(logoId, {
+        tl: { col: 0, row: productsRow - 1 },
+        ext: { width: 200, height: 100 },
+      });
+      productsRow += 5;
+    }
+
+    productsSheet.mergeCells(`A${productsRow}:D${productsRow}`);
+    const productsTitleCell = productsSheet.getCell(`A${productsRow}`);
+    productsTitleCell.value = `Productos Más Vendidos - ${formatDateRange(productsReport.startDate, productsReport.endDate)}`;
+    productsTitleCell.font = { size: 14, bold: true };
+    productsTitleCell.alignment = { horizontal: "center", vertical: "middle" };
+    productsRow += 2;
+
+    productsSheet.getCell(`A${productsRow}`).value = "Producto";
+    productsSheet.getCell(`B${productsRow}`).value = "Cantidad";
+    productsSheet.getCell(`C${productsRow}`).value = "Ingresos";
+    productsSheet.getCell(`D${productsRow}`).value = "Porcentaje";
+    productsSheet.getRow(productsRow).font = { bold: true };
+    productsRow++;
+
+    productsReport.products.forEach((product) => {
+      productsSheet.getCell(`A${productsRow}`).value = product.productName;
+      productsSheet.getCell(`B${productsRow}`).value = product.quantitySold;
+      productsSheet.getCell(`C${productsRow}`).value = Number(product.totalRevenue); // Valor numérico para el gráfico
+      productsSheet.getCell(`D${productsRow}`).value = `${product.percentage.toFixed(2)}%`;
+      productsRow++;
+    });
+
+    // Nota: Los gráficos de ExcelJS requieren configuración adicional en el navegador
+    // Los datos están disponibles para crear gráficos manualmente en Excel
+  }
+
+  // Hoja 4: Mejores Clientes con Gráfico
+  if (customersReport && customersReport.customers.length > 0) {
+    const customersSheet = workbook.addWorksheet("Mejores Clientes");
+    customersSheet.columns = [{ width: 40 }, { width: 15 }, { width: 20 }, { width: 15 }];
+
+    let customersRow = 1;
+
+    // Agregar logo si está disponible
+    if (logoId !== undefined) {
+      customersSheet.addImage(logoId, {
+        tl: { col: 0, row: customersRow - 1 },
+        ext: { width: 200, height: 100 },
+      });
+      customersRow += 5;
+    }
+
+    customersSheet.mergeCells(`A${customersRow}:D${customersRow}`);
+    const customersTitleCell = customersSheet.getCell(`A${customersRow}`);
+    customersTitleCell.value = `Mejores Clientes - ${formatDateRange(customersReport.startDate, customersReport.endDate)}`;
+    customersTitleCell.font = { size: 14, bold: true };
+    customersTitleCell.alignment = { horizontal: "center", vertical: "middle" };
+    customersRow += 2;
+
+    customersSheet.getCell(`A${customersRow}`).value = "Cliente";
+    customersSheet.getCell(`B${customersRow}`).value = "Órdenes";
+    customersSheet.getCell(`C${customersRow}`).value = "Total Gastado";
+    customersSheet.getCell(`D${customersRow}`).value = "Porcentaje";
+    customersSheet.getRow(customersRow).font = { bold: true };
+    customersRow++;
+
+    customersReport.customers.forEach((customer) => {
+      customersSheet.getCell(`A${customersRow}`).value = customer.customerName;
+      customersSheet.getCell(`B${customersRow}`).value = customer.totalOrders;
+      customersSheet.getCell(`C${customersRow}`).value = Number(customer.totalSpent); // Valor numérico para el gráfico
+      customersSheet.getCell(`D${customersRow}`).value = `${customer.percentage.toFixed(2)}%`;
+      customersRow++;
+    });
+
+    // Nota: Los gráficos de ExcelJS requieren configuración adicional en el navegador
+    // Los datos están disponibles para crear gráficos manualmente en Excel
+  }
+
+  // Hoja 5: Ventas por Día con Gráfico
+  if (salesReport.salesByDay.length > 0) {
+    const dailySheet = workbook.addWorksheet("Ventas por Día");
+    dailySheet.columns = [{ width: 15 }, { width: 20 }, { width: 15 }];
+
+    let dailyRow = 1;
+
+    // Agregar logo si está disponible
+    if (logoId !== undefined) {
+      dailySheet.addImage(logoId, {
+        tl: { col: 0, row: dailyRow - 1 },
+        ext: { width: 200, height: 100 },
+      });
+      dailyRow += 5;
+    }
+
+    dailySheet.mergeCells(`A${dailyRow}:C${dailyRow}`);
+    const dailyTitleCell = dailySheet.getCell(`A${dailyRow}`);
+    dailyTitleCell.value = `Ventas por Día - ${formatDateRange(salesReport.startDate, salesReport.endDate)}`;
+    dailyTitleCell.font = { size: 14, bold: true };
+    dailyTitleCell.alignment = { horizontal: "center", vertical: "middle" };
+    dailyRow += 2;
+
+    dailySheet.getCell(`A${dailyRow}`).value = "Fecha";
+    dailySheet.getCell(`B${dailyRow}`).value = "Total";
+    dailySheet.getCell(`C${dailyRow}`).value = "Órdenes";
+    dailySheet.getRow(dailyRow).font = { bold: true };
+    dailyRow++;
+
+    salesReport.salesByDay.forEach((day) => {
+      dailySheet.getCell(`A${dailyRow}`).value = formatDateShort(day.date);
+      dailySheet.getCell(`B${dailyRow}`).value = Number(day.total); // Valor numérico para el gráfico
+      dailySheet.getCell(`C${dailyRow}`).value = day.orders;
+      dailyRow++;
+    });
+
+    // Nota: Los gráficos de ExcelJS requieren configuración adicional en el navegador
+    // Los datos están disponibles para crear gráficos manualmente en Excel
+  }
+
+  // Generar buffer y descargar
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  saveAs(
+    blob,
+    `Reporte_Completo_${formatDateShort(salesReport.startDate).replace(/\//g, "_")}_${formatDateShort(salesReport.endDate).replace(/\//g, "_")}.xlsx`
   );
 };
 

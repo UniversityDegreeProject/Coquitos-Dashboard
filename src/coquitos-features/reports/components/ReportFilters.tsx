@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Calendar, Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Calendar, FileSpreadsheet, FileText } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import type { SalesReport, ProductsReport, CustomersReport, CashRegisterSummaryReport } from "../interfaces";
 import {
@@ -11,6 +11,8 @@ import {
   generateCustomersReportExcel,
   generateCashRegisterSummaryPDF,
   generateCashRegisterSummaryExcel,
+  generateCompleteDashboardPDF,
+  generateCompleteDashboardExcel,
 } from "@/shared/reports";
 
 interface ReportFiltersProps {
@@ -62,7 +64,14 @@ export const ReportFilters = ({
 
   const handleExportPDF = async () => {
     try {
-      if (salesReport) {
+      // Si tenemos todos los reportes (salesReport, productsReport, customersReport), generar reporte completo
+      if (salesReport && productsReport && customersReport) {
+        await generateCompleteDashboardPDF({
+          salesReport,
+          productsReport,
+          customersReport,
+        });
+      } else if (salesReport) {
         await generateSalesReportPDF(salesReport);
       } else if (productsReport) {
         await generateProductsReportPDF(productsReport);
@@ -78,7 +87,14 @@ export const ReportFilters = ({
 
   const handleExportExcel = async () => {
     try {
-      if (salesReport) {
+      // Si tenemos todos los reportes (salesReport, productsReport, customersReport), generar reporte completo
+      if (salesReport && productsReport && customersReport) {
+        await generateCompleteDashboardExcel({
+          salesReport,
+          productsReport,
+          customersReport,
+        });
+      } else if (salesReport) {
         await generateSalesReportExcel(salesReport);
       } else if (productsReport) {
         await generateProductsReportExcel(productsReport);

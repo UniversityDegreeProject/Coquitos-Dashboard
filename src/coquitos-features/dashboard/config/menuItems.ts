@@ -25,7 +25,7 @@ export interface MenuItem {
 export const menuItems = (isAdmin: boolean) : MenuItem[] => {
   return [
     { to: paths.dashboard.home, label: "Inicio", icon: Home },
-    { to: paths.dashboard.orders, label: "Órdenes", icon: ShoppingCart },
+    { to: paths.dashboard.orders, label: "Ventas", icon: ShoppingCart },
     { 
       to: paths.dashboard.products, 
       label: "Gestión de Ventas", 

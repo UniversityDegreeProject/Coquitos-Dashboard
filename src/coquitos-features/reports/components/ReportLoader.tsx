@@ -9,7 +9,7 @@ export const ReportLoader = () => {
 
   return (
     <div className={`space-y-6 ${isDark ? "text-white" : "text-gray-800"}`}>
-      <GenericGridLoader />
+      <GenericGridLoader title="Cargando reportes..." />
     </div>
   );
 };

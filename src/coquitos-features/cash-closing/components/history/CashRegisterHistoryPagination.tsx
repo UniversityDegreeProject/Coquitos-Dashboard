@@ -20,7 +20,6 @@ interface CashRegisterHistoryPaginationProps {
 export const CashRegisterHistoryPagination = memo(({
   total,
   page,
-  limit,
   totalPages,
   onPageChange,
   onLimitChange,

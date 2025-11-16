@@ -14,7 +14,7 @@ interface OrderButtonsActionsProps {
  * - Ver detalle
  * - Reimprimir recibo
  */
-export const OrderButtonsActions = memo(({ order, currentParams, onPageEmpty }: OrderButtonsActionsProps) => {
+export const OrderButtonsActions = memo(({ order }: OrderButtonsActionsProps) => {
   const { isDark } = useTheme();
 
   // * Handler para ver detalle de la orden

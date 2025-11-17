@@ -26,6 +26,8 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
+    setValue,
   } = useForm<CreateBatchSchema>({
     resolver: zodResolver(createBatchSchema),
     defaultValues: {
@@ -35,6 +37,9 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
       expirationDate: "",
     },
   });
+
+  // Observar el campo de peso para calcular automáticamente el precio
+  const watchedWeight = watch("weight");
 
   // Hook para crear batch
   const { useCreateBatchMutation } = useCreateBatch({
@@ -66,6 +71,23 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
     }
     useCreateBatchMutation.mutate(batchData);
   }, [useCreateBatchMutation]);
+
+  // Calcular automáticamente el precio cuando cambia el peso
+  useEffect(() => {
+    if (watchedWeight && product.pricePerKg) {
+      const weightNum = parseFloat(watchedWeight);
+      // Solo calcular si el peso es un número válido y mayor a 0
+      if (!isNaN(weightNum) && weightNum > 0) {
+        const calculatedPrice = weightNum * product.pricePerKg;
+        // Redondear a 2 decimales
+        const roundedPrice = Math.round(calculatedPrice * 100) / 100;
+        setValue("unitPrice", roundedPrice.toFixed(2), {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    }
+  }, [watchedWeight, product.pricePerKg, setValue]);
 
   // Resetear formulario cuando cambia el producto
   useEffect(() => {
@@ -173,7 +195,14 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
           <div className={`p-3 rounded-lg ${isDark ? 'bg-blue-900/20 border border-blue-800/30' : 'bg-blue-50 border border-blue-200'}`}>
             <p className={`text-xs ${isDark ? 'text-blue-300' : 'text-blue-700'}`}>
               <strong>Nota:</strong> El lote se creará con stock inicial de 1 unidad.
-              Precio por unidad: Bs {product.pricePerKg ? product.pricePerKg.toFixed(2) : '0.00'}
+              <br />
+              Precio por kg: Bs {product.pricePerKg ? product.pricePerKg.toFixed(2) : '0.00'}
+              {watchedWeight && parseFloat(watchedWeight) > 0 && product.pricePerKg && (
+                <>
+                  <br />
+                  <strong>Cálculo automático:</strong> {watchedWeight} kg × Bs {product.pricePerKg.toFixed(2)}/kg = Bs {((parseFloat(watchedWeight) || 0) * product.pricePerKg).toFixed(2)}
+                </>
+              )}
             </p>
           </div>
 

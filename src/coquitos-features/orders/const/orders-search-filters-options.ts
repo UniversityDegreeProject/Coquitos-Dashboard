@@ -3,7 +3,7 @@ import type { SearchOrdersSchema } from "../schemas";
 import { CreditCard, CheckCircle, Calendar } from "lucide-react";
 import { paymentMethodOptions } from "./payment-method-options";
 import { statusOptions } from "./status-options";
-import { filtersDateRangeOptions } from "./filters-date-range-otpions";
+import { filtersDateRangeOptions } from "./filters-date-range-options";
 
 /**
  * Configuración de filtros para el buscador genérico de órdenes

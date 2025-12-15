@@ -6,8 +6,9 @@ import { z } from 'zod';
  */
 export const createBatchSchema = z.object({
   productId: z
-    .string({ message: 'ID de producto es requerido' })
-    .uuid({ message: 'ID de producto inválido' }),
+    .uuid({ message: 'ID de producto inválido' })
+    .optional(),
+    
   
   weight: z
     .string({ message: 'Peso es requerido' })

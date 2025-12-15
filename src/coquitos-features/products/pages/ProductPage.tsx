@@ -24,12 +24,12 @@ const filtersDefault : SearchProductsSchema = {
   lowStock: false,
   nearExpiration: false,
   page: 1,
-  limit: 6
+  limit: 4
 }
 export const ProductPage = () => {
   // * Estados locales para filtros
   const [ page, setPage ] = useState<number>(1);
-  const [ limit, setLimit ] = useState<number>(6);
+  const [ limit, setLimit ] = useState<number>(4);
   const [searchFilters, setSearchFilters] = useState<SearchProductsSchema>(filtersDefault);
 
   // * Debounce para la búsqueda (500ms)
@@ -51,8 +51,7 @@ export const ProductPage = () => {
   // * Navigation
   const navigate = useNavigate();
 
-  
-  // * TanStack Query
+  // * Params of search
   const currentParams: SearchProductsParams = useMemo(() => ({
     search: debouncedSearch,
     categoryId: debouncedCategoryId,
@@ -62,6 +61,8 @@ export const ProductPage = () => {
     page: page,
     limit: limit
   }), [debouncedSearch, debouncedCategoryId, searchFilters.status, searchFilters.lowStock, searchFilters.nearExpiration, page, limit]);
+
+  // * TanStack Query
 
   const {
     products,

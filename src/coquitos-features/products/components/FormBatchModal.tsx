@@ -6,20 +6,32 @@ import { useTheme } from "@/shared/hooks/useTheme";
 import { LabelInputString } from "@/shared/components";
 import { createBatchSchema, type CreateBatchSchema } from "../schemas";
 import { useCreateBatch } from "../hooks";
-import type { Product } from "../interfaces";
+import type { Product, PendingBatch } from "../interfaces";
 
 interface FormBatchModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: Product;
+  mode?: 'create' | 'edit'; // Modo creación (sin productId) o edición (con productId)
+  onAddPendingBatch?: (batch: PendingBatch) => void; // Callback para modo creación
 }
 
 /**
  * Modal para crear un nuevo batch de producto de peso variable
  * Solo disponible para productos con isVariableWeight = true
+ * 
+ * Modos:
+ * - 'edit': Requiere product.id, crea batch inmediatamente en el backend
+ * - 'create': No requiere product.id, almacena batch en estado local mediante callback
  */
-export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModalProps) => {
+export const FormBatchModal = memo(({ isOpen, onClose, product, mode = 'edit', onAddPendingBatch }: FormBatchModalProps) => {
   const { isDark } = useTheme();
+  const isCreateMode = mode === 'create';
+
+  // Schema condicional: en modo creación no requerimos productId
+  const batchSchemaForMode = isCreateMode 
+    ? createBatchSchema.omit({ productId: true })
+    : createBatchSchema;
 
   const {
     control,
@@ -29,7 +41,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
     watch,
     setValue,
   } = useForm<CreateBatchSchema>({
-    resolver: zodResolver(createBatchSchema),
+    resolver: zodResolver(batchSchemaForMode),
     defaultValues: {
       productId: product.id || "",
       weight: "",
@@ -41,7 +53,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
   // Observar el campo de peso para calcular automáticamente el precio
   const watchedWeight = watch("weight");
 
-  // Hook para crear batch
+  // Hook para crear batch (solo en modo edición)
   const { useCreateBatchMutation } = useCreateBatch({
     productId: product.id || "",
     onSuccessCallback: () => {
@@ -58,19 +70,35 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
 
   // Handler asíncrono para submit
   const onSubmit = useCallback(async (data: CreateBatchSchema) => {
-    // Convertir strings a números para el backend
-    const batchData: any = {
-      productId: data.productId,
-      weight: parseFloat(data.weight),
-      unitPrice: parseFloat(data.unitPrice),
-    };
-    
-    // Solo incluir expirationDate si tiene valor
-    if (data.expirationDate && data.expirationDate.trim() !== '') {
-      batchData.expirationDate = new Date(data.expirationDate).toISOString();
+    if (isCreateMode && onAddPendingBatch) {
+      // Modo creación: almacenar batch temporalmente
+      const pendingBatch: PendingBatch = {
+        tempId: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        weight: parseFloat(data.weight),
+        unitPrice: parseFloat(data.unitPrice),
+        expirationDate: data.expirationDate && data.expirationDate.trim() !== '' 
+          ? data.expirationDate 
+          : undefined,
+      };
+      onAddPendingBatch(pendingBatch);
+      reset();
+      onClose();
+    } else {
+      // Modo edición: crear batch inmediatamente en el backend
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const batchData: any = {
+        productId: data.productId,
+        weight: parseFloat(data.weight),
+        unitPrice: parseFloat(data.unitPrice),
+      };
+      
+      // Solo incluir expirationDate si tiene valor
+      if (data.expirationDate && data.expirationDate.trim() !== '') {
+        batchData.expirationDate = new Date(data.expirationDate).toISOString();
+      }
+      useCreateBatchMutation.mutate(batchData);
     }
-    useCreateBatchMutation.mutate(batchData);
-  }, [useCreateBatchMutation]);
+  }, [isCreateMode, onAddPendingBatch, useCreateBatchMutation, reset, onClose]);
 
   // Calcular automáticamente el precio cuando cambia el peso
   useEffect(() => {
@@ -89,11 +117,11 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
     }
   }, [watchedWeight, product.pricePerKg, setValue]);
 
-  // Resetear formulario cuando cambia el producto
+  // Resetear formulario cuando se abre el modal
   useEffect(() => {
-    if (isOpen && product.id) {
+    if (isOpen) {
       reset({
-        productId: product.id,
+        productId: product.id || "",
         weight: "",
         unitPrice: "",
         expirationDate: "",
@@ -216,16 +244,16 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
                   ? 'bg-[#334155] text-[#F8FAFC] hover:bg-[#475569]'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
-              disabled={useCreateBatchMutation.isPending}
+              disabled={!isCreateMode && useCreateBatchMutation.isPending}
             >
               Cancelar
             </button>
             <button
               type="submit"
               className={`flex-1 px-4 py-2.5 rounded-lg font-medium bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
-              disabled={useCreateBatchMutation.isPending}
+              disabled={!isCreateMode && useCreateBatchMutation.isPending}
             >
-              {useCreateBatchMutation.isPending ? (
+              {!isCreateMode && useCreateBatchMutation.isPending ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Creando...
@@ -233,7 +261,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product }: FormBatchModal
               ) : (
                 <>
                   <Plus className="w-4 h-4" />
-                  Crear Batch
+                  {isCreateMode ? 'Agregar Batch' : 'Crear Batch'}
                 </>
               )}
             </button>

@@ -5,8 +5,13 @@ import type { User } from "@/coquitos-features/users/interfaces";
 /**
  * Tipos para Order
  */
-export type OrderStatus = "Pendiente" | "Completado" | "Cancelado" | "Reembolsado";
+export type OrderStatus =
+  | "Pendiente"
+  | "Completado"
+  | "Cancelado"
+  | "Reembolsado";
 export type PaymentMethod = "Efectivo" | "Tarjeta" | "QR";
+export type DateRange = "today" | "week" | "month";
 
 /**
  * Item de una orden (producto en el carrito)
@@ -118,4 +123,3 @@ export interface CartItem {
   isVariableWeight: boolean;
   availableStock: number; // Stock disponible para validación
 }
-

@@ -17,4 +17,5 @@ export type {
   DeleteBatchResponse,
   CreateBatchFormData,
   UpdateBatchStockFormData,
+  PendingBatch,
 } from './product-batch.interface';

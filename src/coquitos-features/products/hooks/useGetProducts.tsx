@@ -64,7 +64,7 @@ export const useGetProducts = (params: SearchProductsParams) => {
     total: filteredProducts.length, 
     page: responseData.page,
     limit: responseData.limit,
-    totalPages: Math.ceil(filteredProducts.length / responseData.limit),
+    totalPages: Math.ceil(responseData.total / responseData.limit),
     nextPage: responseData.nextPage,
     previousPage: responseData.previousPage,
   };

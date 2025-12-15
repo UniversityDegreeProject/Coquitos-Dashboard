@@ -34,6 +34,17 @@ export interface CreateBatchFormData {
 }
 
 /**
+ * Batch temporal (pendiente) durante la creación del producto
+ * No tiene id ni batchCode porque aún no existe en el backend
+ */
+export interface PendingBatch {
+  tempId: string; // ID temporal único para React keys
+  weight: number;
+  unitPrice: number;
+  expirationDate?: string; // Formato YYYY-MM-DD para input date
+}
+
+/**
  * Form data para actualizar stock de batch
  */
 export interface UpdateBatchStockFormData {

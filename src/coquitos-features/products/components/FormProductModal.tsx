@@ -11,16 +11,17 @@ import { useTheme } from "@/shared/hooks/useTheme";
 import { statusOptions } from "../const";
 import {  productSchema, type ProductSchema } from "../schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useCreateProduct } from "../hooks/useCreateProduct";
 import { useShallow } from "zustand/shallow";
 import { useUpdateProduct } from "../hooks/useUpdateProduct";
 import { useGetCategories } from "@/coquitos-features/categories/hooks/useGetCategories";
 import { compressImage, validateImageSize, getImageInfo, generateSKUWithCategory } from "../helpers";
 import { toast } from "sonner";
-import type { ProductStatus, SearchProductsParams } from "../interfaces";
-import { useGetBatches, useDeleteBatch, useUpdateBatchStock } from "../hooks";
-import { BatchList, FormBatchModal } from "./";
+import type { ProductStatus, SearchProductsParams, PendingBatch } from "../interfaces";
+import { useGetBatches, useDeleteBatch, useUpdateBatchStock, useCreateProduct } from "../hooks";
+import { BatchList, BatchListLocal, FormBatchModal } from "./";
 import { productsQueries } from "../const";
+import { createBatch } from "../services/product-batch.service";
+import Swal from "sweetalert2";
 
 const onlyStatusOptions = statusOptions;
 
@@ -51,6 +52,12 @@ interface FormProductModalProps {
  * Implementa validación con React Hook Form y Zod
  */
 export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProductModalProps) => {
+
+  // * Estado local para batches pendientes (solo en modo creación)
+  const [pendingBatches, setPendingBatches] = useState<PendingBatch[]>([]);
+  // * Estado local para modal de batch
+  const [isBatchModalOpen, setIsBatchModalOpen] = useState<boolean>(false);
+  
   // * Zustand
   const closeModal = useProductStore(useShallow((state) => state.closeModal));
   const modalMode = useProductStore(useShallow((state) => state.modalMode));
@@ -63,12 +70,9 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
 
   // * Estado local para preview de imagen
   const [imagePreview, setImagePreview] = useState<string>("");
-  
-  // * Estado local para modal de batch
-  const [isBatchModalOpen, setIsBatchModalOpen] = useState<boolean>(false);
 
   // * TanstackQuery
-  const { useCreateProductMutation, isPending: isCreatingProduct } = useCreateProduct({
+  const { useCreateProductMutation , isPending: isCreatingProduct } = useCreateProduct({
     currentParams,
     onNewPageCreated,
   });
@@ -111,7 +115,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
     onSuccessCallback: () => {},
   });
   
-  // * Handlers para batches
+  // * Handlers para batches (modo edición)
   const handleDeleteBatch = useCallback((batchId: string) => {
     deleteBatchMutation.mutate(batchId);
   }, [deleteBatchMutation]);
@@ -132,7 +136,17 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
     });
   }, [updateBatchStockMutation]);
 
-  const onSubmit: SubmitHandler<ProductSchema> = (data) => {
+  // * Handlers para batches pendientes (modo creación)
+  const handleAddPendingBatch = useCallback((batch: PendingBatch) => {
+    setPendingBatches((prev) => [...prev, batch]);
+  }, []);
+
+  const handleDeletePendingBatch = useCallback((tempId: string) => {
+    setPendingBatches((prev) => prev.filter((b) => b.tempId !== tempId));
+  }, []);
+
+  const onSubmit: SubmitHandler<ProductSchema> = async (data) => {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     // Convertir strings a números para el backend
     const productData: any = {
       ...data,
@@ -153,14 +167,75 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
       productData.expirationDate = new Date(data.expirationDate).toISOString();
     }
     
-    closeModal();
-    
     if (isEditMode && productToUpdate?.id) {
+      // Modo edición: comportamiento normal
+      closeModal();
       updateProductMutation.mutate(productData);
       return; 
     }
 
-    useCreateProductMutation.mutate(productData);
+    // Modo creación: crear producto primero, luego batches pendientes
+    const batchesCount = pendingBatches.length; // Guardar antes de limpiar
+    try {
+      // Crear producto
+      const createdProduct = await useCreateProductMutation.mutateAsync(productData);
+      
+      // Si hay batches pendientes, crearlos después de crear el producto
+      if (batchesCount > 0 && createdProduct.product.id) {
+        const batchCreationPromises = pendingBatches.map(async (pendingBatch) => {
+          /* eslint-disable @typescript-eslint/no-explicit-any */
+          const batchData: any  = {
+            productId: createdProduct.product.id,
+            weight: pendingBatch.weight,
+            unitPrice: pendingBatch.unitPrice,
+          };
+          
+          if (pendingBatch.expirationDate) {
+            batchData.expirationDate = new Date(pendingBatch.expirationDate).toISOString();
+          }
+          
+          return createBatch(createdProduct.product.id as string, batchData);
+        });
+
+        // Crear todos los batches en paralelo
+        await Promise.all(batchCreationPromises);
+      }
+
+      // Cerrar modal y limpiar batches pendientes
+      setPendingBatches([]);
+      closeModal();
+      
+      // Invalidar queries para refrescar la UI
+      await queryClient.invalidateQueries({
+        queryKey: productsQueries.allProducts,
+      });
+      
+     
+    } catch (error) {
+      // Si falla la creación de batches pero el producto ya se creó, mostrar advertencia
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      
+      await Swal.fire({
+        title: batchesCount > 0 ? 'Producto creado, pero algunos batches fallaron' : 'Error al crear producto',
+        text: errorMessage,
+        icon: batchesCount > 0 ? 'warning' : 'error',
+        timer: 3000,
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-xl font-bold text-gray-800',
+          htmlContainer: 'text-gray-600',
+        },
+      });
+      
+      // Limpiar batches pendientes de todas formas
+      setPendingBatches([]);
+      closeModal();
+      
+      // Invalidar queries para refrescar la UI
+      await queryClient.invalidateQueries({
+        queryKey: productsQueries.allProducts,
+      });
+    }
   };
 
   // Effect para actualizar el modal en modo edición
@@ -237,6 +312,14 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
       setValue('price', '0', { shouldValidate: false });
     }
   }, [watchedIsVariableWeight, setValue]);
+
+  // Effect para limpiar batches pendientes cuando cambia el modo o se cierra el modal
+  useEffect(() => {
+    if (modalMode === 'create') {
+      // Limpiar batches pendientes al cambiar a modo creación
+      setPendingBatches([]);
+    }
+  }, [modalMode]);
 
   // Handler para cambio de imagen con compresión automática
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -582,8 +665,8 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
             </div>
           </div>
 
-          {/* Sección de Lotes (solo en modo edición y peso variable) */}
-          {isEditMode && watchedIsVariableWeight && productToUpdate?.id && (
+          {/* Sección de Lotes (modo edición: batches del backend | modo creación: batches pendientes) */}
+          {watchedIsVariableWeight && (
             <div className={`border-t ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'} pt-4 mt-4`}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className={`text-base font-semibold ${isDark ? 'text-[#F8FAFC]' : 'text-gray-900'}`}>
@@ -599,16 +682,25 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
                 </button>
               </div>
               
-              {isLoadingBatches ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className={`w-6 h-6 animate-spin ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
-                </div>
+              {isEditMode && productToUpdate?.id ? (
+                // Modo edición: mostrar batches del backend
+                isLoadingBatches ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className={`w-6 h-6 animate-spin ${isDark ? 'text-[#94A3B8]' : 'text-gray-500'}`} />
+                  </div>
+                ) : (
+                  <BatchList
+                    batches={batches}
+                    productId={productToUpdate?.id || ""}
+                    onDeleteBatch={handleDeleteBatch}
+                    onUpdateStock={handleUpdateBatchStock}
+                  />
+                )
               ) : (
-                <BatchList
-                  batches={batches}
-                  productId={productToUpdate?.id || ""}
-                  onDeleteBatch={handleDeleteBatch}
-                  onUpdateStock={handleUpdateBatchStock}
+                // Modo creación: mostrar batches pendientes
+                <BatchListLocal
+                  batches={pendingBatches}
+                  onDeleteBatch={handleDeletePendingBatch}
                 />
               )}
             </div>
@@ -642,11 +734,34 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
       </div>
 
       {/* Modal de Batch */}
-      {isBatchModalOpen && productToUpdate && (
+      {isBatchModalOpen && (
         <FormBatchModal
           isOpen={isBatchModalOpen}
           onClose={() => setIsBatchModalOpen(false)}
-          product={productToUpdate}
+          product={
+            isEditMode && productToUpdate
+              ? productToUpdate
+              : {
+                  // Producto temporal para modo creación
+                  id: "",
+                  name: watchedName || "Nuevo Producto",
+                  description: "",
+                  price: 0,
+                  sku: "",
+                  stock: 0,
+                  minStock: 5,
+                  image: "",
+                  ingredients: "",
+                  categoryId: watchedCategoryId || "",
+                  status: "Disponible",
+                  isVariableWeight: true,
+                  pricePerKg: watchedIsVariableWeight && watch("pricePerKg") 
+                    ? parseFloat(watch("pricePerKg") || "0") 
+                    : undefined,
+                }
+          }
+          mode={isEditMode ? 'edit' : 'create'}
+          onAddPendingBatch={isEditMode ? undefined : handleAddPendingBatch}
         />
       )}
     </div>

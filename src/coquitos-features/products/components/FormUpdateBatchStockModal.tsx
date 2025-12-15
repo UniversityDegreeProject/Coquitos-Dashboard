@@ -3,7 +3,7 @@ import { X, TrendingUp } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { LabelTextarea } from "@/shared/components";
+import { LabelInputNumber, LabelTextarea } from "@/shared/components";
 import { updateBatchStockSchema, type UpdateBatchStockSchema } from "../schemas";
 import type { ProductBatch } from "../interfaces";
 
@@ -167,11 +167,7 @@ export const FormUpdateBatchStockModal = memo(({
           <Controller
             name="stock"
             control={control}
-            render={({ field: { onChange, value, ...field } }) => {
-              // El schema define stock como string, así que value siempre será string
-              const stringValue = String(value || '');
-              
-              return (
+            render={({ field: { onChange, value, ...field } }) => (
               <div className="space-y-2">
                 <label htmlFor="stock" className={`block text-sm font-medium ${isDark ? 'text-[#E2E8F0]' : 'text-gray-700'}`}>
                   Nuevo Stock del Batch <span className="text-red-500 ml-1">*</span>
@@ -182,7 +178,7 @@ export const FormUpdateBatchStockModal = memo(({
                     {...field}
                     id="stock"
                     type="number"
-                    value={stringValue}
+                    value={typeof value === 'string' ? value : (value?.toString() || '')}
                     onChange={(e) => {
                       const val = e.target.value;
                       onChange(val === '' ? '' : val);
@@ -207,8 +203,7 @@ export const FormUpdateBatchStockModal = memo(({
                   </p>
                 )}
               </div>
-              );
-            }}
+            )}
           />
 
           {/* Motivo */}

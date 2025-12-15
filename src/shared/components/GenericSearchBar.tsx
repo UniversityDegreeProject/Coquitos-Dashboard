@@ -1,14 +1,19 @@
 // * Library
-import { type FieldValues, useForm, type Path, type Control } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Search, X } from 'lucide-react';
-import { type LucideIcon } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
-import { type z } from 'zod';
+import {
+  type FieldValues,
+  useForm,
+  type Path,
+  type Control,
+} from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Search, X } from "lucide-react";
+import { type LucideIcon } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { type z } from "zod";
 
 // * Components
-import { LabelInputString, LabelSelect } from '@/shared/components';
-import { useTheme } from '@/shared/hooks/useTheme';
+import { LabelInputString, LabelSelect } from "@/shared/components";
+import { useTheme } from "@/shared/hooks/useTheme";
 
 // * Types
 export interface SelectFilterConfig<T extends FieldValues> {
@@ -32,31 +37,31 @@ interface GenericSearchBarProps<T extends FieldValues> {
   clearFiltersLabel?: string;
 }
 
-
 export const GenericSearchBar = <T extends FieldValues>({
   schema,
   defaultValues,
   onSearchChange,
   selectFilters = [],
-  searchPlaceholder = 'Buscar...',
-  searchLabel = 'Búsqueda',
-  searchFieldName = 'search' as Path<T>,
-  className = '',
+  searchPlaceholder = "Buscar...",
+  searchLabel = "Búsqueda",
+  searchFieldName = "search" as Path<T>,
+  className = "",
   showActiveFilters = false,
-  clearFiltersLabel = 'Borrar filtros',
+  clearFiltersLabel = "Borrar filtros",
 }: GenericSearchBarProps<T>) => {
   const { isDark } = useTheme();
 
+  console.log("selecteFilters", selectFilters);
   const form = useForm<T>({
     // @ts-expect-error - Incompatibilidad de tipos genéricos entre zodResolver y useForm
     resolver: zodResolver(schema),
     // @ts-expect-error - Incompatibilidad de tipos genéricos en defaultValues
     defaultValues: defaultValues,
-    mode: 'onChange',
+    mode: "onChange",
   });
 
   const { control, watch, reset } = form;
-  
+
   // Type assertion para el control debido a limitaciones de tipos genéricos entre Zod y React Hook Form
   const typedControl = control as unknown as Control<T>;
 
@@ -74,29 +79,38 @@ export const GenericSearchBar = <T extends FieldValues>({
   // Detectar si hay filtros activos
   const hasActiveFilters = useMemo(() => {
     if (!showActiveFilters) return false;
-    
+
     // Verificar si hay búsqueda activa
     const searchField = searchFieldName as keyof T;
-    const hasSearch = currentValues[searchField] && 
-                     String(currentValues[searchField]).trim() !== '' &&
-                     currentValues[searchField] !== defaultValues[searchField];
-    
+    const hasSearch =
+      currentValues[searchField] &&
+      String(currentValues[searchField]).trim() !== "" &&
+      currentValues[searchField] !== defaultValues[searchField];
+
     // Verificar si hay filtros select activos
     const hasSelectFilters = selectFilters.some((filter) => {
       const filterValue = currentValues[filter.name as keyof T];
       const defaultValue = defaultValues[filter.name as keyof T];
-      return filterValue && filterValue !== defaultValue && filterValue !== '';
+      return filterValue && filterValue !== defaultValue && filterValue !== "";
     });
 
     return hasSearch || hasSelectFilters;
-  }, [currentValues, defaultValues, selectFilters, searchFieldName, showActiveFilters]);
+  }, [
+    currentValues,
+    defaultValues,
+    selectFilters,
+    searchFieldName,
+    showActiveFilters,
+  ]);
 
   // Obtener el label de un valor de filtro
   const getFilterLabel = (filterName: Path<T>, value: unknown): string => {
     const filter = selectFilters.find((f) => f.name === filterName);
     if (!filter) return String(value);
-    
-    const option = filter.options.find((opt) => String(opt.value) === String(value));
+
+    const option = filter.options.find(
+      (opt) => String(opt.value) === String(value)
+    );
     return option ? option.label : String(value);
   };
 
@@ -110,18 +124,20 @@ export const GenericSearchBar = <T extends FieldValues>({
   return (
     <div
       className={`${
-        isDark ? 'bg-[#1E293B]/50' : 'bg-white/50'
+        isDark ? "bg-[#1E293B]/50" : "bg-white/50"
       } backdrop-blur-md rounded-2xl p-6 shadow-lg border ${
-        isDark ? 'border-[#334155]/50' : 'border-white/50'
+        isDark ? "border-[#334155]/50" : "border-white/50"
       } ${className}`}
     >
-      <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${
-        selectFilters.length === 0 
-          ? 'lg:grid-cols-1' 
-          : selectFilters.length === 1 
-          ? 'lg:grid-cols-2' 
-          : 'lg:grid-cols-3'
-      }`}>
+      <div
+        className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${
+          selectFilters.length === 0
+            ? "lg:grid-cols-1"
+            : selectFilters.length === 1
+            ? "lg:grid-cols-2"
+            : "lg:grid-cols-3"
+        }`}
+      >
         {/* Campo de búsqueda - Siempre presente */}
         <div>
           <LabelInputString
@@ -136,7 +152,6 @@ export const GenericSearchBar = <T extends FieldValues>({
 
         {/* Filtros dinámicos tipo select */}
         {selectFilters.map((filter) => {
-
           return (
             <div key={filter.name}>
               <LabelSelect
@@ -158,39 +173,64 @@ export const GenericSearchBar = <T extends FieldValues>({
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-3 text-sm">
               {/* Búsqueda activa */}
-              {currentValues[searchFieldName as keyof T] && 
-               String(currentValues[searchFieldName as keyof T]).trim() !== '' &&
-               currentValues[searchFieldName as keyof T] !== defaultValues[searchFieldName as keyof T] && (
-                <span className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                  Buscando: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
-                    "{String(currentValues[searchFieldName as keyof T])}"
+              {currentValues[searchFieldName as keyof T] &&
+                String(currentValues[searchFieldName as keyof T]).trim() !==
+                  "" &&
+                currentValues[searchFieldName as keyof T] !==
+                  defaultValues[searchFieldName as keyof T] && (
+                  <span
+                    className={`${isDark ? "text-[#94A3B8]" : "text-gray-600"}`}
+                  >
+                    Buscando:{" "}
+                    <span
+                      className={`font-medium ${
+                        isDark ? "text-[#F8FAFC]" : "text-gray-800"
+                      }`}
+                    >
+                      "{String(currentValues[searchFieldName as keyof T])}"
+                    </span>
                   </span>
-                </span>
-              )}
-              
+                )}
+
               {/* Filtros select activos */}
               {selectFilters.map((filter) => {
                 const filterValue = currentValues[filter.name as keyof T];
                 const defaultValue = defaultValues[filter.name as keyof T];
-                
-                if (!filterValue || filterValue === defaultValue || filterValue === '') {
+
+                if (
+                  !filterValue ||
+                  filterValue === defaultValue ||
+                  filterValue === ""
+                ) {
                   return null;
                 }
 
                 return (
-                  <span key={filter.name} className={`${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
-                    {filter.label}: <span className={`font-medium ${isDark ? 'text-[#F8FAFC]' : 'text-gray-800'}`}>
+                  <span
+                    key={filter.name}
+                    className={`${isDark ? "text-[#94A3B8]" : "text-gray-600"}`}
+                  >
+                    {filter.label}:{" "}
+                    <span
+                      className={`font-medium ${
+                        isDark ? "text-[#F8FAFC]" : "text-gray-800"
+                      }`}
+                    >
                       {getFilterLabel(filter.name, filterValue)}
                     </span>
                   </span>
                 );
               })}
             </div>
-            
+
             {/* Botón borrar filtros */}
             <button
               onClick={handleClearFilters}
-              className={`flex items-center gap-1 text-sm ${isDark ? 'text-[#94A3B8] hover:text-[#F8FAFC]' : 'text-gray-600 hover:text-gray-800'} transition-colors`}
+              className={`flex items-center gap-1 text-sm ${
+                isDark
+                  ? "text-[#94A3B8] hover:text-[#F8FAFC]"
+                  : "text-gray-600 hover:text-gray-800"
+              } transition-colors`}
             >
               <X className="w-4 h-4" />
               <span>{clearFiltersLabel}</span>

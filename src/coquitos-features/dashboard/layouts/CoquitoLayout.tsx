@@ -9,22 +9,43 @@ import { useMobileDetection } from "../hooks/useMobileDetection";
 import { useTheme } from "@/shared/hooks/useTheme";
 
 const urlRoutes = {
-  [paths.dashboard.home]: { title : "Dashboard", subtitle : "Panel de Control"} ,
-  [paths.dashboard.orders]: { title : "Órdenes", subtitle : "Gestiona, administra y visualiza las órdenes"},
-  [paths.dashboard.products]: { title : "Productos", subtitle : "Gestiona, administra y visualiza los productos"},
-  [paths.dashboard.categories]: { title : "Categorías", subtitle : "Gestiona, administra y visualiza las categorías"},
-  [paths.dashboard.clients]: { title : "Clientes", subtitle : "Gestiona, administra y visualiza los clientes"},
-  [paths.dashboard.users]: { title : "Usuarios", subtitle : "Gestiona, administra y visualiza los usuarios"},
-  [paths.dashboard.reports]: { title : "Reportes", subtitle : "Gestiona, administra y visualiza los reportes"},
-  [paths.dashboard.cashClosing]: { title : "Cierre de Caja", subtitle : "Gestiona, administra y visualiza el cierre de caja"},
-  [paths.dashboard.settings]: { title : "Configuración", subtitle : "Configuración de Coquitos"},
-}
-
-
+  [paths.dashboard.home]: { title: "Dashboard", subtitle: "Panel de Control" },
+  [paths.dashboard.sales]: {
+    title: "Ventas",
+    subtitle: "Gestiona, administra y visualiza las ventas",
+  },
+  [paths.dashboard.products]: {
+    title: "Productos",
+    subtitle: "Gestiona, administra y visualiza los productos",
+  },
+  [paths.dashboard.categories]: {
+    title: "Categorías",
+    subtitle: "Gestiona, administra y visualiza las categorías",
+  },
+  [paths.dashboard.clients]: {
+    title: "Clientes",
+    subtitle: "Gestiona, administra y visualiza los clientes",
+  },
+  [paths.dashboard.users]: {
+    title: "Usuarios",
+    subtitle: "Gestiona, administra y visualiza los usuarios",
+  },
+  [paths.dashboard.reports]: {
+    title: "Reportes",
+    subtitle: "Gestiona, administra y visualiza los reportes",
+  },
+  [paths.dashboard.cashClosing]: {
+    title: "Cierre de Caja",
+    subtitle: "Gestiona, administra y visualiza el cierre de caja",
+  },
+  [paths.dashboard.settings]: {
+    title: "Configuración",
+    subtitle: "Configuración de Coquitos",
+  },
+};
 
 export const CoquitoLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
 
   //? movil sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -34,9 +55,9 @@ export const CoquitoLayout = () => {
   //? movil mode toggle|
   const handleToggleSidebar = useCallback(() => {
     if (isMobile) {
-      setIsSidebarOpen(prev => !prev);
+      setIsSidebarOpen((prev) => !prev);
     } else {
-      setIsSidebarCollapsed(prev => !prev);
+      setIsSidebarCollapsed((prev) => !prev);
     }
   }, [isMobile]);
 
@@ -51,18 +72,18 @@ export const CoquitoLayout = () => {
 
   const { pathname } = useLocation();
   const urlRoute = urlRoutes[pathname as keyof typeof urlRoutes];
-  
-  // Para rutas que no están en urlRoutes (como 404), usar valores por defecto
-  const routeBreadcrumb = urlRoute?.title || 'Panel de administración';
-  const routeSubtitle = urlRoute?.subtitle || 'Panel de control de Coquitos';
-  
 
+  // Para rutas que no están en urlRoutes (como 404), usar valores por defecto
+  const routeBreadcrumb = urlRoute?.title || "Panel de administración";
+  const routeSubtitle = urlRoute?.subtitle || "Panel de control de Coquitos";
 
   return (
-    <div className={`flex h-screen ${css.content.background} ${css.content.text} relative`}>
+    <div
+      className={`flex h-screen ${css.content.background} ${css.content.text} relative`}
+    >
       {/* Overlay en móvil cuando el sidebar está abierto */}
       {isMobile && isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-transparent bg-opacity-50 z-40"
           onClick={handleCloseSidebar}
         />
@@ -70,9 +91,13 @@ export const CoquitoLayout = () => {
 
       {/* Sidebar - Solo visible en desktop o cuando está abierto en móvil */}
       {(!isMobile || isSidebarOpen) && (
-        <div className={`${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'relative'} ${isMobile ? 'w-80' : ''}`}>
-          <Sidebar 
-            isCollapsed={!isMobile && isSidebarCollapsed} 
+        <div
+          className={`${
+            isMobile ? "fixed inset-y-0 left-0 z-50" : "relative"
+          } ${isMobile ? "w-80" : ""}`}
+        >
+          <Sidebar
+            isCollapsed={!isMobile && isSidebarCollapsed}
             onCloseSidebar={handleCloseSidebar}
           />
         </div>
@@ -80,10 +105,9 @@ export const CoquitoLayout = () => {
 
       {/* Contenido principal */}
       <div className="flex flex-1 flex-col overflow-hidden">
- 
-        <Topbar 
-          title={routeBreadcrumb} 
-          subtitle={routeSubtitle}  
+        <Topbar
+          title={routeBreadcrumb}
+          subtitle={routeSubtitle}
           onToggleSidebar={handleToggleSidebar}
           isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
         />
@@ -93,7 +117,6 @@ export const CoquitoLayout = () => {
             <Outlet />
           </div>
         </main>
-        
       </div>
     </div>
   );

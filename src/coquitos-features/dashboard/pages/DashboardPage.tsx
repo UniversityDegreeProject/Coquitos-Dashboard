@@ -4,7 +4,7 @@ import {
   KPICards,
   PaymentMethodsSummary,
   TopProductsSection,
-  RecentOrdersTable,
+  RecentSalesTable,
 } from "../components/dashboard";
 
 /**
@@ -18,10 +18,18 @@ export const DashboardPage = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-800"}`}>
+        <h1
+          className={`text-3xl font-bold ${
+            isDark ? "text-white" : "text-gray-800"
+          }`}
+        >
           Dashboard
         </h1>
-        <div className={`flex items-center space-x-2 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+        <div
+          className={`flex items-center space-x-2 text-sm ${
+            isDark ? "text-gray-400" : "text-gray-500"
+          }`}
+        >
           <Clock className="w-4 h-4" />
           <span>Última actualización: {new Date().toLocaleTimeString()}</span>
         </div>
@@ -36,8 +44,8 @@ export const DashboardPage = () => {
         <TopProductsSection />
       </div>
 
-      {/* Recent Orders Table */}
-      <RecentOrdersTable />
+      {/* Recent Sales Table */}
+      <RecentSalesTable />
     </div>
   );
 };

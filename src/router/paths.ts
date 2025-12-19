@@ -4,26 +4,26 @@
  */
 export const paths = {
   // Ruta raíz
-  root: '/',
+  root: "/",
 
   // Rutas de autenticación (públicas)
   auth: {
-    login: '/auth/login',
+    login: "/auth/login",
   },
 
   // Rutas del dashboard (privadas)
   dashboard: {
-    root: '/dashboard',
-    home: '/dashboard/home',
-    orders: '/dashboard/orders',
-    products: '/dashboard/products',
-    categories: '/dashboard/categories',
-    clients: '/dashboard/clients',
-    users: '/dashboard/users',
+    root: "/dashboard",
+    home: "/dashboard/home",
+    sales: "/dashboard/sales",
+    products: "/dashboard/products",
+    categories: "/dashboard/categories",
+    clients: "/dashboard/clients",
+    users: "/dashboard/users",
     userDetail: (userId: string) => `/dashboard/users/${userId}`,
-    reports: '/dashboard/reports',
-    cashClosing: '/dashboard/cash-closing',
-    settings: '/dashboard/settings',
-    stockMovements: '/dashboard/stock-movements',
+    reports: "/dashboard/reports",
+    cashClosing: "/dashboard/cash-closing",
+    settings: "/dashboard/settings",
+    stockMovements: "/dashboard/stock-movements",
   },
 } as const;

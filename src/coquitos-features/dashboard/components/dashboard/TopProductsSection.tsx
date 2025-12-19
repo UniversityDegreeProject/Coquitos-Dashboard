@@ -1,9 +1,9 @@
 import { memo, useMemo } from "react";
 import { Star } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { useGetOrders } from "@/coquitos-features/orders/hooks/useGetOrders";
-import { formatCurrency } from "@/coquitos-features/orders/helpers/format-currency";
-import type { Order } from "@/coquitos-features/orders/interfaces";
+import { useGetSales } from "@/coquitos-features/sales/hooks/useGetSales";
+import { formatCurrency } from "@/coquitos-features/sales/helpers/format-currency";
+import type { Sale } from "@/coquitos-features/sales/interfaces";
 
 interface TopProduct {
   name: string;
@@ -13,7 +13,7 @@ interface TopProduct {
 
 /**
  * Componente de productos más vendidos
- * Calcula los productos más vendidos del día actual basado en los items de las órdenes
+ * Calcula los productos más vendidos del día actual basado en los items de las ventas
  */
 export const TopProductsSection = memo(() => {
   const { isDark } = useTheme();
@@ -24,18 +24,18 @@ export const TopProductsSection = memo(() => {
     const year = today.getFullYear();
     const month = today.getMonth();
     const day = today.getDate();
-    
+
     const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
     const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
-    
+
     return {
       startDate: startOfDay,
       endDate: endOfDay,
     };
   }, []);
 
-  // Obtener órdenes completadas del día actual (máximo 100 según limitación del backend)
-  const { orders, isLoading } = useGetOrders({
+  // Obtener ventas completadas del día actual (máximo 100 según limitación del backend)
+  const { sales, isLoading } = useGetSales({
     page: 1,
     limit: 100, // Máximo permitido por el backend
     status: "Completado",
@@ -45,21 +45,25 @@ export const TopProductsSection = memo(() => {
 
   // Calcular productos más vendidos
   const topProducts = useMemo(() => {
-    const productMap: Record<string, { name: string; sales: number; revenue: number }> = {};
+    const productMap: Record<
+      string,
+      { name: string; sales: number; revenue: number }
+    > = {};
 
-    // Procesar todas las órdenes y sus items
-    orders.forEach((order: Order) => {
-      // Verificar que la orden tenga items
-      if (!order.items || order.items.length === 0) return;
+    // Procesar todas las ventas y sus items
+    sales.forEach((sale: Sale) => {
+      // Verificar que la venta tenga items
+      if (!sale.items || sale.items.length === 0) return;
 
-      order.items.forEach((item) => {
+      sale.items.forEach((item) => {
         // Verificar que el item tenga productId
         if (!item.productId) return;
 
         const productId = item.productId;
-        
+
         // Obtener nombre del producto
-        const productName = item.product?.name || `Producto ${productId.substring(0, 8)}...`;
+        const productName =
+          item.product?.name || `Producto ${productId.substring(0, 8)}...`;
 
         // Inicializar o actualizar el producto en el mapa
         if (!productMap[productId]) {
@@ -88,7 +92,7 @@ export const TopProductsSection = memo(() => {
       }));
 
     return productsArray;
-  }, [orders]);
+  }, [sales]);
 
   if (isLoading) {
     return (
@@ -98,7 +102,11 @@ export const TopProductsSection = memo(() => {
         }`}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-800"}`}>
+          <h2
+            className={`text-lg font-semibold ${
+              isDark ? "text-white" : "text-gray-800"
+            }`}
+          >
             Productos Más Vendidos
           </h2>
           <Star className="w-5 h-5 text-yellow-500" />
@@ -107,10 +115,22 @@ export const TopProductsSection = memo(() => {
           {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="flex items-center justify-between py-2">
               <div className="flex-1">
-                <div className={`h-4 w-32 rounded mb-2 animate-pulse ${isDark ? "bg-gray-700" : "bg-gray-200"}`} />
-                <div className={`h-3 w-20 rounded animate-pulse ${isDark ? "bg-gray-700" : "bg-gray-200"}`} />
+                <div
+                  className={`h-4 w-32 rounded mb-2 animate-pulse ${
+                    isDark ? "bg-gray-700" : "bg-gray-200"
+                  }`}
+                />
+                <div
+                  className={`h-3 w-20 rounded animate-pulse ${
+                    isDark ? "bg-gray-700" : "bg-gray-200"
+                  }`}
+                />
               </div>
-              <div className={`h-4 w-24 rounded animate-pulse ${isDark ? "bg-gray-700" : "bg-gray-200"}`} />
+              <div
+                className={`h-4 w-24 rounded animate-pulse ${
+                  isDark ? "bg-gray-700" : "bg-gray-200"
+                }`}
+              />
             </div>
           ))}
         </div>
@@ -119,9 +139,11 @@ export const TopProductsSection = memo(() => {
   }
 
   if (topProducts.length === 0 && !isLoading) {
-    // Verificar si hay órdenes pero sin items
-    const hasOrdersWithoutItems = orders.length > 0 && orders.every((order) => !order.items || order.items.length === 0);
-    
+    // Verificar si hay ventas pero sin items
+    const hasSalesWithoutItems =
+      sales.length > 0 &&
+      sales.every((sale) => !sale.items || sale.items.length === 0);
+
     return (
       <div
         className={`rounded-lg p-6 shadow-sm border ${
@@ -129,19 +151,29 @@ export const TopProductsSection = memo(() => {
         }`}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-800"}`}>
+          <h2
+            className={`text-lg font-semibold ${
+              isDark ? "text-white" : "text-gray-800"
+            }`}
+          >
             Productos Más Vendidos
           </h2>
           <Star className="w-5 h-5 text-yellow-500" />
         </div>
         <div className="flex flex-col items-center justify-center py-12">
-          <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-            {hasOrdersWithoutItems 
-              ? "Las órdenes no incluyen información de productos" 
+          <p
+            className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}
+          >
+            {hasSalesWithoutItems
+              ? "Las ventas no incluyen información de productos"
               : "No hay productos vendidos aún"}
           </p>
-          {hasOrdersWithoutItems && (
-            <p className={`text-xs mt-2 ${isDark ? "text-gray-600" : "text-gray-500"}`}>
+          {hasSalesWithoutItems && (
+            <p
+              className={`text-xs mt-2 ${
+                isDark ? "text-gray-600" : "text-gray-500"
+              }`}
+            >
               Revisa la consola para más detalles
             </p>
           )}
@@ -157,7 +189,11 @@ export const TopProductsSection = memo(() => {
       }`}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className={`text-lg font-semibold ${isDark ? "text-white" : "text-gray-800"}`}>
+        <h2
+          className={`text-lg font-semibold ${
+            isDark ? "text-white" : "text-gray-800"
+          }`}
+        >
           Productos Más Vendidos
         </h2>
         <Star className="w-5 h-5 text-yellow-500" />
@@ -169,12 +205,26 @@ export const TopProductsSection = memo(() => {
             className="flex items-center justify-between py-2 border-b last:border-b-0 border-gray-200 dark:border-[#334155]"
           >
             <div className="flex-1">
-              <p className={`font-medium ${isDark ? "text-white" : "text-gray-800"}`}>{product.name}</p>
-              <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+              <p
+                className={`font-medium ${
+                  isDark ? "text-white" : "text-gray-800"
+                }`}
+              >
+                {product.name}
+              </p>
+              <p
+                className={`text-sm ${
+                  isDark ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
                 {product.sales} {product.sales === 1 ? "unidad" : "unidades"}
               </p>
             </div>
-            <span className={`font-semibold ${isDark ? "text-green-400" : "text-green-600"}`}>
+            <span
+              className={`font-semibold ${
+                isDark ? "text-green-400" : "text-green-600"
+              }`}
+            >
               {formatCurrency(product.revenue)}
             </span>
           </div>
@@ -183,4 +233,3 @@ export const TopProductsSection = memo(() => {
     </div>
   );
 });
-

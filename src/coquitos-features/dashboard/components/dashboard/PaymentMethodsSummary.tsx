@@ -1,8 +1,8 @@
 import { memo, useMemo } from "react";
 import { Banknote, CreditCard, Smartphone, TrendingUp } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { useOrdersStats } from "@/coquitos-features/orders/hooks/useOrdersStats";
-import { formatCurrency } from "@/coquitos-features/orders/helpers/format-currency";
+import { useSalesStats } from "@/coquitos-features/sales/hooks/useSalesStats";
+import { formatCurrency } from "@/coquitos-features/sales/helpers/format-currency";
 import { Loader2 } from "lucide-react";
 
 interface PaymentMethodData {
@@ -22,8 +22,8 @@ interface PaymentMethodData {
 export const PaymentMethodsSummary = memo(() => {
   const { isDark } = useTheme();
 
-  // Obtener estadísticas de órdenes del día
-  const { stats, isLoading } = useOrdersStats(
+  // Obtener estadísticas de ventas del día
+  const { stats, isLoading } = useSalesStats(
     {
       paymentMethod: "",
       status: "",
@@ -35,24 +35,25 @@ export const PaymentMethodsSummary = memo(() => {
 
   // Calcular totales por método de pago
   const paymentMethods = useMemo(() => {
-    const totalOrders = stats.cashOrders + stats.cardOrders + stats.qrOrders;
-    
-    // Calcular porcentajes aproximados basados en cantidad de órdenes
-    // (Nota: Para obtener totales exactos por método, necesitaríamos calcular desde las órdenes)
-    const cashPercentage = totalOrders > 0 ? (stats.cashOrders / totalOrders) * 100 : 0;
-    const cardPercentage = totalOrders > 0 ? (stats.cardOrders / totalOrders) * 100 : 0;
-    const qrPercentage = totalOrders > 0 ? (stats.qrOrders / totalOrders) * 100 : 0;
+    const totalSales = stats.cashSales + stats.cardSales + stats.qrSales;
 
-    // Estimar totales por método basado en porcentajes (aproximado)
-    // En una implementación real, esto debería calcularse desde las órdenes individuales
-    const estimatedCashTotal = stats.totalSales * (cashPercentage / 100);
-    const estimatedCardTotal = stats.totalSales * (cardPercentage / 100);
-    const estimatedQrTotal = stats.totalSales * (qrPercentage / 100);
+    // Calcular porcentajes aproximados basados en cantidad de ventas
+    const cashPercentage =
+      totalSales > 0 ? (stats.cashSales / totalSales) * 100 : 0;
+    const cardPercentage =
+      totalSales > 0 ? (stats.cardSales / totalSales) * 100 : 0;
+    const qrPercentage =
+      totalSales > 0 ? (stats.qrSales / totalSales) * 100 : 0;
+
+    // Estimar totales por método basado en porcentajes
+    const estimatedCashTotal = stats.totalSalesAmount * (cashPercentage / 100);
+    const estimatedCardTotal = stats.totalSalesAmount * (cardPercentage / 100);
+    const estimatedQrTotal = stats.totalSalesAmount * (qrPercentage / 100);
 
     const methods: PaymentMethodData[] = [
       {
         method: "Efectivo",
-        count: stats.cashOrders,
+        count: stats.cashSales,
         total: estimatedCashTotal,
         percentage: cashPercentage,
         icon: Banknote,
@@ -61,7 +62,7 @@ export const PaymentMethodsSummary = memo(() => {
       },
       {
         method: "Tarjeta",
-        count: stats.cardOrders,
+        count: stats.cardSales,
         total: estimatedCardTotal,
         percentage: cardPercentage,
         icon: CreditCard,
@@ -70,7 +71,7 @@ export const PaymentMethodsSummary = memo(() => {
       },
       {
         method: "QR",
-        count: stats.qrOrders,
+        count: stats.qrSales,
         total: estimatedQrTotal,
         percentage: qrPercentage,
         icon: Smartphone,
@@ -79,7 +80,7 @@ export const PaymentMethodsSummary = memo(() => {
       },
     ];
 
-    return methods.filter((m) => m.count > 0); // Solo mostrar métodos que tienen órdenes
+    return methods.filter((m) => m.count > 0); // Solo mostrar métodos que tienen ventas
   }, [stats, isDark]);
 
   if (isLoading) {
@@ -89,11 +90,19 @@ export const PaymentMethodsSummary = memo(() => {
           isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100"
         }`}
       >
-        <h2 className={`text-lg font-semibold mb-4 ${isDark ? "text-white" : "text-gray-800"}`}>
+        <h2
+          className={`text-lg font-semibold mb-4 ${
+            isDark ? "text-white" : "text-gray-800"
+          }`}
+        >
           Métodos de Pago
         </h2>
         <div className="h-64 flex items-center justify-center">
-          <Loader2 className={`w-8 h-8 animate-spin ${isDark ? "text-[#F59E0B]" : "text-[#275081]"}`} />
+          <Loader2
+            className={`w-8 h-8 animate-spin ${
+              isDark ? "text-[#F59E0B]" : "text-[#275081]"
+            }`}
+          />
         </div>
       </div>
     );
@@ -106,12 +115,22 @@ export const PaymentMethodsSummary = memo(() => {
           isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100"
         }`}
       >
-        <h2 className={`text-lg font-semibold mb-4 ${isDark ? "text-white" : "text-gray-800"}`}>
+        <h2
+          className={`text-lg font-semibold mb-4 ${
+            isDark ? "text-white" : "text-gray-800"
+          }`}
+        >
           Métodos de Pago
         </h2>
         <div className="flex flex-col items-center justify-center py-12">
-          <TrendingUp className={`w-12 h-12 mb-4 ${isDark ? "text-gray-600" : "text-gray-400"}`} />
-          <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+          <TrendingUp
+            className={`w-12 h-12 mb-4 ${
+              isDark ? "text-gray-600" : "text-gray-400"
+            }`}
+          />
+          <p
+            className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}
+          >
             No hay datos de métodos de pago disponibles
           </p>
         </div>
@@ -125,10 +144,14 @@ export const PaymentMethodsSummary = memo(() => {
         isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100"
       }`}
     >
-      <h2 className={`text-lg font-semibold mb-6 ${isDark ? "text-white" : "text-gray-800"}`}>
+      <h2
+        className={`text-lg font-semibold mb-6 ${
+          isDark ? "text-white" : "text-gray-800"
+        }`}
+      >
         Métodos de Pago
       </h2>
-      
+
       <div className="space-y-4">
         {paymentMethods.map((method, index) => (
           <div key={index} className="space-y-2">
@@ -139,11 +162,19 @@ export const PaymentMethodsSummary = memo(() => {
                   <method.icon className={`w-5 h-5 ${method.color}`} />
                 </div>
                 <div>
-                  <p className={`font-semibold ${isDark ? "text-white" : "text-gray-800"}`}>
+                  <p
+                    className={`font-semibold ${
+                      isDark ? "text-white" : "text-gray-800"
+                    }`}
+                  >
                     {method.method}
                   </p>
-                  <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                    {method.count} {method.count === 1 ? "orden" : "órdenes"}
+                  <p
+                    className={`text-xs ${
+                      isDark ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    {method.count} {method.count === 1 ? "venta" : "ventas"}
                   </p>
                 </div>
               </div>
@@ -151,16 +182,22 @@ export const PaymentMethodsSummary = memo(() => {
                 <p className={`font-bold text-lg ${method.color}`}>
                   {formatCurrency(method.total)}
                 </p>
-                <p className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                <p
+                  className={`text-xs ${
+                    isDark ? "text-gray-400" : "text-gray-500"
+                  }`}
+                >
                   {method.percentage.toFixed(1)}%
                 </p>
               </div>
             </div>
 
             {/* Barra de progreso */}
-            <div className={`h-2 rounded-full overflow-hidden ${
-              isDark ? "bg-[#0F172A]" : "bg-gray-200"
-            }`}>
+            <div
+              className={`h-2 rounded-full overflow-hidden ${
+                isDark ? "bg-[#0F172A]" : "bg-gray-200"
+              }`}
+            >
               <div
                 className={`h-full transition-all duration-500 ${
                   method.method === "Efectivo"
@@ -184,17 +221,25 @@ export const PaymentMethodsSummary = memo(() => {
 
       {/* Resumen total */}
       {paymentMethods.length > 0 && (
-        <div className={`mt-6 pt-4 border-t ${
-          isDark ? "border-[#334155]" : "border-gray-200"
-        }`}>
+        <div
+          className={`mt-6 pt-4 border-t ${
+            isDark ? "border-[#334155]" : "border-gray-200"
+          }`}
+        >
           <div className="flex items-center justify-between">
-            <p className={`font-semibold ${isDark ? "text-white" : "text-gray-800"}`}>
+            <p
+              className={`font-semibold ${
+                isDark ? "text-white" : "text-gray-800"
+              }`}
+            >
               Total Recaudado
             </p>
-            <p className={`font-bold text-xl ${
-              isDark ? "text-[#F59E0B]" : "text-[#275081]"
-            }`}>
-              {formatCurrency(stats.totalSales)}
+            <p
+              className={`font-bold text-xl ${
+                isDark ? "text-[#F59E0B]" : "text-[#275081]"
+              }`}
+            >
+              {formatCurrency(stats.totalSalesAmount)}
             </p>
           </div>
         </div>
@@ -202,4 +247,3 @@ export const PaymentMethodsSummary = memo(() => {
     </div>
   );
 });
-

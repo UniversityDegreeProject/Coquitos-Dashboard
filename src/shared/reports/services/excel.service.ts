@@ -18,15 +18,14 @@ import type { CompleteDashboardReport } from "./pdf.service";
 /**
  * Genera un archivo Excel para el reporte diario
  */
-export const generateDailyReportExcel = async (report: DailyReport): Promise<void> => {
+export const generateDailyReportExcel = async (
+  report: DailyReport
+): Promise<void> => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Reporte Diario");
 
   // Configurar columnas
-  worksheet.columns = [
-    { width: 30 },
-    { width: 20 },
-  ];
+  worksheet.columns = [{ width: 30 }, { width: 20 }];
 
   // Título
   worksheet.mergeCells("A1:B1");
@@ -43,11 +42,14 @@ export const generateDailyReportExcel = async (report: DailyReport): Promise<voi
 
   if (report.cashRegister) {
     worksheet.getCell(`A${currentRow}`).value = "Monto Inicial:";
-    worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.cashRegister.openingAmount);
+    worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+      report.cashRegister.openingAmount
+    );
     currentRow++;
 
     worksheet.getCell(`A${currentRow}`).value = "Monto Final:";
-    worksheet.getCell(`B${currentRow}`).value = report.cashRegister.closingAmount
+    worksheet.getCell(`B${currentRow}`).value = report.cashRegister
+      .closingAmount
       ? formatCurrency(report.cashRegister.closingAmount)
       : "N/A";
     currentRow++;
@@ -57,7 +59,12 @@ export const generateDailyReportExcel = async (report: DailyReport): Promise<voi
       ? formatCurrency(report.cashRegister.difference)
       : "N/A";
     worksheet.getCell(`B${currentRow}`).font = {
-      color: { argb: report.cashRegister.difference && report.cashRegister.difference < 0 ? "FFFF0000" : "FF008000" },
+      color: {
+        argb:
+          report.cashRegister.difference && report.cashRegister.difference < 0
+            ? "FFFF0000"
+            : "FF008000",
+      },
     };
     currentRow++;
 
@@ -65,7 +72,8 @@ export const generateDailyReportExcel = async (report: DailyReport): Promise<voi
     worksheet.getCell(`B${currentRow}`).value = report.cashRegister.status;
     currentRow++;
   } else {
-    worksheet.getCell(`A${currentRow}`).value = "No hay información de caja disponible";
+    worksheet.getCell(`A${currentRow}`).value =
+      "No hay información de caja disponible";
     currentRow++;
   }
 
@@ -86,7 +94,9 @@ export const generateDailyReportExcel = async (report: DailyReport): Promise<voi
   currentRow++;
 
   worksheet.getCell(`A${currentRow}`).value = "Ticket Promedio:";
-  worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.averageTicket);
+  worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+    report.averageTicket
+  );
   currentRow++;
 
   currentRow += 2;
@@ -97,15 +107,21 @@ export const generateDailyReportExcel = async (report: DailyReport): Promise<voi
   currentRow++;
 
   worksheet.getCell(`A${currentRow}`).value = "Efectivo:";
-  worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.salesByPaymentMethod.cash);
+  worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+    report.salesByPaymentMethod.cash
+  );
   currentRow++;
 
   worksheet.getCell(`A${currentRow}`).value = "Tarjeta:";
-  worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.salesByPaymentMethod.card);
+  worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+    report.salesByPaymentMethod.card
+  );
   currentRow++;
 
   worksheet.getCell(`A${currentRow}`).value = "QR:";
-  worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.salesByPaymentMethod.qr);
+  worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+    report.salesByPaymentMethod.qr
+  );
   currentRow++;
 
   // Generar buffer y descargar
@@ -113,26 +129,31 @@ export const generateDailyReportExcel = async (report: DailyReport): Promise<voi
   const blob = new Blob([buffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
-  saveAs(blob, `Reporte_Diario_${formatDateShort(report.date).replace(/\//g, "_")}.xlsx`);
+  saveAs(
+    blob,
+    `Reporte_Diario_${formatDateShort(report.date).replace(/\//g, "_")}.xlsx`
+  );
 };
 
 /**
  * Genera un archivo Excel para el reporte de ventas
  */
-export const generateSalesReportExcel = async (report: SalesReport): Promise<void> => {
+export const generateSalesReportExcel = async (
+  report: SalesReport
+): Promise<void> => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Reporte de Ventas");
 
   // Configurar columnas
-  worksheet.columns = [
-    { width: 30 },
-    { width: 20 },
-  ];
+  worksheet.columns = [{ width: 30 }, { width: 20 }];
 
   // Título
   worksheet.mergeCells("A1:B1");
   const titleCell = worksheet.getCell("A1");
-  titleCell.value = `Reporte de Ventas - ${formatDateRange(report.startDate, report.endDate)}`;
+  titleCell.value = `Reporte de Ventas - ${formatDateRange(
+    report.startDate,
+    report.endDate
+  )}`;
   titleCell.font = { size: 16, bold: true };
   titleCell.alignment = { horizontal: "center", vertical: "middle" };
 
@@ -153,7 +174,9 @@ export const generateSalesReportExcel = async (report: SalesReport): Promise<voi
   currentRow++;
 
   worksheet.getCell(`A${currentRow}`).value = "Ticket Promedio:";
-  worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.averageTicket);
+  worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+    report.averageTicket
+  );
   currentRow++;
 
   currentRow += 2;
@@ -164,15 +187,21 @@ export const generateSalesReportExcel = async (report: SalesReport): Promise<voi
   currentRow++;
 
   worksheet.getCell(`A${currentRow}`).value = "Efectivo:";
-  worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.salesByPaymentMethod.cash);
+  worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+    report.salesByPaymentMethod.cash
+  );
   currentRow++;
 
   worksheet.getCell(`A${currentRow}`).value = "Tarjeta:";
-  worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.salesByPaymentMethod.card);
+  worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+    report.salesByPaymentMethod.card
+  );
   currentRow++;
 
   worksheet.getCell(`A${currentRow}`).value = "QR:";
-  worksheet.getCell(`B${currentRow}`).value = formatCurrency(report.salesByPaymentMethod.qr);
+  worksheet.getCell(`B${currentRow}`).value = formatCurrency(
+    report.salesByPaymentMethod.qr
+  );
   currentRow++;
 
   currentRow += 2;
@@ -203,14 +232,19 @@ export const generateSalesReportExcel = async (report: SalesReport): Promise<voi
   });
   saveAs(
     blob,
-    `Reporte_Ventas_${formatDateShort(report.startDate).replace(/\//g, "_")}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
+    `Reporte_Ventas_${formatDateShort(report.startDate).replace(
+      /\//g,
+      "_"
+    )}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
   );
 };
 
 /**
  * Genera un archivo Excel para el reporte de productos
  */
-export const generateProductsReportExcel = async (report: ProductsReport): Promise<void> => {
+export const generateProductsReportExcel = async (
+  report: ProductsReport
+): Promise<void> => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Productos Más Vendidos");
 
@@ -225,7 +259,10 @@ export const generateProductsReportExcel = async (report: ProductsReport): Promi
   // Título
   worksheet.mergeCells("A1:D1");
   const titleCell = worksheet.getCell("A1");
-  titleCell.value = `Productos Más Vendidos - ${formatDateRange(report.startDate, report.endDate)}`;
+  titleCell.value = `Productos Más Vendidos - ${formatDateRange(
+    report.startDate,
+    report.endDate
+  )}`;
   titleCell.font = { size: 16, bold: true };
   titleCell.alignment = { horizontal: "center", vertical: "middle" };
 
@@ -243,8 +280,12 @@ export const generateProductsReportExcel = async (report: ProductsReport): Promi
   report.products.forEach((product) => {
     worksheet.getCell(`A${currentRow}`).value = product.productName;
     worksheet.getCell(`B${currentRow}`).value = product.quantitySold;
-    worksheet.getCell(`C${currentRow}`).value = formatCurrency(product.totalRevenue);
-    worksheet.getCell(`D${currentRow}`).value = `${product.percentage.toFixed(2)}%`;
+    worksheet.getCell(`C${currentRow}`).value = formatCurrency(
+      product.totalRevenue
+    );
+    worksheet.getCell(`D${currentRow}`).value = `${product.percentage.toFixed(
+      2
+    )}%`;
     currentRow++;
   });
 
@@ -255,14 +296,19 @@ export const generateProductsReportExcel = async (report: ProductsReport): Promi
   });
   saveAs(
     blob,
-    `Reporte_Productos_${formatDateShort(report.startDate).replace(/\//g, "_")}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
+    `Reporte_Productos_${formatDateShort(report.startDate).replace(
+      /\//g,
+      "_"
+    )}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
   );
 };
 
 /**
  * Genera un archivo Excel para el reporte de clientes
  */
-export const generateCustomersReportExcel = async (report: CustomersReport): Promise<void> => {
+export const generateCustomersReportExcel = async (
+  report: CustomersReport
+): Promise<void> => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Mejores Clientes");
 
@@ -277,7 +323,10 @@ export const generateCustomersReportExcel = async (report: CustomersReport): Pro
   // Título
   worksheet.mergeCells("A1:D1");
   const titleCell = worksheet.getCell("A1");
-  titleCell.value = `Mejores Clientes - ${formatDateRange(report.startDate, report.endDate)}`;
+  titleCell.value = `Mejores Clientes - ${formatDateRange(
+    report.startDate,
+    report.endDate
+  )}`;
   titleCell.font = { size: 16, bold: true };
   titleCell.alignment = { horizontal: "center", vertical: "middle" };
 
@@ -295,8 +344,12 @@ export const generateCustomersReportExcel = async (report: CustomersReport): Pro
   report.customers.forEach((customer) => {
     worksheet.getCell(`A${currentRow}`).value = customer.customerName;
     worksheet.getCell(`B${currentRow}`).value = customer.totalOrders;
-    worksheet.getCell(`C${currentRow}`).value = formatCurrency(customer.totalSpent);
-    worksheet.getCell(`D${currentRow}`).value = `${customer.percentage.toFixed(2)}%`;
+    worksheet.getCell(`C${currentRow}`).value = formatCurrency(
+      customer.totalSpent
+    );
+    worksheet.getCell(`D${currentRow}`).value = `${customer.percentage.toFixed(
+      2
+    )}%`;
     currentRow++;
   });
 
@@ -307,14 +360,19 @@ export const generateCustomersReportExcel = async (report: CustomersReport): Pro
   });
   saveAs(
     blob,
-    `Reporte_Clientes_${formatDateShort(report.startDate).replace(/\//g, "_")}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
+    `Reporte_Clientes_${formatDateShort(report.startDate).replace(
+      /\//g,
+      "_"
+    )}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
   );
 };
 
 /**
  * Genera un archivo Excel para el resumen de cierres de caja
  */
-export const generateCashRegisterSummaryExcel = async (report: CashRegisterSummaryReport): Promise<void> => {
+export const generateCashRegisterSummaryExcel = async (
+  report: CashRegisterSummaryReport
+): Promise<void> => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Resumen de Cierres");
 
@@ -332,7 +390,10 @@ export const generateCashRegisterSummaryExcel = async (report: CashRegisterSumma
   // Título
   worksheet.mergeCells("A1:G1");
   const titleCell = worksheet.getCell("A1");
-  titleCell.value = `Resumen de Cierres de Caja - ${formatDateRange(report.startDate, report.endDate)}`;
+  titleCell.value = `Resumen de Cierres de Caja - ${formatDateRange(
+    report.startDate,
+    report.endDate
+  )}`;
   titleCell.font = { size: 16, bold: true };
   titleCell.alignment = { horizontal: "center", vertical: "middle" };
 
@@ -354,8 +415,12 @@ export const generateCashRegisterSummaryExcel = async (report: CashRegisterSumma
     worksheet.getCell(`A${currentRow}`).value = formatDateShort(day.date);
     worksheet.getCell(`B${currentRow}`).value = formatCurrency(day.totalSales);
     worksheet.getCell(`C${currentRow}`).value = day.totalOrders;
-    worksheet.getCell(`D${currentRow}`).value = day.openingAmount ? formatCurrency(day.openingAmount) : "N/A";
-    worksheet.getCell(`E${currentRow}`).value = day.closingAmount ? formatCurrency(day.closingAmount) : "N/A";
+    worksheet.getCell(`D${currentRow}`).value = day.openingAmount
+      ? formatCurrency(day.openingAmount)
+      : "N/A";
+    worksheet.getCell(`E${currentRow}`).value = day.closingAmount
+      ? formatCurrency(day.closingAmount)
+      : "N/A";
     const diffCell = worksheet.getCell(`F${currentRow}`);
     diffCell.value = day.difference ? formatCurrency(day.difference) : "N/A";
     if (day.difference && day.difference < 0) {
@@ -374,7 +439,10 @@ export const generateCashRegisterSummaryExcel = async (report: CashRegisterSumma
   });
   saveAs(
     blob,
-    `Resumen_Cierres_${formatDateShort(report.startDate).replace(/\//g, "_")}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
+    `Resumen_Cierres_${formatDateShort(report.startDate).replace(
+      /\//g,
+      "_"
+    )}_${formatDateShort(report.endDate).replace(/\//g, "_")}.xlsx`
   );
 };
 
@@ -382,7 +450,9 @@ export const generateCashRegisterSummaryExcel = async (report: CashRegisterSumma
  * Genera un archivo Excel completo del dashboard con todos los datos
  * Incluye: KPIs, ventas por hora, métodos de pago, productos más vendidos, mejores clientes y ventas por día
  */
-export const generateCompleteDashboardExcel = async (report: CompleteDashboardReport): Promise<void> => {
+export const generateCompleteDashboardExcel = async (
+  report: CompleteDashboardReport
+): Promise<void> => {
   const workbook = new ExcelJS.Workbook();
   const { salesReport, productsReport, customersReport } = report;
 
@@ -403,8 +473,8 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
       // Convertir ArrayBuffer a Uint8Array para ExcelJS (compatible con navegador)
       const buffer = new Uint8Array(logoBuffer);
       logoId = workbook.addImage({
-        // @ts-expect-error - ExcelJS acepta Uint8Array en navegador aunque el tipo es Buffer
-        buffer,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        buffer: buffer as any,
         extension: "jpeg",
       });
     }
@@ -429,7 +499,10 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
 
   summarySheet.mergeCells(`A${currentRow}:B${currentRow}`);
   const titleCell = summarySheet.getCell(`A${currentRow}`);
-  titleCell.value = `Reporte Completo de Ventas - ${formatDateRange(salesReport.startDate, salesReport.endDate)}`;
+  titleCell.value = `Reporte Completo de Ventas - ${formatDateRange(
+    salesReport.startDate,
+    salesReport.endDate
+  )}`;
   titleCell.font = { size: 16, bold: true };
   titleCell.alignment = { horizontal: "center", vertical: "middle" };
   currentRow += 2;
@@ -440,7 +513,9 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
   currentRow++;
 
   summarySheet.getCell(`A${currentRow}`).value = "Total de Ventas:";
-  summarySheet.getCell(`B${currentRow}`).value = formatCurrency(salesReport.totalSales);
+  summarySheet.getCell(`B${currentRow}`).value = formatCurrency(
+    salesReport.totalSales
+  );
   summarySheet.getCell(`B${currentRow}`).font = { bold: true };
   currentRow++;
 
@@ -449,7 +524,9 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
   currentRow++;
 
   summarySheet.getCell(`A${currentRow}`).value = "Ticket Promedio:";
-  summarySheet.getCell(`B${currentRow}`).value = formatCurrency(salesReport.averageTicket);
+  summarySheet.getCell(`B${currentRow}`).value = formatCurrency(
+    salesReport.averageTicket
+  );
   currentRow++;
 
   summarySheet.getCell(`A${currentRow}`).value = "Métodos de Pago:";
@@ -462,18 +539,30 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
   currentRow++;
 
   summarySheet.getCell(`A${currentRow}`).value = "Efectivo";
-  summarySheet.getCell(`B${currentRow}`).value = Number(salesReport.salesByPaymentMethod.cash);
-  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(salesReport.salesByPaymentMethod.cash);
+  summarySheet.getCell(`B${currentRow}`).value = Number(
+    salesReport.salesByPaymentMethod.cash
+  );
+  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(
+    salesReport.salesByPaymentMethod.cash
+  );
   currentRow++;
 
   summarySheet.getCell(`A${currentRow}`).value = "Tarjeta";
-  summarySheet.getCell(`B${currentRow}`).value = Number(salesReport.salesByPaymentMethod.card);
-  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(salesReport.salesByPaymentMethod.card);
+  summarySheet.getCell(`B${currentRow}`).value = Number(
+    salesReport.salesByPaymentMethod.card
+  );
+  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(
+    salesReport.salesByPaymentMethod.card
+  );
   currentRow++;
 
   summarySheet.getCell(`A${currentRow}`).value = "QR";
-  summarySheet.getCell(`B${currentRow}`).value = Number(salesReport.salesByPaymentMethod.qr);
-  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(salesReport.salesByPaymentMethod.qr);
+  summarySheet.getCell(`B${currentRow}`).value = Number(
+    salesReport.salesByPaymentMethod.qr
+  );
+  summarySheet.getCell(`C${currentRow}`).value = formatCurrency(
+    salesReport.salesByPaymentMethod.qr
+  );
   currentRow++;
 
   // Nota: Los gráficos de ExcelJS requieren configuración adicional en el navegador
@@ -498,7 +587,10 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
 
     hourSheet.mergeCells(`A${hourRow}:C${hourRow}`);
     const hourTitleCell = hourSheet.getCell(`A${hourRow}`);
-    hourTitleCell.value = `Ventas por Hora - ${formatDateRange(salesReport.startDate, salesReport.endDate)}`;
+    hourTitleCell.value = `Ventas por Hora - ${formatDateRange(
+      salesReport.startDate,
+      salesReport.endDate
+    )}`;
     hourTitleCell.font = { size: 14, bold: true };
     hourTitleCell.alignment = { horizontal: "center", vertical: "middle" };
     hourRow += 2;
@@ -523,7 +615,12 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
   // Hoja 3: Productos Más Vendidos con Gráfico
   if (productsReport && productsReport.products.length > 0) {
     const productsSheet = workbook.addWorksheet("Productos Más Vendidos");
-    productsSheet.columns = [{ width: 40 }, { width: 15 }, { width: 20 }, { width: 15 }];
+    productsSheet.columns = [
+      { width: 40 },
+      { width: 15 },
+      { width: 20 },
+      { width: 15 },
+    ];
 
     let productsRow = 1;
 
@@ -538,7 +635,10 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
 
     productsSheet.mergeCells(`A${productsRow}:D${productsRow}`);
     const productsTitleCell = productsSheet.getCell(`A${productsRow}`);
-    productsTitleCell.value = `Productos Más Vendidos - ${formatDateRange(productsReport.startDate, productsReport.endDate)}`;
+    productsTitleCell.value = `Productos Más Vendidos - ${formatDateRange(
+      productsReport.startDate,
+      productsReport.endDate
+    )}`;
     productsTitleCell.font = { size: 14, bold: true };
     productsTitleCell.alignment = { horizontal: "center", vertical: "middle" };
     productsRow += 2;
@@ -553,8 +653,12 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
     productsReport.products.forEach((product) => {
       productsSheet.getCell(`A${productsRow}`).value = product.productName;
       productsSheet.getCell(`B${productsRow}`).value = product.quantitySold;
-      productsSheet.getCell(`C${productsRow}`).value = Number(product.totalRevenue); // Valor numérico para el gráfico
-      productsSheet.getCell(`D${productsRow}`).value = `${product.percentage.toFixed(2)}%`;
+      productsSheet.getCell(`C${productsRow}`).value = Number(
+        product.totalRevenue
+      ); // Valor numérico para el gráfico
+      productsSheet.getCell(
+        `D${productsRow}`
+      ).value = `${product.percentage.toFixed(2)}%`;
       productsRow++;
     });
 
@@ -565,7 +669,12 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
   // Hoja 4: Mejores Clientes con Gráfico
   if (customersReport && customersReport.customers.length > 0) {
     const customersSheet = workbook.addWorksheet("Mejores Clientes");
-    customersSheet.columns = [{ width: 40 }, { width: 15 }, { width: 20 }, { width: 15 }];
+    customersSheet.columns = [
+      { width: 40 },
+      { width: 15 },
+      { width: 20 },
+      { width: 15 },
+    ];
 
     let customersRow = 1;
 
@@ -580,7 +689,10 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
 
     customersSheet.mergeCells(`A${customersRow}:D${customersRow}`);
     const customersTitleCell = customersSheet.getCell(`A${customersRow}`);
-    customersTitleCell.value = `Mejores Clientes - ${formatDateRange(customersReport.startDate, customersReport.endDate)}`;
+    customersTitleCell.value = `Mejores Clientes - ${formatDateRange(
+      customersReport.startDate,
+      customersReport.endDate
+    )}`;
     customersTitleCell.font = { size: 14, bold: true };
     customersTitleCell.alignment = { horizontal: "center", vertical: "middle" };
     customersRow += 2;
@@ -595,8 +707,12 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
     customersReport.customers.forEach((customer) => {
       customersSheet.getCell(`A${customersRow}`).value = customer.customerName;
       customersSheet.getCell(`B${customersRow}`).value = customer.totalOrders;
-      customersSheet.getCell(`C${customersRow}`).value = Number(customer.totalSpent); // Valor numérico para el gráfico
-      customersSheet.getCell(`D${customersRow}`).value = `${customer.percentage.toFixed(2)}%`;
+      customersSheet.getCell(`C${customersRow}`).value = Number(
+        customer.totalSpent
+      ); // Valor numérico para el gráfico
+      customersSheet.getCell(
+        `D${customersRow}`
+      ).value = `${customer.percentage.toFixed(2)}%`;
       customersRow++;
     });
 
@@ -622,7 +738,10 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
 
     dailySheet.mergeCells(`A${dailyRow}:C${dailyRow}`);
     const dailyTitleCell = dailySheet.getCell(`A${dailyRow}`);
-    dailyTitleCell.value = `Ventas por Día - ${formatDateRange(salesReport.startDate, salesReport.endDate)}`;
+    dailyTitleCell.value = `Ventas por Día - ${formatDateRange(
+      salesReport.startDate,
+      salesReport.endDate
+    )}`;
     dailyTitleCell.font = { size: 14, bold: true };
     dailyTitleCell.alignment = { horizontal: "center", vertical: "middle" };
     dailyRow += 2;
@@ -651,7 +770,9 @@ export const generateCompleteDashboardExcel = async (report: CompleteDashboardRe
   });
   saveAs(
     blob,
-    `Reporte_Completo_${formatDateShort(salesReport.startDate).replace(/\//g, "_")}_${formatDateShort(salesReport.endDate).replace(/\//g, "_")}.xlsx`
+    `Reporte_Completo_${formatDateShort(salesReport.startDate).replace(
+      /\//g,
+      "_"
+    )}_${formatDateShort(salesReport.endDate).replace(/\//g, "_")}.xlsx`
   );
 };
-

@@ -9,6 +9,7 @@ import {
   type UpdateBatchStockSchema,
 } from "../schemas";
 import type { ProductBatch } from "../interfaces";
+import { createPortal } from "react-dom";
 
 interface FormUpdateBatchStockModalProps {
   isOpen: boolean;
@@ -108,8 +109,8 @@ export const FormUpdateBatchStockModal = memo(
 
     if (!isOpen) return null;
 
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+    return createPortal(
+      <div className="fixed inset-0 z-[60] flex items-center justify-center">
         {/* Overlay */}
         <div
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -355,7 +356,8 @@ export const FormUpdateBatchStockModal = memo(
             </button>
           </div>
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 );

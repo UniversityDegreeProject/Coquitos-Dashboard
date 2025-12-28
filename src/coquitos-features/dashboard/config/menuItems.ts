@@ -9,6 +9,7 @@ import {
   BarChart3,
   Calculator,
   Settings,
+  History,
 } from "lucide-react";
 
 export interface MenuItem {
@@ -45,6 +46,11 @@ export const menuItems = (isAdmin: boolean): MenuItem[] => {
             icon: Shield,
             submenu: [
               { to: paths.dashboard.users, label: "Usuarios", icon: Users },
+              {
+                to: paths.dashboard.activityLog,
+                label: "Registro de Actividades",
+                icon: History,
+              },
             ],
           },
         ]

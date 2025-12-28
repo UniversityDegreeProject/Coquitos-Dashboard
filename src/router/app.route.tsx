@@ -18,6 +18,7 @@ import { ReportPage } from "@/coquitos-features/reports/pages/ReportPage";
 import { CashClosePage } from "@/coquitos-features/cash-closing/pages/CashClosePage";
 import { SettingPage } from "@/coquitos-features/settings/pages/SettingPage";
 import { StockMovementsPage } from "@/coquitos-features/stock-movements/pages/StockMovementsPage";
+import { ActivityLogPage } from "@/coquitos-features/activity-log/pages/ActivityLogPage";
 import { LoginPage } from "@/auth/pages/LoginPage";
 import { NotFoundPage } from "@/shared/pages";
 
@@ -91,6 +92,10 @@ export const appRouter = createBrowserRouter([
           {
             path: "stock-movements",
             element: <StockMovementsPage />,
+          },
+          {
+            path: "activity-log",
+            element: <ActivityLogPage />,
           },
           {
             path: "404",

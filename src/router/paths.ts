@@ -25,5 +25,6 @@ export const paths = {
     cashClosing: "/dashboard/cash-closing",
     settings: "/dashboard/settings",
     stockMovements: "/dashboard/stock-movements",
+    activityLog: "/dashboard/activity-log",
   },
 } as const;

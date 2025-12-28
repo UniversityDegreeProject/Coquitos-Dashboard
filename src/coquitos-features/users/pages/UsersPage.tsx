@@ -4,7 +4,12 @@ import { useCallback, useState, useEffect, useMemo, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 
 //* Others
-import { UserGrid, FormUserModal, UserStats, UserPagination } from "../components";
+import {
+  UserGrid,
+  FormUserModal,
+  UserStats,
+  UserPagination,
+} from "../components";
 import { useUserStore } from "../store/user.store";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "../hooks/useDebounce";
@@ -18,9 +23,9 @@ import { GenericSearchBar } from "@/shared/components";
 import { usersSearchFilterOptions } from "../const";
 
 const searchDefaultValues: SearchUsersSchema = {
-  search: '',
-  role: '',
-  status: '',
+  search: "",
+  role: "",
+  status: "",
 };
 
 /**
@@ -32,9 +37,10 @@ export const UsersPage = () => {
   // * Paginacion ( necesarios)
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(5);
-  
+
   // * Estado para los filtros (controlado por el formulario)
-  const [ searchFilters, setSearchFilters] = useState<SearchUsersSchema>(searchDefaultValues);
+  const [searchFilters, setSearchFilters] =
+    useState<SearchUsersSchema>(searchDefaultValues);
 
   // * Debounce para la búsqueda (500ms)
   const debouncedSearch = useDebounce(searchFilters.search, 500);
@@ -47,28 +53,33 @@ export const UsersPage = () => {
 
   // * Zustand User
   const modalMode = useUserStore(useShallow((state) => state.modalMode));
-  const setOpenModalCreate = useUserStore(useShallow((state) => state.setOpenModalCreate));
+  const setOpenModalCreate = useUserStore(
+    useShallow((state) => state.setOpenModalCreate)
+  );
   const isMutating = useUserStore(useShallow((state) => state.isMutating));
   // * Theme
   const { colors, isDark } = useTheme();
 
   // * Tanstack Query - Hook de búsqueda con todos los filtros (memoizado para estabilidad)
-  const currentParams: SearchUsersParams = useMemo(() => ({
-    search: debouncedSearch,
-    role: searchFilters.role,
-    status: searchFilters.status,
-    page,
-    limit,
-  }), [debouncedSearch, searchFilters.role, searchFilters.status, page, limit]);
+  const currentParams: SearchUsersParams = useMemo(
+    () => ({
+      search: debouncedSearch,
+      role: searchFilters.role,
+      status: searchFilters.status,
+      page,
+      limit,
+    }),
+    [debouncedSearch, searchFilters.role, searchFilters.status, page, limit]
+  );
 
-  const { 
-    users, 
-    total, 
-    page: currentPage, 
-    limit: currentLimit, 
-    totalPages, 
-    nextPage, 
-    previousPage, 
+  const {
+    users,
+    total,
+    page: currentPage,
+    limit: currentLimit,
+    totalPages,
+    nextPage,
+    previousPage,
     isLoading,
     isFetching, // Necesario para detectar búsquedas activas
   } = useGetUsers(currentParams);
@@ -113,7 +124,10 @@ export const UsersPage = () => {
   }, [debouncedSearch, searchFilters.role, searchFilters.status]);
 
   // * Detectar si hay cambios pendientes en la búsqueda (usuario escribiendo)
-  const isSearchPending = searchFilters.search !== debouncedSearch || searchFilters.role !== debouncedRole || searchFilters.status !== debouncedStatus;
+  const isSearchPending =
+    searchFilters.search !== debouncedSearch ||
+    searchFilters.role !== debouncedRole ||
+    searchFilters.status !== debouncedStatus;
 
   // * Ref para rastrear si hay un fetch intencional (usuario busca/filtra)
   const isIntentionalFetchRef = useRef(false);
@@ -122,7 +136,10 @@ export const UsersPage = () => {
   // Esto sucede ANTES del debounce, asegurando que el flag esté listo cuando el fetch inicie
   useEffect(() => {
     // Activar el flag si el usuario tiene algo escrito O cambió filtros de select
-    const userIsSearching = searchFilters.search !== '' || searchFilters.role !== '' || searchFilters.status !== '';
+    const userIsSearching =
+      searchFilters.search !== "" ||
+      searchFilters.role !== "" ||
+      searchFilters.status !== "";
     if (userIsSearching) {
       isIntentionalFetchRef.current = true;
     }
@@ -140,11 +157,18 @@ export const UsersPage = () => {
   }, [isFetching]);
 
   // * Loader para búsquedas/filtros: Solo se muestra para fetches INTENCIONALES
-  const isSearching = isIntentionalFetchRef.current && isFetching && !isSearchPending && !isMutating;
-
+  const isSearching =
+    isIntentionalFetchRef.current &&
+    isFetching &&
+    !isSearchPending &&
+    !isMutating;
 
   // * Validación de autorización
-  if ((emailVerified && role === "Cajero") || status === "Inactivo" || status === "Suspendido") {
+  if (
+    (emailVerified && role === "Vendedor") ||
+    status === "Inactivo" ||
+    status === "Suspendido"
+  ) {
     return <UnauthorizedUser />;
   }
 
@@ -155,26 +179,38 @@ export const UsersPage = () => {
         {/* Título con icono y toggle tema */}
         <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className={`p-1.5 sm:p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
-              <Users className={`w-5 h-5 sm:w-6 sm:h-6 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+            <div
+              className={`p-1.5 sm:p-2 rounded-lg ${
+                isDark
+                  ? "bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20"
+                  : "bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20"
+              }`}
+            >
+              <Users
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                  isDark ? "text-[#F59E0B]" : "text-[#275081]"
+                }`}
+              />
             </div>
-            <h3 className={`text-lg sm:text-xl lg:text-2xl font-bold ${colors.text.primary}`}>
+            <h3
+              className={`text-lg sm:text-xl lg:text-2xl font-bold ${colors.text.primary}`}
+            >
               Usuarios del Sistema
             </h3>
           </div>
-                    
         </div>
-        
+
         {/* Botones - Responsive */}
         <div className="flex items-center gap-2 sm:gap-2.5 lg:gap-3">
-                  
           {/* Botón agregar */}
           <button
             onClick={handleOpenModal}
             className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-2 lg:px-8 lg:py-2.5 xl:px-10 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-lg hover:shadow-xl transition-all duration-200 shadow-md cursor-pointer min-w-[120px] sm:min-w-[140px] lg:min-w-[160px]`}
           >
             <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-[#2309095c]" />
-            <span className="text-[#08080865] font-semibold lg:font-bold text-sm lg:text-base ml-1.5 lg:ml-2">Agregar Usuario</span>
+            <span className="text-[#08080865] font-semibold lg:font-bold text-sm lg:text-base ml-1.5 lg:ml-2">
+              Agregar Usuario
+            </span>
           </button>
         </div>
       </div>
@@ -194,18 +230,23 @@ export const UsersPage = () => {
 
       {/* Users Grid/Table */}
       {/* Loader se muestra cuando: carga inicial, mutaciones CRUD, o búsquedas activas */}
-      <UserGrid users={users} isPending={isLoading || isMutating || isSearching} currentParams={currentParams} onPageEmpty={handlePageEmpty} />
+      <UserGrid
+        users={users}
+        isPending={isLoading || isMutating || isSearching}
+        currentParams={currentParams}
+        onPageEmpty={handlePageEmpty}
+      />
 
       {/* Pagination */}
       {total > 0 && (
         <UserPagination
-          paginationData={{ 
-            total, 
-            page: currentPage, 
-            limit: currentLimit, 
-            totalPages, 
-            nextPage, 
-            previousPage 
+          paginationData={{
+            total,
+            page: currentPage,
+            limit: currentLimit,
+            totalPages,
+            nextPage,
+            previousPage,
           }}
           onPageChange={handlePageChange}
           onLimitChange={handleLimitChange}
@@ -215,8 +256,18 @@ export const UsersPage = () => {
       )}
 
       {/* Modals */}
-      {modalMode === 'create' && <FormUserModal currentParams={currentParams} onNewPageCreated={handlePageChange} />}
-      {modalMode === 'update' && <FormUserModal currentParams={currentParams} onNewPageCreated={handlePageChange} />}
+      {modalMode === "create" && (
+        <FormUserModal
+          currentParams={currentParams}
+          onNewPageCreated={handlePageChange}
+        />
+      )}
+      {modalMode === "update" && (
+        <FormUserModal
+          currentParams={currentParams}
+          onNewPageCreated={handlePageChange}
+        />
+      )}
     </div>
   );
 };

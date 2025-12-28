@@ -9,7 +9,6 @@ export interface SalesStatsData {
   totalSalesAmount: number;
   completedSales: number;
   cashSales: number;
-  cardSales: number;
   qrSales: number;
 }
 
@@ -92,7 +91,6 @@ export const useSalesStats = (
         totalSalesAmount: 0,
         completedSales: 0,
         cashSales: 0,
-        cardSales: 0,
         qrSales: 0,
       };
     }
@@ -105,8 +103,6 @@ export const useSalesStats = (
       completedSales: sales.filter((sale) => sale.status === "Completado")
         .length,
       cashSales: sales.filter((sale) => sale.paymentMethod === "Efectivo")
-        .length,
-      cardSales: sales.filter((sale) => sale.paymentMethod === "Tarjeta")
         .length,
       qrSales: sales.filter((sale) => sale.paymentMethod === "QR").length,
     };

@@ -35,13 +35,13 @@ export const PaymentMethodsSummary = memo(() => {
 
   // Calcular totales por método de pago
   const paymentMethods = useMemo(() => {
-    const totalSales = stats.cashSales + stats.cardSales + stats.qrSales;
+    const totalSales = stats.cashSales + stats.cashSales + stats.qrSales;
 
     // Calcular porcentajes aproximados basados en cantidad de ventas
     const cashPercentage =
       totalSales > 0 ? (stats.cashSales / totalSales) * 100 : 0;
     const cardPercentage =
-      totalSales > 0 ? (stats.cardSales / totalSales) * 100 : 0;
+      totalSales > 0 ? (stats.cashSales / totalSales) * 100 : 0;
     const qrPercentage =
       totalSales > 0 ? (stats.qrSales / totalSales) * 100 : 0;
 
@@ -62,7 +62,7 @@ export const PaymentMethodsSummary = memo(() => {
       },
       {
         method: "Tarjeta",
-        count: stats.cardSales,
+        count: stats.cashSales,
         total: estimatedCardTotal,
         percentage: cardPercentage,
         icon: CreditCard,
@@ -80,7 +80,7 @@ export const PaymentMethodsSummary = memo(() => {
       },
     ];
 
-    return methods.filter((m) => m.count > 0); // Solo mostrar métodos que tienen ventas
+    return methods.filter((m) => m.count > 0);
   }, [stats, isDark]);
 
   if (isLoading) {

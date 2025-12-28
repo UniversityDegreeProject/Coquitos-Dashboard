@@ -55,12 +55,22 @@ export const menuItems = (isAdmin: boolean): MenuItem[] => {
           },
         ]
       : []),
-    { to: paths.dashboard.reports, label: "Reportes", icon: BarChart3 },
+    ...(isAdmin
+      ? [{ to: paths.dashboard.reports, label: "Reportes", icon: BarChart3 }]
+      : []),
     {
       to: paths.dashboard.cashClosing,
       label: "Cierre de Caja",
       icon: Calculator,
     },
-    { to: paths.dashboard.settings, label: "Configuración", icon: Settings },
+    ...(isAdmin
+      ? [
+          {
+            to: paths.dashboard.settings,
+            label: "Configuración",
+            icon: Settings,
+          },
+        ]
+      : []),
   ];
 };

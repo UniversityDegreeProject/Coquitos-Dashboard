@@ -6,12 +6,11 @@ import { z } from "zod";
  */
 export const createSaleSchema = z.object({
   customerId: z
-    .string({ error: "Cliente es requerido" })
     .uuid({ error: "ID de cliente inválido" })
     .min(1, { error: "Debe seleccionar un cliente" }),
 
-  paymentMethod: z.enum(["Efectivo", "Tarjeta", "QR"], {
-    error: "Método de pago debe ser Efectivo, Tarjeta o QR",
+  paymentMethod: z.enum(["Efectivo", "QR"], {
+    error: "Método de pago debe ser Efectivo o QR",
   }),
 
   amountPaid: z

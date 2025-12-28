@@ -16,9 +16,11 @@ interface UserStatsData {
  * Hace una query separada que obtiene TODOS los usuarios (sin límite de paginación)
  * para calcular estadísticas precisas independientes de la página actual
  */
-export const useUsersStats = (filters: Pick<SearchUsersParams, 'search' | 'role' | 'status'>) => {
+export const useUsersStats = (
+  filters: Pick<SearchUsersParams, "search" | "role" | "status">
+) => {
   const { data, isLoading } = useQuery({
-    queryKey: [...usersQueries.allUsers, 'stats', filters],
+    queryKey: [...usersQueries.allUsers, "stats", filters],
     queryFn: async () => {
       const response = await getUsers({
         ...filters,
@@ -32,10 +34,16 @@ export const useUsersStats = (filters: Pick<SearchUsersParams, 'search' | 'role'
 
   const stats: UserStatsData = {
     totalUsers: data?.total ?? 0,
-    activeUsers: data?.data.filter(user => user.status === 'Activo').length ?? 0,
-    inactiveUsers: data?.data.filter(user => user.status === 'Inactivo' || user.status === 'Suspendido').length ?? 0,
-    adminsUsers: data?.data.filter(user => user.role === 'Administrador').length ?? 0,
-    cashiersUsers: data?.data.filter(user => user.role === 'Cajero').length ?? 0,
+    activeUsers:
+      data?.data.filter((user) => user.status === "Activo").length ?? 0,
+    inactiveUsers:
+      data?.data.filter(
+        (user) => user.status === "Inactivo" || user.status === "Suspendido"
+      ).length ?? 0,
+    adminsUsers:
+      data?.data.filter((user) => user.role === "Administrador").length ?? 0,
+    cashiersUsers:
+      data?.data.filter((user) => user.role === "Vendedor").length ?? 0,
   };
 
   return {
@@ -43,4 +51,3 @@ export const useUsersStats = (filters: Pick<SearchUsersParams, 'search' | 'role'
     isLoading,
   };
 };
-

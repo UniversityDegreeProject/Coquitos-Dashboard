@@ -18,39 +18,41 @@ export const createUserSchema = zod.object({
     .max(16, { message: "Contraseña debe tener máximo 16 caracteres" })
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
-      { 
-        message: "Contraseña debe tener al menos una letra mayuscula, una letra minuscula, un numero y un caracter especial" 
+      {
+        message:
+          "Contraseña debe tener al menos una letra mayuscula, una letra minuscula, un numero y un caracter especial",
       }
     )
     .optional(),
   firstName: zod
     .string({ error: "Nombre es requerido" })
     .min(1, { error: "El nombre no puede estar vacio" })
-    .regex(/^[A-Z][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, { error: "El nombre debe comenzar con letra mayúscula y solo puede contener letras" }),
-  
+    .regex(/^[A-Z][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
+      error:
+        "El nombre debe comenzar con letra mayúscula y solo puede contener letras",
+    }),
+
   lastName: zod
     .string({ error: "Apellido es requerido" })
     .min(1, { error: "El apellido no puede estar vacio" })
-    .regex(/^[A-Z][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, { error: "El apellido debe comenzar con letra mayúscula y solo puede contener letras" }),
-  
+    .regex(/^[A-Z][a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
+      error:
+        "El apellido debe comenzar con letra mayúscula y solo puede contener letras",
+    }),
+
   phone: zod
     .string({ error: "Teléfono es requerido" })
-    .refine(
-      val =>
-        (/^\d{8}$/.test(val)) ||
-        (/^\+\d{11}$/.test(val)),
-      {
-        message:
-          "Debe ingresar 8 números si es local o 11 números con el prefijo internacional (+59161853613)",
-      }
-    ),
-  
-  role: zod.enum(["Administrador", "Cajero"], { 
-    error: "Rol es requerido" 
+    .refine((val) => /^\d{8}$/.test(val) || /^\+\d{11}$/.test(val), {
+      message:
+        "Debe ingresar 8 números si es local o 11 números con el prefijo internacional (+59161853613)",
+    }),
+
+  role: zod.enum(["Administrador", "Vendedor"], {
+    error: "Rol es requerido",
   }),
-  
-  status: zod.enum(["Activo", "Inactivo", "Suspendido"], { 
-    error: "Estado es requerido" 
+
+  status: zod.enum(["Activo", "Inactivo", "Suspendido"], {
+    error: "Estado es requerido",
   }),
 });
 

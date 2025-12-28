@@ -4,7 +4,6 @@ import {
   CheckCircle,
   Coins,
   Banknote,
-  CreditCard,
   Smartphone,
 } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
@@ -16,7 +15,6 @@ interface SaleStatsProps {
   totalSalesAmount: number;
   completedSales: number;
   cashSales: number;
-  cardSales: number;
   qrSales: number;
 }
 
@@ -30,7 +28,6 @@ export const SaleStats = memo(
     totalSalesAmount,
     completedSales,
     cashSales,
-    cardSales,
     qrSales,
   }: SaleStatsProps) => {
     const { isDark } = useTheme();
@@ -42,21 +39,13 @@ export const SaleStats = memo(
         amount: totalSalesAmount,
         completed: completedSales,
         cash: cashSales,
-        card: cardSales,
         qr: qrSales,
       }),
-      [
-        totalSalesCount,
-        totalSalesAmount,
-        completedSales,
-        cashSales,
-        cardSales,
-        qrSales,
-      ]
+      [totalSalesCount, totalSalesAmount, completedSales, cashSales, qrSales]
     );
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Ventas (Cantidad) */}
         <SaleStatCard
           label="Total Ventas"
@@ -80,14 +69,6 @@ export const SaleStats = memo(
           value={stats.cash}
           icon={Banknote}
           iconColor={isDark ? "text-green-500" : "text-green-600"}
-        />
-
-        {/* Ventas con Tarjeta */}
-        <SaleStatCard
-          label="Tarjeta"
-          value={stats.card}
-          icon={CreditCard}
-          iconColor={isDark ? "text-blue-500" : "text-blue-600"}
         />
 
         {/* Ventas con QR */}

@@ -10,6 +10,7 @@ import { CashRegisterHistoryPagination } from "./CashRegisterHistoryPagination";
 import { GenericGridLoader } from "@/shared/components";
 import { cn } from "@/lib/utils";
 import type { GetCashRegisterHistoryParams } from "../../interfaces";
+import { getIdByUserRole } from "../../helpers";
 
 /**
  * Componente principal del historial de cierres de caja
@@ -23,14 +24,16 @@ export const CashRegisterHistoryList = memo(() => {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
 
+  const userId = getIdByUserRole(user!);
+
   // Parámetros de búsqueda memoizados
   const searchParams: GetCashRegisterHistoryParams = useMemo(
     () => ({
-      userId: user?.id, // Opcional: filtrar por usuario actual
+      userId: userId, // TODO: Filtrar todo si es administrador en caso de ser usuario normal filtrar por usuario actual.
       page,
       limit,
     }),
-    [user?.id, page, limit]
+    [userId, page, limit]
   );
 
   // Obtener historial
@@ -68,24 +71,41 @@ export const CashRegisterHistoryList = memo(() => {
               : "bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20"
           )}
         >
-          <History className={cn("w-5 h-5", isDark ? "text-[#F59E0B]" : "text-[#275081]")} />
+          <History
+            className={cn(
+              "w-5 h-5",
+              isDark ? "text-[#F59E0B]" : "text-[#275081]"
+            )}
+          />
         </div>
-        <h3 className={cn("text-xl font-bold", isDark ? "text-white" : "text-gray-900")}>
+        <h3
+          className={cn(
+            "text-xl font-bold",
+            isDark ? "text-white" : "text-gray-900"
+          )}
+        >
           Historial de Cierres
         </h3>
       </div>
 
       {/* Loading */}
-      {isLoading && <GenericGridLoader title="Cargando historial de cierres..." />}
+      {isLoading && (
+        <GenericGridLoader title="Cargando historial de cierres..." />
+      )}
 
       {/* Lista de cierres */}
-      {!isLoading && cashRegisters.length === 0 && <CashRegisterHistoryEmptyState />}
+      {!isLoading && cashRegisters.length === 0 && (
+        <CashRegisterHistoryEmptyState />
+      )}
 
       {!isLoading && cashRegisters.length > 0 && (
         <>
           <div className="space-y-4">
             {cashRegisters.map((cashRegister) => (
-              <CashRegisterHistoryItem key={cashRegister.id} cashRegister={cashRegister} />
+              <CashRegisterHistoryItem
+                key={cashRegister.id}
+                cashRegister={cashRegister}
+              />
             ))}
           </div>
 
@@ -105,4 +125,3 @@ export const CashRegisterHistoryList = memo(() => {
     </div>
   );
 });
-

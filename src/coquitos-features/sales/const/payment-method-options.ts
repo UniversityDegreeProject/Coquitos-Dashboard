@@ -7,11 +7,9 @@ interface PaymentMethodOption {
 
 /**
  * Opciones de métodos de pago
- * Solo Efectivo, Tarjeta y QR (según requerimientos)
+ * Solo Efectivo y QR (según requerimientos)
  */
 export const paymentMethodOptions: PaymentMethodOption[] = [
   { value: "Efectivo", label: "Efectivo" },
-  { value: "Tarjeta", label: "Tarjeta" },
   { value: "QR", label: "QR" },
 ];
-

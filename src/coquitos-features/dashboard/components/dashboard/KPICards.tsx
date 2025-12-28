@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { TrendingUp, ShoppingBag, Users, DollarSign } from "lucide-react";
+import { TrendingUp, ShoppingBag, DollarSign } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useSalesStats } from "@/coquitos-features/sales/hooks/useSalesStats";
 import { formatCurrency } from "@/coquitos-features/sales/helpers/format-currency";
@@ -34,34 +34,26 @@ export const KPICards = memo(() => {
       {
         title: "Ventas del Día",
         value: formatCurrency(stats.totalSalesAmount),
-        change: "+0%", // TODO: Calcular cambio porcentual comparando con día anterior
+        change: "",
         icon: DollarSign,
         color: "text-green-600",
         bgColor: isDark ? "bg-green-500/10" : "bg-green-50",
       },
       {
-        title: "Ventas (Cantidad)",
+        title: "Ventas realizadas",
         value: stats.totalSalesCount.toString(),
-        change: "+0%", // TODO: Calcular cambio porcentual comparando con día anterior
+        change: "",
         icon: ShoppingBag,
         color: "text-orange-600",
         bgColor: isDark ? "bg-orange-500/10" : "bg-orange-50",
       },
       {
-        title: "Ticket Promedio",
+        title: "Ticket promedio",
         value: formatCurrency(averageTicket),
-        change: "+0%", // TODO: Calcular cambio porcentual comparando con día anterior
+        change: "",
         icon: TrendingUp,
         color: "text-blue-600",
         bgColor: isDark ? "bg-blue-500/10" : "bg-blue-50",
-      },
-      {
-        title: "Clientes Nuevos",
-        value: "0", // TODO: Implementar endpoint para obtener clientes nuevos del día
-        change: "+0%",
-        icon: Users,
-        color: "text-purple-600",
-        bgColor: isDark ? "bg-purple-500/10" : "bg-purple-50",
       },
     ],
     [stats.totalSalesAmount, stats.totalSalesCount, averageTicket, isDark]
@@ -98,7 +90,7 @@ export const KPICards = memo(() => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {kpis.map((kpi, index) => (
         <div
           key={index}

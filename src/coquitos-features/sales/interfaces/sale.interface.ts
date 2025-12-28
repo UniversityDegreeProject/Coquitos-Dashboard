@@ -10,7 +10,7 @@ export type SaleStatus =
   | "Completado"
   | "Cancelado"
   | "Reembolsado";
-export type PaymentMethod = "Efectivo" | "Tarjeta" | "QR";
+export type PaymentMethod = "Efectivo" | "QR";
 export type DateRange = "today" | "week" | "month";
 
 /**

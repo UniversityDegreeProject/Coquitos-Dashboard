@@ -24,11 +24,18 @@ export interface SelectFilterConfig<T extends FieldValues> {
   placeholder?: string;
 }
 
+export interface DateFilterConfig<T extends FieldValues> {
+  name: Path<T>;
+  label: string;
+  placeholder?: string;
+}
+
 interface GenericSearchBarProps<T extends FieldValues> {
   schema: z.ZodType<T>;
   defaultValues: T;
   onSearchChange: (values: T) => void;
   selectFilters?: SelectFilterConfig<T>[];
+  dateFilters?: DateFilterConfig<T>[];
   searchPlaceholder?: string;
   searchLabel?: string;
   searchFieldName?: Path<T>;
@@ -42,6 +49,7 @@ export const GenericSearchBar = <T extends FieldValues>({
   defaultValues,
   onSearchChange,
   selectFilters = [],
+  dateFilters = [],
   searchPlaceholder = "Buscar...",
   searchLabel = "Búsqueda",
   searchFieldName = "search" as Path<T>,
@@ -94,11 +102,19 @@ export const GenericSearchBar = <T extends FieldValues>({
       return filterValue && filterValue !== defaultValue && filterValue !== "";
     });
 
-    return hasSearch || hasSelectFilters;
+    // Verificar si hay filtros date activos
+    const hasDateFilters = dateFilters.some((filter) => {
+      const filterValue = currentValues[filter.name as keyof T];
+      const defaultValue = defaultValues[filter.name as keyof T];
+      return filterValue && filterValue !== defaultValue && filterValue !== "";
+    });
+
+    return hasSearch || hasSelectFilters || hasDateFilters;
   }, [
     currentValues,
     defaultValues,
     selectFilters,
+    dateFilters,
     searchFieldName,
     showActiveFilters,
   ]);
@@ -165,6 +181,21 @@ export const GenericSearchBar = <T extends FieldValues>({
             </div>
           );
         })}
+
+        {/* Filtros dinámicos tipo date */}
+        {dateFilters.map((filter) => {
+          return (
+            <div key={filter.name}>
+              <LabelInputString
+                label={filter.label}
+                name={filter.name}
+                control={typedControl}
+                type="date"
+                placeholder={filter.placeholder}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Indicador de filtros activos */}
@@ -217,6 +248,36 @@ export const GenericSearchBar = <T extends FieldValues>({
                       }`}
                     >
                       {getFilterLabel(filter.name, filterValue)}
+                    </span>
+                  </span>
+                );
+              })}
+
+              {/* Filtros date activos */}
+              {dateFilters.map((filter) => {
+                const filterValue = currentValues[filter.name as keyof T];
+                const defaultValue = defaultValues[filter.name as keyof T];
+
+                if (
+                  !filterValue ||
+                  filterValue === defaultValue ||
+                  filterValue === ""
+                ) {
+                  return null;
+                }
+
+                return (
+                  <span
+                    key={filter.name}
+                    className={`${isDark ? "text-[#94A3B8]" : "text-gray-600"}`}
+                  >
+                    {filter.label}:{" "}
+                    <span
+                      className={`font-medium ${
+                        isDark ? "text-[#F8FAFC]" : "text-gray-800"
+                      }`}
+                    >
+                      {String(filterValue)}
                     </span>
                   </span>
                 );

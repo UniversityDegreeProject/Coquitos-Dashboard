@@ -5,10 +5,7 @@ import { z } from "zod";
  */
 export const searchSalesSchema = z.object({
   search: z.string().optional().default(""),
-  paymentMethod: z
-    .enum(["Efectivo", "Tarjeta", "QR", ""])
-    .optional()
-    .default(""),
+  paymentMethod: z.enum(["Efectivo", "QR", ""]).optional().default(""),
   status: z
     .enum(["Pendiente", "Completado", "Cancelado", "Reembolsado", ""])
     .optional()

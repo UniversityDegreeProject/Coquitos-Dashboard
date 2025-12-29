@@ -1,53 +1,95 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { History } from "lucide-react";
-import { useDebounce } from "@/shared/hooks/useDebounce";
 import { useTheme } from "@/shared/hooks/useTheme";
-import { ActivityLogFilters } from "../components/ActivityLogFilters";
 import { ActivityLogTable } from "../components/ActivityLogTable";
 import { useActivityLogs } from "../hooks/useActivityLogs";
+import { GenericSearchBar } from "@/shared/components";
+import {
+  searchActivityLogSchema,
+  type SearchActivityLogSchema,
+} from "../schemas/search-activity-log.schema";
+import {
+  activityLogSearchFiltersOptions,
+  activityLogDateFilters,
+} from "../const/search-options";
+import { calculateDateRange } from "@/shared/helpers";
+
+const searchDefaultValues: SearchActivityLogSchema = {
+  search: "",
+  action: "",
+  entity: "",
+  dateRange: "today",
+  startDate: "",
+  endDate: "",
+};
 
 export const ActivityLogPage = () => {
   const { colors } = useTheme();
 
-  // Filter states
+  // Pagination state
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [action, setAction] = useState("");
-  const [entity, setEntity] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [limit] = useState(10);
 
-  const debouncedSearch = useDebounce(search, 500);
+  // Filters state
+  const [searchFilters, setSearchFilters] =
+    useState<SearchActivityLogSchema>(searchDefaultValues);
+
+  // Calculate date range
+  const dateParams = useMemo(() => {
+    // If manual dates are set, ignore dateRange preset
+    if (searchFilters.startDate || searchFilters.endDate) {
+      return {
+        startDate: searchFilters.startDate,
+        endDate: searchFilters.endDate,
+      };
+    }
+    return calculateDateRange({ dateRange: searchFilters.dateRange });
+  }, [searchFilters.dateRange, searchFilters.startDate, searchFilters.endDate]);
+
+  // Construct query params
+  const queryParams = useMemo(() => {
+    const formatParamDate = (
+      date: string | Date | undefined
+    ): string | undefined => {
+      if (!date) return undefined;
+      if (date instanceof Date) return date.toISOString();
+      return date;
+    };
+
+    return {
+      page,
+      limit,
+      search: searchFilters.search,
+      action: searchFilters.action || undefined,
+      entity: searchFilters.entity || undefined,
+      startDate: formatParamDate(dateParams.startDate),
+      endDate: formatParamDate(dateParams.endDate),
+    };
+  }, [
+    page,
+    limit,
+    searchFilters.search,
+    searchFilters.action,
+    searchFilters.entity,
+    dateParams,
+  ]);
 
   // Fetch activity logs
-  const { data, isLoading } = useActivityLogs({
-    page,
-    limit: 10,
-    search: debouncedSearch,
-    action: action || undefined,
-    entity: entity || undefined,
-    startDate: startDate || undefined,
-    endDate: endDate || undefined,
-  });
+  const { data, isLoading } = useActivityLogs(queryParams);
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, action, entity, startDate, endDate]);
+  // Handlers
+  const handleSearchFiltersChange = useCallback(
+    (values: SearchActivityLogSchema) => {
+      setSearchFilters(values);
+      setPage(1);
+    },
+    []
+  );
 
-  const handleClearFilters = () => {
-    setSearch("");
-    setAction("");
-    setEntity("");
-    setStartDate("");
-    setEndDate("");
-    setPage(1);
-  };
-
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = useCallback((newPage: number) => {
     setPage(newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -69,18 +111,14 @@ export const ActivityLogPage = () => {
       </div>
 
       {/* Filters */}
-      <ActivityLogFilters
-        search={search}
-        setSearch={setSearch}
-        action={action}
-        setAction={setAction}
-        entity={entity}
-        setEntity={setEntity}
-        startDate={startDate}
-        setStartDate={setStartDate}
-        endDate={endDate}
-        setEndDate={setEndDate}
-        onClearFilters={handleClearFilters}
+      <GenericSearchBar
+        schema={searchActivityLogSchema}
+        defaultValues={searchDefaultValues}
+        onSearchChange={handleSearchFiltersChange}
+        selectFilters={activityLogSearchFiltersOptions}
+        dateFilters={activityLogDateFilters}
+        searchPlaceholder="Buscar en descripciones..."
+        searchLabel="Buscar Actividad"
       />
 
       {/* Table */}

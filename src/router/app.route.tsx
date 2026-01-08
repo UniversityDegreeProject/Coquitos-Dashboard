@@ -9,6 +9,7 @@ import { PrivateRoute, PublicRoute, RootRedirect } from "./components";
 // components Pages
 import { DashboardPage } from "@/coquitos-features/dashboard/pages/DashboardPage";
 import { SalesPage } from "@/coquitos-features/sales/pages/SalesPage";
+import { SaleDetailPage } from "@/coquitos-features/sales/pages/SaleDetailPage";
 import { ProductPage } from "@/coquitos-features/products/pages/ProductPage";
 import { CategoriesPage } from "@/coquitos-features/categories/pages/CategoriesPage";
 import { ClientsPage } from "@/coquitos-features/clients/pages/ClientsPage";
@@ -56,6 +57,10 @@ export const appRouter = createBrowserRouter([
           {
             path: "sales",
             element: <SalesPage />,
+          },
+          {
+            path: "sales/:saleId",
+            element: <SaleDetailPage />,
           },
           {
             path: "products",

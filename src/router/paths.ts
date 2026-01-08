@@ -16,6 +16,7 @@ export const paths = {
     root: "/dashboard",
     home: "/dashboard/home",
     sales: "/dashboard/sales",
+    saleDetail: (saleId: string) => `/dashboard/sales/${saleId}`,
     products: "/dashboard/products",
     categories: "/dashboard/categories",
     clients: "/dashboard/clients",

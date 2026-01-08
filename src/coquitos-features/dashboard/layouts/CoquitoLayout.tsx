@@ -42,6 +42,10 @@ const urlRoutes = {
     title: "Configuración",
     subtitle: "Configuración de Coquitos",
   },
+  [paths.dashboard.activityLog]: {
+    title: "Registro de Actividades",
+    subtitle: "Gestiona, administra y visualiza el registro de actividades",
+  },
 };
 
 export const CoquitoLayout = () => {

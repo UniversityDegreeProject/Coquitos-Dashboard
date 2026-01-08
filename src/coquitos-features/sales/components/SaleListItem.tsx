@@ -130,8 +130,15 @@ export const SaleListItem = memo(
 
           {/* Sección derecha: Desktop */}
           <div className="hidden sm:flex items-center gap-4 flex-shrink-0 self-center">
-            {/* Badge de estado */}
-            <div className="flex-shrink-0">
+            {/* Badge de estado con label */}
+            <div className="flex-shrink-0 flex flex-col items-center">
+              <p
+                className={`text-xs mb-1 ${
+                  isDark ? "text-[#64748B]" : "text-gray-400"
+                }`}
+              >
+                Estado
+              </p>
               <span
                 className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                   sale.status || "Pendiente"
@@ -141,8 +148,8 @@ export const SaleListItem = memo(
               </span>
             </div>
 
-            {/* Badge de método de pago */}
-            <div className="flex-shrink-0">
+            {/* Badge de método de pago con label */}
+            <div className="flex-shrink-0 flex flex-col items-center">
               <p
                 className={`text-xs mb-1 ${
                   isDark ? "text-[#64748B]" : "text-gray-400"
@@ -160,16 +167,16 @@ export const SaleListItem = memo(
             </div>
 
             {/* Total */}
-            <div className="flex-shrink-0 text-right min-w-[100px]">
+            <div className="flex-shrink-0 text-right min-w-[100px] flex flex-col items-center">
               <p
-                className={`text-xs ${
+                className={`text-xs text-center ${
                   isDark ? "text-[#64748B]" : "text-gray-400"
                 }`}
               >
                 Total
               </p>
               <p
-                className={`text-base font-bold ${
+                className={`text-base font-bold text-center ${
                   isDark ? "text-[#F59E0B]" : "text-[#275081]"
                 }`}
               >
@@ -178,16 +185,16 @@ export const SaleListItem = memo(
             </div>
 
             {/* Fecha */}
-            <div className="flex-shrink-0 text-right min-w-[140px]">
+            <div className="flex-shrink-0 text-right min-w-[140px] flex flex-col items-center">
               <p
-                className={`text-xs ${
+                className={`text-xs text-center ${
                   isDark ? "text-[#64748B]" : "text-gray-400"
                 }`}
               >
                 Fecha de creación
               </p>
               <p
-                className={`text-sm ${
+                className={`text-sm text-center ${
                   isDark ? "text-[#94A3B8]" : "text-gray-500"
                 }`}
               >

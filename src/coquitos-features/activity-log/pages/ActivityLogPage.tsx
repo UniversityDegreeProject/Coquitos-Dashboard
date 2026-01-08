@@ -30,6 +30,7 @@ export const ActivityLogPage = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
 
+  const { isDark } = useTheme();
   // Filters state
   const [searchFilters, setSearchFilters] =
     useState<SearchActivityLogSchema>(searchDefaultValues);
@@ -93,19 +94,29 @@ export const ActivityLogPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-gradient-to-br from-[#275081] to-[#F59E0B]">
-            <History className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className={`text-3xl font-bold ${colors.text.primary}`}>
+      {/* Header - Responsive */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Título con icono y toggle tema */}
+        <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div
+              className={`p-1.5 sm:p-2 rounded-lg ${
+                isDark
+                  ? "bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20"
+                  : "bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20"
+              }`}
+            >
+              <History
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                  isDark ? "text-[#F59E0B]" : "text-[#275081]"
+                }`}
+              />
+            </div>
+            <h3
+              className={`text-lg sm:text-xl lg:text-2xl font-bold ${colors.text.primary}`}
+            >
               Registro de Actividades
-            </h1>
-            <p className={`${colors.text.muted}`}>
-              Historial completo de acciones en el sistema
-            </p>
+            </h3>
           </div>
         </div>
       </div>

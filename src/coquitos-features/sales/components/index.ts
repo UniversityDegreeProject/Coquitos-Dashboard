@@ -12,3 +12,4 @@ export * from "./SaleListItem";
 export * from "./SaleEmptyState";
 export * from "./SaleButtonsActions";
 export * from "./SalePagination";
+export * from "./SaleReceipt";

@@ -60,7 +60,7 @@ export const menuItems = (isAdmin: boolean): MenuItem[] => {
       : []),
     {
       to: paths.dashboard.cashClosing,
-      label: "Cierre de Caja",
+      label: "Caja",
       icon: Calculator,
     },
     ...(isAdmin

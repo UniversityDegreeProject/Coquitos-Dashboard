@@ -1,7 +1,11 @@
 import { memo, useCallback } from "react";
+import { createRoot } from "react-dom/client";
+import { useNavigate } from "react-router";
 import { Eye, Printer } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
+import { paths } from "@/router/paths";
 import type { Sale, SearchSalesParams } from "../interfaces";
+import { SaleReceipt } from "./SaleReceipt";
 
 interface SaleButtonsActionsProps {
   sale: Sale;
@@ -12,22 +16,44 @@ interface SaleButtonsActionsProps {
 /**
  * Botones de acción para cada venta
  * - Ver detalle
- * - Reimprimir recibo
+ * - Reimprimir recibo (imprime directamente sin redirigir)
  */
 export const SaleButtonsActions = memo(({ sale }: SaleButtonsActionsProps) => {
+  const navigate = useNavigate();
   const { isDark } = useTheme();
 
   // * Handler para ver detalle de la venta
   const handleViewDetail = useCallback(() => {
-    // TODO: Implementar navegación a detalle de venta
-    console.log("Ver detalle de venta:", sale.id);
-  }, [sale.id]);
+    if (sale.id) {
+      navigate(paths.dashboard.saleDetail(sale.id));
+    }
+  }, [sale.id, navigate]);
 
-  // * Handler para reimprimir recibo
+  // * Handler para reimprimir recibo - imprime directamente sin redirigir
   const handlePrint = useCallback(() => {
-    // TODO: Implementar impresión de recibo
-    console.log("Imprimir recibo de venta:", sale.saleNumber);
-  }, [sale.saleNumber]);
+    // Crear un contenedor temporal en el body para el recibo
+    const printContainer = document.createElement("div");
+    printContainer.id = "sale-receipt-print-container";
+    printContainer.style.position = "fixed";
+    printContainer.style.top = "-9999px";
+    printContainer.style.left = "-9999px";
+    document.body.appendChild(printContainer);
+
+    // Renderizar el recibo
+    const root = createRoot(printContainer);
+    root.render(<SaleReceipt sale={sale} />);
+
+    // Esperar un momento para que se renderice y luego imprimir
+    setTimeout(() => {
+      window.print();
+
+      // Limpiar después de imprimir
+      setTimeout(() => {
+        root.unmount();
+        document.body.removeChild(printContainer);
+      }, 500);
+    }, 200);
+  }, [sale]);
 
   return (
     <div className="flex space-x-2 flex-shrink-0">

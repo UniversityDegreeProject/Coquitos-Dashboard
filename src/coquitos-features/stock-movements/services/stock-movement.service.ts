@@ -5,15 +5,15 @@ import type {
   SearchStockMovementsResponse,
   StockMovementMutationResponse,
   StockMovementFormData,
-  SearchStockMovementsParams
+  SearchStockMovementsParams,
 } from "../interfaces";
 
 /**
- * Obtiene todos los movimientos de stock usando el endpoint de búsqueda
+ //* Obtiene todos los movimientos de stock usando el endpoint de búsqueda
  */
 export const getStockMovements = async (): Promise<StockMovementResponse[]> => {
   try {
-    const response = await CoquitoApi.get('/stock-movements/search');
+    const response = await CoquitoApi.get("/stock-movements/search");
     return response.data.movements;
   } catch (error) {
     throw new Error(`Error al obtener movimientos de stock: ${error}`);
@@ -21,28 +21,36 @@ export const getStockMovements = async (): Promise<StockMovementResponse[]> => {
 };
 
 /**
- * Obtiene un movimiento de stock por su ID
+ //* Obtiene un movimiento de stock por su ID
  */
-export const getStockMovementById = async (stockMovementId: string): Promise<StockMovementResponse> => {
+export const getStockMovementById = async (
+  stockMovementId: string
+): Promise<StockMovementResponse> => {
   try {
-    const response = await CoquitoApi.get<StockMovementMutationResponse>(`/stock-movements/${stockMovementId}`);
+    const response = await CoquitoApi.get<StockMovementMutationResponse>(
+      `/stock-movements/${stockMovementId}`
+    );
     return response.data.stockMovement;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
-      throw new Error(error.response?.data.error || 'Error al obtener movimiento de stock');
+      throw new Error(
+        error.response?.data.error || "Error al obtener movimiento de stock"
+      );
     }
-    throw new Error('Error desconocido');
+    throw new Error("Error desconocido");
   }
 };
 
 /**
- * Busca movimientos de stock por término de búsqueda
+ //* Busca movimientos de stock por término de búsqueda
  */
-export const searchStockMovements = async (params: SearchStockMovementsParams): Promise<StockMovementResponse[]> => {
+export const searchStockMovements = async (
+  params: SearchStockMovementsParams
+): Promise<StockMovementResponse[]> => {
   try {
     const queryParams = new URLSearchParams();
-    if (params.search) queryParams.append('search', params.search);
-    
+    if (params.search) queryParams.append("search", params.search);
+
     const response = await CoquitoApi.get<SearchStockMovementsResponse>(
       `/stock-movements/search?${queryParams.toString()}`
     );
@@ -53,19 +61,24 @@ export const searchStockMovements = async (params: SearchStockMovementsParams): 
 };
 
 /**
- * Crea un nuevo movimiento de stock
+ //* Crea un nuevo movimiento de stock
  */
-export const createStockMovement = async (stockMovementData: StockMovementFormData): Promise<StockMovementResponse> => {
+export const createStockMovement = async (
+  stockMovementData: StockMovementFormData
+): Promise<StockMovementResponse> => {
   try {
-    const response = await CoquitoApi.post<{message: string, movement: StockMovementResponse}>('/stock-movements/', stockMovementData);
+    const response = await CoquitoApi.post<{
+      message: string;
+      movement: StockMovementResponse;
+    }>("/stock-movements/", stockMovementData);
 
     return response.data?.movement as StockMovementResponse;
-
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
-      throw new Error(error.response?.data.error || 'Error al crear movimiento de stock');
+      throw new Error(
+        error.response?.data.error || "Error al crear movimiento de stock"
+      );
     }
-    throw new Error('Error desconocido');
+    throw new Error("Error desconocido");
   }
 };
-

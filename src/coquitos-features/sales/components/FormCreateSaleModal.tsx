@@ -1,6 +1,6 @@
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { X, ShoppingCart, AlertTriangle } from "lucide-react";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useShallow } from "zustand/shallow";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useSaleStore } from "../store/sale.store";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useAuthStore } from "@/auth/store/auth.store";
-import { useCreateSale } from "../hooks";
+import { useCreateSale, usePaymentQR } from "../hooks";
 import { useGetClients } from "@/coquitos-features/clients/hooks/useGetClients";
 import { useGetProducts } from "@/coquitos-features/products/hooks/useGetProducts";
 import { useGetBatches } from "@/coquitos-features/products/hooks";
@@ -45,15 +45,15 @@ const initialValues: CreateSaleSchema = {
 export const FormCreateSaleModal = () => {
   // * Zustand
   const closeCreateSaleModal = useSaleStore(
-    useShallow((state) => state.closeCreateSaleModal)
+    useShallow((state) => state.closeCreateSaleModal),
   );
   const cartItems = useSaleStore(useShallow((state) => state.cartItems));
   const addToCart = useSaleStore(useShallow((state) => state.addToCart));
   const removeFromCart = useSaleStore(
-    useShallow((state) => state.removeFromCart)
+    useShallow((state) => state.removeFromCart),
   );
   const updateCartItemQuantity = useSaleStore(
-    useShallow((state) => state.updateCartItemQuantity)
+    useShallow((state) => state.updateCartItemQuantity),
   );
   const clearCart = useSaleStore(useShallow((state) => state.clearCart));
   const getCartTotal = useSaleStore(useShallow((state) => state.getCartTotal));
@@ -107,7 +107,7 @@ export const FormCreateSaleModal = () => {
 
   const { batches, isLoading: isLoadingBatches } = useGetBatches(
     selectedProductForBatch?.id || "",
-    !!selectedProductForBatch?.id
+    !!selectedProductForBatch?.id,
   );
 
   const { cashRegister, isLoading: isLoadingCashRegister } =
@@ -140,6 +140,12 @@ export const FormCreateSaleModal = () => {
   const change = amountPaidNumber - cartTotal;
   const isPaymentSufficient = amountPaidNumber >= cartTotal && cartTotal > 0;
 
+  // * Hook para generar QR
+  const { qrUrl, isPaid, isQrLoading, generateQR, transactionId, resetQR } =
+    usePaymentQR(cartTotal, cartItems);
+
+  const selectedPaymentMethod = useWatch({ control, name: "paymentMethod" });
+
   // * Handler para agregar producto al carrito
   const handleAddProductToCart = useCallback(
     (product: Product) => {
@@ -150,7 +156,7 @@ export const FormCreateSaleModal = () => {
 
       // Verificar si el producto ya está en el carrito
       const existingItem = cartItems.find(
-        (item) => item.productId === product.id && !item.batchId
+        (item) => item.productId === product.id && !item.batchId,
       );
 
       if (existingItem) {
@@ -159,7 +165,7 @@ export const FormCreateSaleModal = () => {
           toast.error(
             `Stock insuficiente. Solo hay ${
               existingItem.availableStock
-            } disponible${existingItem.availableStock === 1 ? "" : "s"}`
+            } disponible${existingItem.availableStock === 1 ? "" : "s"}`,
           );
           return;
         }
@@ -179,7 +185,7 @@ export const FormCreateSaleModal = () => {
       addToCart(cartItem);
       toast.success(`${product.name} agregado al carrito`);
     },
-    [addToCart, cartItems]
+    [addToCart, cartItems],
   );
 
   // * Handler para agregar batch al carrito
@@ -191,7 +197,7 @@ export const FormCreateSaleModal = () => {
       const existingItem = cartItems.find(
         (item) =>
           item.productId === selectedProductForBatch.id &&
-          item.batchId === batch.id
+          item.batchId === batch.id,
       );
 
       if (existingItem) {
@@ -200,7 +206,7 @@ export const FormCreateSaleModal = () => {
           toast.error(
             `Stock insuficiente. Solo hay ${
               existingItem.availableStock
-            } disponible${existingItem.availableStock === 1 ? "" : "s"}`
+            } disponible${existingItem.availableStock === 1 ? "" : "s"}`,
           );
           return;
         }
@@ -222,15 +228,25 @@ export const FormCreateSaleModal = () => {
 
       addToCart(cartItem);
       toast.success(
-        `${selectedProductForBatch.name} (${batch.weight}kg) agregado al carrito`
+        `${selectedProductForBatch.name} (${batch.weight}kg) agregado al carrito`,
       );
       setSelectedProductForBatch(null);
     },
-    [selectedProductForBatch, addToCart, cartItems]
+    [selectedProductForBatch, addToCart, cartItems],
   );
+
+  // *Effect de pago
+
+  useEffect(() => {
+    if (selectedPaymentMethod !== "QR") resetQR();
+  }, [selectedPaymentMethod, resetQR]);
 
   // * Submit handler
   const onSubmit: SubmitHandler<CreateSaleSchema> = (data) => {
+    if (data.paymentMethod === "QR" && !isPaid) {
+      toast.error("Debe completar el pago por QR antes de confirmar");
+      return;
+    }
     if (cartItems.length === 0) {
       toast.error("Debes agregar al menos un producto al carrito");
       return;
@@ -259,6 +275,8 @@ export const FormCreateSaleModal = () => {
       paymentMethod: data.paymentMethod,
       amountPaid: amountPaidNumber,
       notes: data.notes,
+      // * pago por QR
+      transactionId: data.paymentMethod === "QR" ? transactionId : null,
     };
 
     useCreateSaleMutation.mutate(saleData);
@@ -394,6 +412,11 @@ export const FormCreateSaleModal = () => {
                 isLoadingClients={isLoadingClients}
                 paymentMethodOptions={paymentMethodOptions}
                 onSubmit={handleSubmit(onSubmit)}
+                //* pago por QR
+                qrUrl={qrUrl}
+                isQrLoading={isQrLoading}
+                isPaid={isPaid}
+                onGenerateQR={generateQR}
               />
             </div>
           </div>

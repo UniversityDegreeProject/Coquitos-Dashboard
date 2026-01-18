@@ -1,6 +1,6 @@
 import { memo } from "react";
 import type { Control, FieldErrors } from "react-hook-form";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import {
   Loader2,
   ShoppingCart,
@@ -31,6 +31,12 @@ interface CheckoutFormProps {
   isLoadingClients: boolean;
   paymentMethodOptions: { value: PaymentMethod; label: string }[];
   onSubmit: () => void;
+
+  //* Revisar aqui
+  onGenerateQR: () => void;
+  qrUrl: string | null;
+  isQrLoading: boolean;
+  isPaid: boolean;
 }
 
 /**
@@ -53,8 +59,18 @@ export const CheckoutForm = memo(
     isLoadingClients,
     paymentMethodOptions,
     onSubmit,
+    onGenerateQR,
+    qrUrl,
+    isQrLoading,
+    isPaid,
   }: CheckoutFormProps) => {
     const { isDark } = useTheme();
+
+    // * Revisar aqui
+    const selectedPaymentMethod = useWatch({
+      control,
+      name: "paymentMethod",
+    });
 
     return (
       <form
@@ -190,6 +206,48 @@ export const CheckoutForm = memo(
           )}
         </div>
 
+        {/* QR */}
+        {/* //*Revisar aqui */}
+
+        {selectedPaymentMethod === "QR" && (
+          <div
+            className={`p-4 rounded-xl border-2 mb-4 ${isDark ? "bg-[#0F172A] border-[#F59E0B]/30" : "bg-blue-50 border-[#275081]/20"}`}
+          >
+            {!qrUrl ? (
+              <button
+                type="button"
+                onClick={onGenerateQR}
+                disabled={isQrLoading || cartItemsCount === 0}
+                className="w-full py-2 bg-[#F59E0B] text-white rounded-lg font-bold hover:bg-[#D97706] transition-colors flex items-center justify-center gap-2"
+              >
+                {isQrLoading ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <ShoppingCart size={18} />
+                )}
+                Generar QR de Cobro
+              </button>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <img
+                  src={qrUrl}
+                  alt="QR de Pago"
+                  className="w-48 h-48 bg-white p-2 rounded-lg"
+                />
+                {isPaid ? (
+                  <span className="text-green-500 font-bold flex items-center gap-1">
+                    Pago Confirmado ✅
+                  </span>
+                ) : (
+                  <span className="text-sm animate-pulse text-amber-600">
+                    Esperando pago...
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Notas (opcional) */}
         <LabelTextarea
           label="Notas (Opcional)"
@@ -209,7 +267,8 @@ export const CheckoutForm = memo(
             !isValid ||
             !isPaymentSufficient ||
             cartItemsCount === 0 ||
-            !hasCashRegister
+            !hasCashRegister ||
+            (selectedPaymentMethod === "QR" && !isPaid)
           }
           className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
             isPending ||
@@ -219,8 +278,8 @@ export const CheckoutForm = memo(
             !hasCashRegister
               ? "bg-gray-400 cursor-not-allowed"
               : isDark
-              ? "bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B] hover:shadow-2xl hover:shadow-[#F59E0B]/50"
-              : "bg-gradient-to-r from-[#275081] via-blue-600 to-[#F9E44E] hover:shadow-2xl hover:shadow-[#275081]/50"
+                ? "bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B] hover:shadow-2xl hover:shadow-[#F59E0B]/50"
+                : "bg-gradient-to-r from-[#275081] via-blue-600 to-[#F9E44E] hover:shadow-2xl hover:shadow-[#275081]/50"
           } text-white shadow-xl`}
         >
           {isPending ? (
@@ -242,5 +301,5 @@ export const CheckoutForm = memo(
         </button>
       </form>
     );
-  }
+  },
 );

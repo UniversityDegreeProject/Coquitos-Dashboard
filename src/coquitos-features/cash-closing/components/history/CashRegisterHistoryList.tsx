@@ -20,20 +20,18 @@ export const CashRegisterHistoryList = memo(() => {
   const { isDark } = useTheme();
   const user = useAuthStore(useShallow((state) => state.user));
 
-  // Estado de paginación
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
 
   const userId = getIdByUserRole(user!);
 
-  // Parámetros de búsqueda memoizados
   const searchParams: GetCashRegisterHistoryParams = useMemo(
     () => ({
       userId: userId, // TODO: Filtrar todo si es administrador en caso de ser usuario normal filtrar por usuario actual.
       page,
       limit,
     }),
-    [userId, page, limit]
+    [userId, page, limit],
   );
 
   // Obtener historial
@@ -68,20 +66,20 @@ export const CashRegisterHistoryList = memo(() => {
             "p-2 rounded-lg",
             isDark
               ? "bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20"
-              : "bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20"
+              : "bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20",
           )}
         >
           <History
             className={cn(
               "w-5 h-5",
-              isDark ? "text-[#F59E0B]" : "text-[#275081]"
+              isDark ? "text-[#F59E0B]" : "text-[#275081]",
             )}
           />
         </div>
         <h3
           className={cn(
             "text-xl font-bold",
-            isDark ? "text-white" : "text-gray-900"
+            isDark ? "text-white" : "text-gray-900",
           )}
         >
           Historial de Cierres

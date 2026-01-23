@@ -59,7 +59,6 @@ export const GenericSearchBar = <T extends FieldValues>({
 }: GenericSearchBarProps<T>) => {
   const { isDark } = useTheme();
 
-  console.log("selecteFilters", selectFilters);
   const form = useForm<T>({
     // @ts-expect-error - Incompatibilidad de tipos genéricos entre zodResolver y useForm
     resolver: zodResolver(schema),
@@ -125,7 +124,7 @@ export const GenericSearchBar = <T extends FieldValues>({
     if (!filter) return String(value);
 
     const option = filter.options.find(
-      (opt) => String(opt.value) === String(value)
+      (opt) => String(opt.value) === String(value),
     );
     return option ? option.label : String(value);
   };
@@ -150,8 +149,8 @@ export const GenericSearchBar = <T extends FieldValues>({
           selectFilters.length === 0
             ? "lg:grid-cols-1"
             : selectFilters.length === 1
-            ? "lg:grid-cols-2"
-            : "lg:grid-cols-3"
+              ? "lg:grid-cols-2"
+              : "lg:grid-cols-3"
         }`}
       >
         {/* Campo de búsqueda - Siempre presente */}

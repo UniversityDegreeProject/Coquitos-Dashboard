@@ -48,10 +48,10 @@ export const SalesPage = () => {
 
   // * Zustand
   const isCreateSaleModalOpen = useSaleStore(
-    useShallow((state) => state.isCreateSaleModalOpen)
+    useShallow((state) => state.isCreateSaleModalOpen),
   );
   const openCreateSaleModal = useSaleStore(
-    useShallow((state) => state.openCreateSaleModal)
+    useShallow((state) => state.openCreateSaleModal),
   );
 
   // * Theme
@@ -71,6 +71,10 @@ export const SalesPage = () => {
       limit,
     };
 
+    if (searchFilters.search) {
+      params.search = searchFilters.search;
+    }
+
     //? Solo agregar fechas si están definidas
     if (dateParams.startDate) {
       params.startDate = dateParams.startDate;
@@ -83,6 +87,7 @@ export const SalesPage = () => {
   }, [
     searchFilters.paymentMethod,
     searchFilters.status,
+    searchFilters.search,
     dateParams,
     page,
     limit,
@@ -113,7 +118,7 @@ export const SalesPage = () => {
       // Si hay fechas definidas en dateParams, usarlas
       startDate: dateParams.startDate,
       endDate: dateParams.endDate,
-    }
+    },
   );
 
   // * Handlers

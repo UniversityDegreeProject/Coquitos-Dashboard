@@ -40,7 +40,7 @@ export const ReportSummaryCards = ({ report }: ReportSummaryCardsProps) => {
     },
     {
       title: "Métodos de Pago",
-      value: "3",
+      value: "2",
       icon: Users,
       color: "purple",
       bgColor: isDark ? "bg-purple-900/20" : "bg-purple-50",
@@ -56,7 +56,9 @@ export const ReportSummaryCards = ({ report }: ReportSummaryCardsProps) => {
           <div
             key={index}
             className={`rounded-lg p-6 shadow-sm border ${
-              isDark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
+              isDark
+                ? "bg-slate-800 border-slate-700"
+                : "bg-white border-gray-200"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -65,10 +67,14 @@ export const ReportSummaryCards = ({ report }: ReportSummaryCardsProps) => {
               </div>
             </div>
             <div className="mt-4">
-              <p className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+              <p
+                className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}
+              >
                 {card.title}
               </p>
-              <p className={`text-2xl font-bold mt-1 ${isDark ? "text-white" : "text-gray-900"}`}>
+              <p
+                className={`text-2xl font-bold mt-1 ${isDark ? "text-white" : "text-gray-900"}`}
+              >
                 {card.value}
               </p>
             </div>
@@ -78,4 +84,3 @@ export const ReportSummaryCards = ({ report }: ReportSummaryCardsProps) => {
     </div>
   );
 };
-

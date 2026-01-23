@@ -243,11 +243,11 @@ export const FormCreateSaleModal = () => {
 
   // * Submit handler
   const onSubmit: SubmitHandler<CreateSaleSchema> = (data) => {
-    // TODO: Comentar - descomentar
-    // if (data.paymentMethod === "QR" && !isPaid) {
-    //   toast.error("Debe completar el pago por QR antes de confirmar");
-    //   return;
-    // }
+    // TODO: Comentar - descomentar para pagar por libelula
+    if (data.paymentMethod === "QR" && !isPaid) {
+      toast.error("Debe completar el pago por QR antes de confirmar");
+      return;
+    }
     if (cartItems.length === 0) {
       toast.error("Debes agregar al menos un producto al carrito");
       return;

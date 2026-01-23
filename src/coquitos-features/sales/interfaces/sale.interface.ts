@@ -66,6 +66,7 @@ export interface SearchSalesParams {
   endDate?: Date;
   page: number;
   limit: number;
+  search?: string;
 }
 
 /**

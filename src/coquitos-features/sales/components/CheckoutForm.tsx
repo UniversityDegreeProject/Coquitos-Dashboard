@@ -1,7 +1,7 @@
 import { memo } from "react";
 import type { Control, FieldErrors } from "react-hook-form";
-// TODO: Comentar - descomentar esto
-import { Controller /* useWatch */ } from "react-hook-form";
+// TODO: Comentar - descomentar esto para pagar por libelula
+import { Controller, useWatch } from "react-hook-form";
 import {
   Loader2,
   ShoppingCart,
@@ -60,19 +60,19 @@ export const CheckoutForm = memo(
     isLoadingClients,
     paymentMethodOptions,
     onSubmit,
-    // TODO: Comentar - descomentar esto
-    // onGenerateQR,
-    // qrUrl,
-    // isQrLoading,
-    // isPaid,
+    // TODO: Comentar - descomentar esto para pagar por libelula
+    onGenerateQR,
+    qrUrl,
+    isQrLoading,
+    isPaid,
   }: CheckoutFormProps) => {
     const { isDark } = useTheme();
 
-    // TODO: Comentar - descomentar esto
-    // const selectedPaymentMethod = useWatch({
-    //   control,
-    //   name: "paymentMethod",
-    // });
+    // TODO: Comentar - descomentar esto para pagar por libelula
+    const selectedPaymentMethod = useWatch({
+      control,
+      name: "paymentMethod",
+    });
 
     return (
       <form
@@ -209,8 +209,8 @@ export const CheckoutForm = memo(
         </div>
 
         {/* QR */}
-        {/* // TODO: Comentar - descomentar esto */}
-        {/* {selectedPaymentMethod === "QR" && (
+        {/* TODO: Comentar - descomentar esto para pagar por libelula */}
+        {selectedPaymentMethod === "QR" && (
           <div
             className={`p-4 rounded-xl border-2 mb-4 ${isDark ? "bg-[#0F172A] border-[#F59E0B]/30" : "bg-blue-50 border-[#275081]/20"}`}
           >
@@ -247,7 +247,7 @@ export const CheckoutForm = memo(
               </div>
             )}
           </div>
-        )} */}
+        )}
 
         {/* Notas (opcional) */}
         <LabelTextarea
@@ -268,9 +268,9 @@ export const CheckoutForm = memo(
             !isValid ||
             !isPaymentSufficient ||
             cartItemsCount === 0 ||
-            !hasCashRegister /* || */
-            // TODO: Comentar - descomentar esto
-            // (selectedPaymentMethod === "QR" && !isPaid)
+            !hasCashRegister ||
+            // TODO: Comentar - descomentar esto para pagar por libelula
+            (selectedPaymentMethod === "QR" && !isPaid)
           }
           className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
             isPending ||

@@ -13,7 +13,7 @@ import type {
  * GET /api/sales
  */
 export const getSales = async (
-  searchParams: SearchSalesParams
+  searchParams: SearchSalesParams,
 ): Promise<GetSalesResponse> => {
   const clearParams: Record<string, unknown> = {
     page: searchParams.page,
@@ -40,7 +40,7 @@ export const getSales = async (
       const year = searchParams.startDate.getFullYear();
       const month = String(searchParams.startDate.getMonth() + 1).padStart(
         2,
-        "0"
+        "0",
       );
       const day = String(searchParams.startDate.getDate()).padStart(2, "0");
       clearParams.startDate = `${year}-${month}-${day}`;
@@ -53,13 +53,18 @@ export const getSales = async (
       const year = searchParams.endDate.getFullYear();
       const month = String(searchParams.endDate.getMonth() + 1).padStart(
         2,
-        "0"
+        "0",
       );
       const day = String(searchParams.endDate.getDate()).padStart(2, "0");
       clearParams.endDate = `${year}-${month}-${day}T23:59:59.999`;
     } else {
       clearParams.endDate = searchParams.endDate;
     }
+  }
+
+  // Parámetro de búsqueda textual
+  if (searchParams.search?.trim()) {
+    clearParams.search = searchParams.search.trim();
   }
 
   try {
@@ -96,12 +101,12 @@ export const getSaleById = async (saleId: string): Promise<Sale> => {
  * POST /api/sales
  */
 export const createSale = async (
-  saleData: SaleFormData
+  saleData: SaleFormData,
 ): Promise<CreateSaleResponse> => {
   try {
     const response = await CoquitoApi.post<CreateSaleResponse>(
       "/sales",
-      saleData
+      saleData,
     );
     return response.data;
   } catch (error: unknown) {

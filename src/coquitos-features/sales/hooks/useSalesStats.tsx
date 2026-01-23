@@ -10,6 +10,8 @@ export interface SalesStatsData {
   completedSales: number;
   cashSales: number;
   qrSales: number;
+  cashTotal: number;
+  qrTotal: number;
 }
 
 /**
@@ -17,7 +19,7 @@ export interface SalesStatsData {
  */
 export const useSalesStats = (
   filters: Pick<SearchSalesParams, "paymentMethod" | "status">,
-  options?: { filterByToday?: boolean; startDate?: Date; endDate?: Date }
+  options?: { filterByToday?: boolean; startDate?: Date; endDate?: Date },
 ) => {
   const { filterByToday = false, startDate, endDate } = options || {};
 
@@ -54,7 +56,7 @@ export const useSalesStats = (
     if (dateRange) {
       key.push(
         `startDate:${dateRange.startDate.toISOString()}`,
-        `endDate:${dateRange.endDate.toISOString()}`
+        `endDate:${dateRange.endDate.toISOString()}`,
       );
     } else {
       key.push("all-dates");
@@ -92,19 +94,28 @@ export const useSalesStats = (
         completedSales: 0,
         cashSales: 0,
         qrSales: 0,
+        cashTotal: 0,
+        qrTotal: 0,
       };
     }
 
     const sales = data.data;
+
+    // Filtrar ventas por método de pago
+    const cashSalesData = sales.filter(
+      (sale) => sale.paymentMethod === "Efectivo",
+    );
+    const qrSalesData = sales.filter((sale) => sale.paymentMethod === "QR");
 
     return {
       totalSalesCount: data.total ?? 0,
       totalSalesAmount: sales.reduce((sum, sale) => sum + sale.total, 0),
       completedSales: sales.filter((sale) => sale.status === "Completado")
         .length,
-      cashSales: sales.filter((sale) => sale.paymentMethod === "Efectivo")
-        .length,
-      qrSales: sales.filter((sale) => sale.paymentMethod === "QR").length,
+      cashSales: cashSalesData.length,
+      qrSales: qrSalesData.length,
+      cashTotal: cashSalesData.reduce((sum, sale) => sum + sale.total, 0),
+      qrTotal: qrSalesData.reduce((sum, sale) => sum + sale.total, 0),
     };
   }, [data]);
 

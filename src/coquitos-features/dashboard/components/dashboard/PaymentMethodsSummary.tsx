@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { Banknote, CreditCard, Smartphone, TrendingUp } from "lucide-react";
+import { Banknote, Smartphone, TrendingUp } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useSalesStats } from "@/coquitos-features/sales/hooks/useSalesStats";
 import { formatCurrency } from "@/coquitos-features/sales/helpers/format-currency";
@@ -30,49 +30,33 @@ export const PaymentMethodsSummary = memo(() => {
     },
     {
       filterByToday: true, // Filtrar por el día actual en el dashboard
-    }
+    },
   );
 
   // Calcular totales por método de pago
   const paymentMethods = useMemo(() => {
-    const totalSales = stats.cashSales + stats.cashSales + stats.qrSales;
+    const totalAmount = stats.cashTotal + stats.qrTotal;
 
-    // Calcular porcentajes aproximados basados en cantidad de ventas
+    // Calcular porcentajes basados en montos reales
     const cashPercentage =
-      totalSales > 0 ? (stats.cashSales / totalSales) * 100 : 0;
-    const cardPercentage =
-      totalSales > 0 ? (stats.cashSales / totalSales) * 100 : 0;
+      totalAmount > 0 ? (stats.cashTotal / totalAmount) * 100 : 0;
     const qrPercentage =
-      totalSales > 0 ? (stats.qrSales / totalSales) * 100 : 0;
-
-    // Estimar totales por método basado en porcentajes
-    const estimatedCashTotal = stats.totalSalesAmount * (cashPercentage / 100);
-    const estimatedCardTotal = stats.totalSalesAmount * (cardPercentage / 100);
-    const estimatedQrTotal = stats.totalSalesAmount * (qrPercentage / 100);
+      totalAmount > 0 ? (stats.qrTotal / totalAmount) * 100 : 0;
 
     const methods: PaymentMethodData[] = [
       {
         method: "Efectivo",
         count: stats.cashSales,
-        total: estimatedCashTotal,
+        total: stats.cashTotal,
         percentage: cashPercentage,
         icon: Banknote,
         color: isDark ? "text-green-400" : "text-green-600",
         bgColor: isDark ? "bg-green-500/10" : "bg-green-50",
       },
       {
-        method: "Tarjeta",
-        count: stats.cashSales,
-        total: estimatedCardTotal,
-        percentage: cardPercentage,
-        icon: CreditCard,
-        color: isDark ? "text-blue-400" : "text-blue-600",
-        bgColor: isDark ? "bg-blue-500/10" : "bg-blue-50",
-      },
-      {
         method: "QR",
         count: stats.qrSales,
-        total: estimatedQrTotal,
+        total: stats.qrTotal,
         percentage: qrPercentage,
         icon: Smartphone,
         color: isDark ? "text-purple-400" : "text-purple-600",
@@ -205,12 +189,12 @@ export const PaymentMethodsSummary = memo(() => {
                       ? "bg-gradient-to-r from-green-500 to-green-400"
                       : "bg-gradient-to-r from-green-500 to-green-400"
                     : method.method === "Tarjeta"
-                    ? isDark
-                      ? "bg-gradient-to-r from-blue-500 to-blue-400"
-                      : "bg-gradient-to-r from-blue-500 to-blue-400"
-                    : isDark
-                    ? "bg-gradient-to-r from-purple-500 to-purple-400"
-                    : "bg-gradient-to-r from-purple-500 to-purple-400"
+                      ? isDark
+                        ? "bg-gradient-to-r from-blue-500 to-blue-400"
+                        : "bg-gradient-to-r from-blue-500 to-blue-400"
+                      : isDark
+                        ? "bg-gradient-to-r from-purple-500 to-purple-400"
+                        : "bg-gradient-to-r from-purple-500 to-purple-400"
                 }`}
                 style={{ width: `${method.percentage}%` }}
               />

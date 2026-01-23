@@ -4,6 +4,7 @@ import { useCallback, useState, useMemo } from "react";
 import { useShallow } from "zustand/shallow";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useSaleStore } from "../store/sale.store";
+import { useAuthStore } from "@/auth/store/auth.store";
 // * Components
 import {
   FormCreateSaleModal,
@@ -46,6 +47,9 @@ export const SalesPage = () => {
   const [searchFilters, setSearchFilters] =
     useState<SearchSalesSchema>(searchDefaultValues);
 
+  // * Auth - Usuario autenticado
+  const user = useAuthStore(useShallow((state) => state.user));
+
   // * Zustand
   const isCreateSaleModalOpen = useSaleStore(
     useShallow((state) => state.isCreateSaleModalOpen),
@@ -71,6 +75,11 @@ export const SalesPage = () => {
       limit,
     };
 
+    // Si el usuario es Vendedor, filtrar solo por sus propias ventas
+    if (user?.role === "Vendedor" && user?.id) {
+      params.userId = user.id;
+    }
+
     if (searchFilters.search) {
       params.search = searchFilters.search;
     }
@@ -91,6 +100,8 @@ export const SalesPage = () => {
     dateParams,
     page,
     limit,
+    user?.role,
+    user?.id,
   ]);
 
   // * Hook para obtener ventas con paginación
@@ -118,6 +129,8 @@ export const SalesPage = () => {
       // Si hay fechas definidas en dateParams, usarlas
       startDate: dateParams.startDate,
       endDate: dateParams.endDate,
+      // Si el usuario es Vendedor, filtrar solo sus estadísticas
+      userId: user?.role === "Vendedor" ? user?.id : undefined,
     },
   );
 

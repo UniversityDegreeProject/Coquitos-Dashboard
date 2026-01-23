@@ -167,3 +167,30 @@ export interface GetCashRegisterSummaryParams {
   endDate: string; // YYYY-MM-DD
 }
 
+// Reporte de Vendedores
+export interface SellerReportItem {
+  userId: string;
+  sellerName: string;
+  username: string;
+  totalOrders: number;
+  totalSales: number;
+  cashTotal: number;
+  qrTotal: number;
+  percentage: number;
+}
+
+export interface SellersReport {
+  startDate: string;
+  endDate: string;
+  sellers: SellerReportItem[];
+}
+
+export interface SellersReportResponse {
+  report: SellersReport;
+}
+
+export interface GetSellersReportParams {
+  startDate: string; // YYYY-MM-DD
+  endDate: string; // YYYY-MM-DD
+  limit?: number; // Default: 10
+}

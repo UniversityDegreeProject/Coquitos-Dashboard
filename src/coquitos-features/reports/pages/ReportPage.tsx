@@ -1,9 +1,12 @@
 import { useState, useMemo } from "react";
+import { useShallow } from "zustand/shallow";
 import { useTheme } from "@/shared/hooks/useTheme";
+import { useAuthStore } from "@/auth/store/auth.store";
 import {
   useGetSalesReport,
   useGetProductsReport,
   useGetCustomersReport,
+  useGetSellersReport,
 } from "../hooks";
 import {
   ReportFilters,
@@ -13,6 +16,7 @@ import {
   TopProductsList,
   TopCustomersList,
   ReportLoader,
+  SellerPerformanceList,
 } from "../components";
 
 /**
@@ -21,9 +25,15 @@ import {
  */
 export const ReportPage = () => {
   const { isDark } = useTheme();
-  const [dateRange, setDateRange] = useState<"today" | "week" | "month" | "custom">("today");
+  const [dateRange, setDateRange] = useState<
+    "today" | "week" | "month" | "custom"
+  >("today");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
+
+  // Obtener usuario autenticado para control de acceso
+  const user = useAuthStore(useShallow((state) => state.user));
+  const isAdmin = user?.role === "Administrador";
 
   // Función helper para formatear fecha local a YYYY-MM-DD sin problemas de zona horaria
   const formatLocalDate = (date: Date): string => {
@@ -78,26 +88,39 @@ export const ReportPage = () => {
     error: salesError,
   } = useGetSalesReport(
     dateParams || { startDate: "", endDate: "" },
-    !!dateParams
+    !!dateParams,
   );
 
-  const {
-    report: productsReport,
-    isLoading: isLoadingProducts,
-  } = useGetProductsReport(
-    dateParams ? { ...dateParams, limit: 10 } : { startDate: "", endDate: "", limit: 10 },
-    !!dateParams
-  );
+  const { report: productsReport, isLoading: isLoadingProducts } =
+    useGetProductsReport(
+      dateParams
+        ? { ...dateParams, limit: 10 }
+        : { startDate: "", endDate: "", limit: 10 },
+      !!dateParams,
+    );
 
-  const {
-    report: customersReport,
-    isLoading: isLoadingCustomers,
-  } = useGetCustomersReport(
-    dateParams ? { ...dateParams, limit: 10 } : { startDate: "", endDate: "", limit: 10 },
-    !!dateParams
-  );
+  const { report: customersReport, isLoading: isLoadingCustomers } =
+    useGetCustomersReport(
+      dateParams
+        ? { ...dateParams, limit: 10 }
+        : { startDate: "", endDate: "", limit: 10 },
+      !!dateParams,
+    );
 
-  const isLoading = isLoadingSales || isLoadingProducts || isLoadingCustomers;
+  // Hook para reporte de vendedores (solo si es admin)
+  const { report: sellersReport, isLoading: isLoadingSellers } =
+    useGetSellersReport(
+      dateParams
+        ? { ...dateParams, limit: 20 }
+        : { startDate: "", endDate: "", limit: 20 },
+      !!dateParams && isAdmin,
+    );
+
+  const isLoading =
+    isLoadingSales ||
+    isLoadingProducts ||
+    isLoadingCustomers ||
+    (isAdmin && isLoadingSellers);
 
   // Verificar si hay datos reales en el reporte
   const hasData = useMemo(() => {
@@ -119,7 +142,9 @@ export const ReportPage = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-800"}`}>
+        <h1
+          className={`text-3xl font-bold ${isDark ? "text-white" : "text-gray-800"}`}
+        >
           Reportes y Análisis
         </h1>
       </div>
@@ -148,7 +173,10 @@ export const ReportPage = () => {
           } border`}
         >
           <p className={isDark ? "text-red-400" : "text-red-600"}>
-            Error al cargar reportes: {salesError instanceof Error ? salesError.message : "Error desconocido"}
+            Error al cargar reportes:{" "}
+            {salesError instanceof Error
+              ? salesError.message
+              : "Error desconocido"}
           </p>
         </div>
       )}
@@ -164,6 +192,18 @@ export const ReportPage = () => {
             <SalesByHourChart report={salesReport} />
             <PaymentMethodsChart report={salesReport} />
           </div>
+
+          {/* Seller Performance - Solo para Administradores */}
+          {isAdmin &&
+            sellersReport &&
+            sellersReport.sellers.length > 0 &&
+            dateParams && (
+              <SellerPerformanceList
+                report={sellersReport}
+                startDate={dateParams.startDate}
+                endDate={dateParams.endDate}
+              />
+            )}
 
           {/* Products and Customers Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -181,7 +221,9 @@ export const ReportPage = () => {
       {!isLoading && (!salesReport || !hasData) && !salesError && (
         <div
           className={`p-8 rounded-lg text-center ${
-            isDark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"
+            isDark
+              ? "bg-slate-800 border-slate-700"
+              : "bg-white border-gray-200"
           } border`}
         >
           <p className={isDark ? "text-gray-400" : "text-gray-500"}>

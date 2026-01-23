@@ -3,4 +3,4 @@ export * from "./useGetSalesReport";
 export * from "./useGetProductsReport";
 export * from "./useGetCustomersReport";
 export * from "./useGetCashRegisterSummary";
-
+export * from "./useGetSellersReport";

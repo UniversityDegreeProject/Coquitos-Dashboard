@@ -5,4 +5,5 @@ export * from "./SalesByHourChart";
 export * from "./TopProductsList";
 export * from "./TopCustomersList";
 export * from "./ReportLoader";
-
+export * from "./SellerPerformanceList";
+export * from "./SellerSalesDetailModal";

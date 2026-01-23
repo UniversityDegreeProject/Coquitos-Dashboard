@@ -19,9 +19,14 @@ export interface SalesStatsData {
  */
 export const useSalesStats = (
   filters: Pick<SearchSalesParams, "paymentMethod" | "status">,
-  options?: { filterByToday?: boolean; startDate?: Date; endDate?: Date },
+  options?: {
+    filterByToday?: boolean;
+    startDate?: Date;
+    endDate?: Date;
+    userId?: string;
+  },
 ) => {
-  const { filterByToday = false, startDate, endDate } = options || {};
+  const { filterByToday = false, startDate, endDate, userId } = options || {};
 
   // Calcular fechas según los parámetros recibidos
   const dateRange = useMemo(() => {
@@ -53,6 +58,9 @@ export const useSalesStats = (
   // Query key estable
   const queryKey = useMemo(() => {
     const key: unknown[] = [...salesQueries.allSales, "stats", filters];
+    if (userId) {
+      key.push(`userId:${userId}`);
+    }
     if (dateRange) {
       key.push(
         `startDate:${dateRange.startDate.toISOString()}`,
@@ -62,7 +70,7 @@ export const useSalesStats = (
       key.push("all-dates");
     }
     return key;
-  }, [filters, dateRange]);
+  }, [filters, dateRange, userId]);
 
   const { data, isLoading, isError } = useQuery({
     queryKey,
@@ -72,6 +80,11 @@ export const useSalesStats = (
         page: 1,
         limit: 1000,
       };
+
+      // Filtrar por usuario si se proporciona
+      if (userId) {
+        params.userId = userId;
+      }
 
       if (dateRange) {
         params.startDate = dateRange.startDate;

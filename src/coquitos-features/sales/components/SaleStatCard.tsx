@@ -39,11 +39,26 @@ export const SaleStatCard = memo(
     };
     const valueSizeClass = `${valueSizeMap[valueSize]} font-bold ${defaultValueColor}`;
 
+    const getIconBgColor = (colorClass?: string) => {
+      if (!colorClass) return isDark ? "bg-[#F59E0B]/10" : "bg-[#275081]/10";
+      if (colorClass.includes("green"))
+        return "bg-green-100 dark:bg-green-900/30";
+      if (colorClass.includes("purple"))
+        return "bg-purple-100 dark:bg-purple-900/30";
+      if (colorClass.includes("blue")) return "bg-blue-100 dark:bg-blue-900/30";
+      if (colorClass.includes("red")) return "bg-red-100 dark:bg-red-900/30";
+      if (colorClass.includes("amber") || colorClass.includes("orange"))
+        return "bg-amber-100 dark:bg-amber-900/30";
+      return isDark ? "bg-[#F59E0B]/10" : "bg-[#275081]/10";
+    };
+
+    const iconBgClass = getIconBgColor(iconColor);
+
     return (
       <div
         className={`${
           isDark ? "bg-[#1E293B]" : "bg-white"
-        } rounded-xl p-4 shadow-lg border ${
+        } rounded-xl p-4 shadow-sm border ${
           isDark ? "border-[#334155]" : "border-gray-100"
         }`}
       >
@@ -58,11 +73,13 @@ export const SaleStatCard = memo(
             </p>
             <p className={valueSizeClass}>{value}</p>
           </div>
-          <Icon className={`w-8 h-8 ${defaultIconColor}`} />
+          <div className={`p-2.5 rounded-xl ${iconBgClass}`}>
+            <Icon className={`w-6 h-6 ${defaultIconColor}`} />
+          </div>
         </div>
       </div>
     );
-  }
+  },
 );
 
 SaleStatCard.displayName = "SaleStatCard";

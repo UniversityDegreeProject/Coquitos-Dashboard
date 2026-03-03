@@ -129,11 +129,11 @@ export const LoginPage = () => {
                 <div className="absolute inset-2 bg-gradient-to-r from-[#B0E0E6]/40 to-[#87CEEB]/30 rounded-full blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-300 animate-pulse-slow" style={{ animationDelay: '1s' }}></div>
                 
                 {/* Icono principal con efecto de brillo */}
-                <div className="relative bg-gradient-to-br from-[#4682B4] via-[#5F9EA0] to-[#87CEEB] p-2 rounded-2xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 flex items-center justify-center">
+                <div className="relative bg-gradient-to-br from-[#4682B4] via-[#5F9EA0] to-[#87CEEB] p-2 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105 flex items-center justify-center">
                   <img 
                     src="/imagen-corporativa.svg" 
                     alt="Embutidos Coquito" 
-                    className="w-16 h-16 drop-shadow-lg object-contain filter brightness-110 contrast-110"
+                    className="w-16 h-16 drop-shadow-sm object-contain filter brightness-110 contrast-110"
                   />
                 </div>
                 

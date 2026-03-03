@@ -13,7 +13,7 @@ export const ProductGridSkeleton = memo(() => {
       {[...Array(8)].map((_, index) => (
         <div
           key={index}
-          className={`animate-pulse rounded-xl shadow-lg ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}
+          className={`animate-pulse rounded-xl shadow-sm ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}
         >
           {/* Imagen */}
           <div className="h-48 bg-gray-300 dark:bg-gray-600 rounded-t-xl" />

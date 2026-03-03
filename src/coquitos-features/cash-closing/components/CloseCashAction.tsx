@@ -17,7 +17,7 @@ export const CloseCashAction = memo(() => {
   }, [openCloseCashModal]);
 
   return (
-    <div className={`${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-gray-100'} rounded-2xl p-6 shadow-xl border-2`}>
+    <div className={`${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-gray-100'} rounded-2xl p-6 shadow-md border`}>
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <div>
           <h3 className={`font-bold text-lg ${isDark ? 'text-white' : 'text-gray-900'}`}>
@@ -29,7 +29,7 @@ export const CloseCashAction = memo(() => {
         </div>
         <button
           onClick={handleCloseCash}
-          className={`flex items-center gap-3 px-6 py-3 bg-gradient-to-r ${isDark ? 'from-red-700 to-red-500' : 'from-red-600 to-red-500'} text-white rounded-xl hover:shadow-2xl hover:shadow-red-500/50 transition-all duration-200 font-bold shadow-lg`}
+          className={`flex items-center gap-3 px-6 py-3 bg-gradient-to-r ${isDark ? 'from-red-700 to-red-500' : 'from-red-600 to-red-500'} text-white rounded-xl hover:shadow-2xl hover:shadow-red-500/50 transition-all duration-200 font-bold shadow-sm`}
         >
           <Calculator className="w-5 h-5" />
           Realizar Cierre de Caja

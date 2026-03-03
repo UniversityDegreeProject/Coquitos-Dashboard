@@ -294,7 +294,7 @@ export const FormCreateSaleModal = () => {
       <div
         className={`${
           isDark ? "bg-[#0F172A]" : "bg-white"
-        } rounded-3xl w-full max-w-7xl h-[90vh] shadow-2xl border-2 ${
+        } rounded-3xl w-full max-w-7xl h-[90vh] shadow-2xl border ${
           isDark ? "border-[#1E3A8A]/30" : "border-[#275081]/20"
         } flex flex-col overflow-hidden`}
       >
@@ -379,8 +379,8 @@ export const FormCreateSaleModal = () => {
           <div
             className={`lg:col-span-1 flex flex-col ${
               isDark
-                ? "bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-2 border-[#334155]"
-                : "bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200"
+                ? "bg-gradient-to-br from-[#1E293B] to-[#0F172A] border border-[#334155]"
+                : "bg-gradient-to-br from-white to-gray-50 border border-gray-200"
             } rounded-2xl p-4 shadow-2xl`}
           >
             {/* Carrito con altura limitada */}

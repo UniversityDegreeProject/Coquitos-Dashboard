@@ -270,13 +270,13 @@ export const FormUpdateBatchStockModal = memo(
                         const val = e.target.value;
                         onChange(val === "" ? "" : val);
                       }}
-                      className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${
+                      className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
                         errors.stock
                           ? "border-red-300 focus:border-red-500 focus:ring-red-500/10"
                           : isDark
                           ? "border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/10 bg-[#0F172A] text-[#F8FAFC]"
                           : "border-gray-200 focus:border-[#275081] focus:ring-[#275081]/10 bg-white text-gray-800"
-                      } focus:ring-4 outline-none transition-all placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
+                      } focus:ring-2 ring-offset-1 outline-none transition-all placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
                       placeholder="Ej: 5"
                       min={0}
                       step={1}
@@ -340,11 +340,11 @@ export const FormUpdateBatchStockModal = memo(
                 isDark
                   ? "from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90"
                   : "from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90"
-              } text-white transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+              } text-white transition-all duration-200 shadow-md hover:shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {isPending ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin" />
                   Actualizando...
                 </>
               ) : (

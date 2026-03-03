@@ -121,7 +121,7 @@ export const SaleDetailPage = () => {
       <div
         className={`print-content ${
           isDark ? "bg-[#1E293B]" : "bg-white"
-        } rounded-xl shadow-lg border ${
+        } rounded-xl shadow-sm border ${
           isDark ? "border-[#334155]" : "border-gray-100"
         } overflow-hidden`}
       >
@@ -133,7 +133,7 @@ export const SaleDetailPage = () => {
             <div
               className={`w-24 h-24 sm:w-32 sm:h-32 rounded-full ${
                 isDark ? "bg-[#1E293B]" : "bg-white"
-              } p-2 shadow-xl`}
+              } p-2 shadow-md`}
             >
               <div
                 className={`w-full h-full rounded-full bg-gradient-to-br ${colors.gradient.accent} flex items-center justify-center`}
@@ -356,7 +356,7 @@ export const SaleDetailPage = () => {
       <div
         className={`${
           isDark ? "bg-[#1E293B]" : "bg-white"
-        } rounded-xl shadow-lg border ${
+        } rounded-xl shadow-sm border ${
           isDark ? "border-[#334155]" : "border-gray-100"
         } p-4 sm:p-6`}
       >
@@ -428,7 +428,7 @@ export const SaleDetailPage = () => {
       <div
         className={`print-content ${
           isDark ? "bg-[#1E293B]" : "bg-white"
-        } rounded-xl shadow-lg border ${
+        } rounded-xl shadow-sm border ${
           isDark ? "border-[#334155]" : "border-gray-100"
         } p-4 sm:p-6`}
       >
@@ -477,7 +477,7 @@ export const SaleDetailPage = () => {
           </div>
 
           <div
-            className={`flex justify-between items-center p-3 sm:p-4 rounded-lg border-2 ${
+            className={`flex justify-between items-center p-3 sm:p-4 rounded-lg border ${
               isDark
                 ? "bg-[#0F172A] border-[#F59E0B]"
                 : "bg-gray-50 border-[#275081]"

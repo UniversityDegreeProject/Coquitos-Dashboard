@@ -88,7 +88,7 @@ export const CheckoutForm = memo(
             isDark
               ? "bg-[#0F172A] border-[#334155]"
               : "bg-gray-50 border-gray-200"
-          } border-2 rounded-xl p-4`}
+          } border rounded-xl p-4`}
         >
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
@@ -188,11 +188,11 @@ export const CheckoutForm = memo(
                   type="text"
                   inputMode="decimal"
                   placeholder="0.00"
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${
+                  className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
                     isDark
                       ? "bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]"
                       : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]"
-                  } focus:ring-4 ${
+                  } focus:ring-2 ring-offset-1 ${
                     isDark
                       ? "focus:ring-[#F59E0B]/20"
                       : "focus:ring-[#275081]/20"
@@ -212,7 +212,7 @@ export const CheckoutForm = memo(
         {/* TODO: Comentar - descomentar esto para pagar por libelula */}
         {selectedPaymentMethod === "QR" && (
           <div
-            className={`p-4 rounded-xl border-2 mb-4 ${isDark ? "bg-[#0F172A] border-[#F59E0B]/30" : "bg-blue-50 border-[#275081]/20"}`}
+            className={`p-4 rounded-xl border mb-4 ${isDark ? "bg-[#0F172A] border-[#F59E0B]/30" : "bg-blue-50 border-[#275081]/20"}`}
           >
             {!qrUrl ? (
               <button
@@ -282,7 +282,7 @@ export const CheckoutForm = memo(
               : isDark
                 ? "bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B] hover:shadow-2xl hover:shadow-[#F59E0B]/50"
                 : "bg-gradient-to-r from-[#275081] via-blue-600 to-[#F9E44E] hover:shadow-2xl hover:shadow-[#275081]/50"
-          } text-white shadow-xl`}
+          } text-white shadow-md`}
         >
           {isPending ? (
             <>

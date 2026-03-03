@@ -33,7 +33,7 @@ export const LabelCheckbox = <T extends FieldValues>({
                 type="checkbox"
                 checked={!!value}
                 onChange={(e) => onChange(e.target.checked)}
-                className="w-5 h-5 rounded border-2 border-gray-300 text-[#275081] focus:ring-4 focus:ring-[#275081]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="w-5 h-5 rounded border border-gray-300 text-[#275081] focus:ring-2 ring-offset-1 focus:ring-[#275081]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 disabled={disabled}
                 aria-invalid={error ? 'true' : 'false'}
                 aria-describedby={error ? `${name}-error` : description ? `${name}-description` : undefined}

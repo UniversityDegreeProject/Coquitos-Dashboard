@@ -56,7 +56,7 @@ export const FormOpenCashModal = () => {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div
-        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-3xl w-full max-w-lg shadow-2xl border-2 ${isDark ? "border-[#1E3A8A]/30" : "border-[#275081]/20"}`}
+        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-3xl w-full max-w-lg shadow-2xl border ${isDark ? "border-[#1E3A8A]/30" : "border-[#275081]/20"}`}
       >
         {/* Header */}
         <div
@@ -65,7 +65,7 @@ export const FormOpenCashModal = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div
-                className={`p-3 rounded-2xl ${isDark ? "bg-emerald-500/20 border border-emerald-500/30" : "bg-emerald-100 border border-emerald-300"} shadow-lg`}
+                className={`p-3 rounded-2xl ${isDark ? "bg-emerald-500/20 border border-emerald-500/30" : "bg-emerald-100 border border-emerald-300"} shadow-sm`}
               >
                 <Unlock
                   className={`w-7 h-7 ${isDark ? "text-emerald-400" : "text-emerald-600"}`}
@@ -116,7 +116,7 @@ export const FormOpenCashModal = () => {
                     type="text"
                     inputMode="decimal"
                     placeholder="100.00"
-                    className={`w-full pl-12 pr-4 py-4 rounded-xl border-2 ${isDark ? "bg-[#0F172A] border-[#334155] text-white placeholder-gray-500 focus:border-emerald-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-emerald-500"} focus:ring-4 focus:ring-emerald-500/20 outline-none transition-all duration-200 text-lg font-semibold`}
+                    className={`w-full pl-12 pr-4 py-4 rounded-xl border ${isDark ? "bg-[#0F172A] border-[#334155] text-white placeholder-gray-500 focus:border-emerald-500" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-emerald-500"} focus:ring-2 ring-offset-1 focus:ring-emerald-500/20 outline-none transition-all duration-200 text-lg font-semibold`}
                   />
                 )}
               />
@@ -130,7 +130,7 @@ export const FormOpenCashModal = () => {
 
           {/* Info */}
           <div
-            className={`${isDark ? "bg-blue-500/10 border-blue-500/30" : "bg-blue-50 border-blue-200"} border-2 rounded-xl p-4`}
+            className={`${isDark ? "bg-blue-500/10 border-blue-500/30" : "bg-blue-50 border-blue-200"} border rounded-xl p-4`}
           >
             <p
               className={`text-sm ${isDark ? "text-blue-300" : "text-blue-700"}`}
@@ -146,7 +146,7 @@ export const FormOpenCashModal = () => {
             <button
               type="button"
               onClick={closeOpenCashModal}
-              className={`flex-1 px-4 py-3 border-2 ${isDark ? "border-[#334155] text-gray-300 hover:bg-[#334155]/50" : "border-gray-300 text-gray-700 hover:bg-gray-50"} rounded-xl transition-all duration-200 font-semibold`}
+              className={`flex-1 px-4 py-3 border ${isDark ? "border-[#334155] text-gray-300 hover:bg-[#334155]/50" : "border-gray-300 text-gray-700 hover:bg-gray-50"} rounded-xl transition-all duration-200 font-semibold`}
             >
               Cancelar
             </button>
@@ -159,7 +159,7 @@ export const FormOpenCashModal = () => {
                   : isDark
                     ? "bg-gradient-to-r from-emerald-600 to-green-500 hover:shadow-2xl hover:shadow-emerald-500/50"
                     : "bg-gradient-to-r from-emerald-500 to-green-600 hover:shadow-2xl hover:shadow-emerald-500/50"
-              } text-white shadow-xl`}
+              } text-white shadow-md`}
             >
               {isPending ? (
                 <>

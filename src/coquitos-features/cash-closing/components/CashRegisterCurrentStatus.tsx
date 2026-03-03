@@ -22,7 +22,7 @@ export const CashRegisterCurrentStatus = memo(({ cashRegister }: CashRegisterCur
   }
 
   return (
-    <div className={`${isDark ? 'bg-gradient-to-br from-emerald-900/20 via-[#1E293B] to-emerald-900/20 border-emerald-500/30' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50 border-emerald-200'} rounded-2xl p-6 shadow-xl border-2`}>
+    <div className={`${isDark ? 'bg-gradient-to-br from-emerald-900/20 via-[#1E293B] to-emerald-900/20 border-emerald-500/30' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-50 border-emerald-200'} rounded-2xl p-6 shadow-md border`}>
       {/* Header con status */}
       <div className="flex items-center justify-between mb-6">
         <h2 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>

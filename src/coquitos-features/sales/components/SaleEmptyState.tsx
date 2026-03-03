@@ -13,7 +13,7 @@ export const SaleEmptyState = memo(() => {
     <div
       className={`${
         isDark ? "bg-[#1E293B]" : "bg-white"
-      } rounded-xl shadow-lg border ${
+      } rounded-xl shadow-sm border ${
         isDark ? "border-[#334155]" : "border-gray-100"
       } p-12`}
     >

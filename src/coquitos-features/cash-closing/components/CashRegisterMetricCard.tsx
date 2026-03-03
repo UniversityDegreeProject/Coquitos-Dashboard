@@ -26,7 +26,7 @@ export const CashRegisterMetricCard = memo(({
   const { isDark } = useTheme();
 
   return (
-    <div className={`${isDark ? 'bg-[#0F172A] border-[#334155]' : 'bg-white border-gray-100'} rounded-xl p-4 border-2 shadow-lg hover:shadow-xl transition-shadow duration-200`}>
+    <div className={`${isDark ? 'bg-[#0F172A] border-[#334155]' : 'bg-white border-gray-100'} rounded-xl p-4 border shadow-sm hover:shadow-md transition-shadow duration-200`}>
       <div className="flex items-center gap-3">
         <div className={`p-3 rounded-xl ${iconBgColor}`}>
           <Icon className={`w-6 h-6 ${iconTextColor}`} />

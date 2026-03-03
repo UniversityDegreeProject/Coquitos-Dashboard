@@ -87,7 +87,7 @@ export const FormCloseCashModal = ({
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div
-        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border-2 ${isDark ? "border-red-500/30" : "border-red-200"}`}
+        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border ${isDark ? "border-red-500/30" : "border-red-200"}`}
       >
         {/* Header */}
         <div
@@ -96,7 +96,7 @@ export const FormCloseCashModal = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div
-                className={`p-3 rounded-2xl ${isDark ? "bg-red-500/20 border border-red-500/30" : "bg-red-100 border border-red-300"} shadow-lg`}
+                className={`p-3 rounded-2xl ${isDark ? "bg-red-500/20 border border-red-500/30" : "bg-red-100 border border-red-300"} shadow-sm`}
               >
                 <Lock
                   className={`w-7 h-7 ${isDark ? "text-red-400" : "text-red-600"}`}
@@ -127,7 +127,7 @@ export const FormCloseCashModal = ({
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
           {/* Info General */}
           <div
-            className={`${isDark ? "bg-[#0F172A] border-[#334155]" : "bg-gray-50 border-gray-200"} rounded-xl p-4 border-2`}
+            className={`${isDark ? "bg-[#0F172A] border-[#334155]" : "bg-gray-50 border-gray-200"} rounded-xl p-4 border`}
           >
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -254,7 +254,7 @@ export const FormCloseCashModal = ({
                     type="text"
                     inputMode="decimal"
                     placeholder="0.00"
-                    className={`w-full pl-12 pr-4 py-4 rounded-xl border-2 ${isDark ? "bg-[#0F172A] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]"} focus:ring-4 ${isDark ? "focus:ring-[#F59E0B]/20" : "focus:ring-[#275081]/20"} outline-none transition-all duration-200 text-lg font-semibold`}
+                    className={`w-full pl-12 pr-4 py-4 rounded-xl border ${isDark ? "bg-[#0F172A] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]"} focus:ring-2 ring-offset-1 ${isDark ? "focus:ring-[#F59E0B]/20" : "focus:ring-[#275081]/20"} outline-none transition-all duration-200 text-lg font-semibold`}
                   />
                 )}
               />
@@ -307,7 +307,7 @@ export const FormCloseCashModal = ({
 
           {/* Advertencia */}
           <div
-            className={`${isDark ? "bg-yellow-500/10 border-yellow-500/30" : "bg-yellow-50 border-yellow-200"} border-2 rounded-xl p-4`}
+            className={`${isDark ? "bg-yellow-500/10 border-yellow-500/30" : "bg-yellow-50 border-yellow-200"} border rounded-xl p-4`}
           >
             <div className="flex items-start gap-3">
               <AlertTriangle
@@ -335,14 +335,14 @@ export const FormCloseCashModal = ({
             <button
               type="button"
               onClick={closeCloseCashModal}
-              className={`flex-1 px-4 py-3 border-2 ${isDark ? "border-[#334155] text-gray-300 hover:bg-[#334155]/50" : "border-gray-300 text-gray-700 hover:bg-gray-50"} rounded-xl transition-all duration-200 font-semibold`}
+              className={`flex-1 px-4 py-3 border ${isDark ? "border-[#334155] text-gray-300 hover:bg-[#334155]/50" : "border-gray-300 text-gray-700 hover:bg-gray-50"} rounded-xl transition-all duration-200 font-semibold`}
             >
               Cancelar
             </button>
             <button
               type="button"
               onClick={() => window.print()}
-              className={`flex-1 px-4 py-3 border-2 ${isDark ? "border-blue-500 text-blue-400 hover:bg-blue-500/10" : "border-blue-500 text-blue-600 hover:bg-blue-50"} rounded-xl transition-all duration-200 font-semibold flex items-center justify-center gap-2`}
+              className={`flex-1 px-4 py-3 border ${isDark ? "border-blue-500 text-blue-400 hover:bg-blue-500/10" : "border-blue-500 text-blue-600 hover:bg-blue-50"} rounded-xl transition-all duration-200 font-semibold flex items-center justify-center gap-2`}
             >
               <Printer className="w-4 h-4" />
               Imprimir Reporte
@@ -356,7 +356,7 @@ export const FormCloseCashModal = ({
                   : isDark
                     ? "bg-gradient-to-r from-red-700 to-red-500 hover:shadow-2xl hover:shadow-red-500/50"
                     : "bg-gradient-to-r from-red-600 to-red-500 hover:shadow-2xl hover:shadow-red-500/50"
-              } text-white shadow-xl`}
+              } text-white shadow-md`}
             >
               {isPending ? (
                 <>

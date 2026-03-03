@@ -34,9 +34,9 @@ export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: Pr
     <div
       className={`${
         isDark ? 'bg-[#1E293B]' : 'bg-white'
-      } rounded-xl shadow-lg border ${
+      } rounded-xl shadow-sm border ${
         isDark ? 'border-[#334155]' : 'border-gray-100'
-      } p-4 hover:shadow-xl transition-all duration-200`}
+      } p-4 hover:shadow-md transition-all duration-200`}
     >
       <div className="flex items-center space-x-4">
         {/* Imagen */}

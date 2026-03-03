@@ -20,7 +20,7 @@ export const CartItem = memo(({ item, onRemove, onUpdateQuantity }: CartItemProp
 
   return (
     <div
-      className={`${isDark ? 'bg-[#0F172A] border-[#334155]' : 'bg-white border-gray-200'} border-2 rounded-xl p-3 transition-all duration-200 hover:shadow-lg`}
+      className={`${isDark ? 'bg-[#0F172A] border-[#334155]' : 'bg-white border-gray-200'} border rounded-xl p-3 transition-all duration-200 hover:shadow-sm`}
     >
       {/* Info del producto */}
       <div className="flex items-start gap-3 mb-2">

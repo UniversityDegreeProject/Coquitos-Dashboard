@@ -51,11 +51,11 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
         className="flex items-center space-x-1 sm:space-x-3 p-1 sm:p-2 rounded-lg hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 group"
       >
         <div className="relative">
-          <div className="flex h-8 w-8 sm:h-10 sm:w-10 lg:h-11 lg:w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#F9E44E] to-[#F5F7E7] font-bold text-[#275081] shadow-lg group-hover:shadow-xl text-xs sm:text-sm">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 lg:h-11 lg:w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#F9E44E] to-[#F5F7E7] font-bold text-[#275081] shadow-sm group-hover:shadow-md text-xs sm:text-sm">
             {user.firstName?.charAt(0)} {user.lastName?.charAt(0)}
           </div>
           {/* Indicador de estado online */}
-          <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 sm:h-3 sm:w-3 bg-[#F9E44E] border-2 border-[#275081] rounded-full animate-pulse"></div>
+          <div className="absolute -bottom-0.5 -right-0.5 h-2 w-2 sm:h-3 sm:w-3 bg-[#F9E44E] border border-[#275081] rounded-full animate-pulse"></div>
         </div>
         {/* Información del usuario - Oculta en pantallas muy pequeñas */}
         <div className="text-left hidden xs:block">
@@ -73,7 +73,7 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
 
       {/* Menú desplegable */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-gradient-to-br from-[#2d2d2d] to-[#1a1a1a] rounded-lg shadow-xl border border-gray-700 py-2 z-50">
+        <div className="absolute right-0 top-full mt-2 w-48 sm:w-56 bg-gradient-to-br from-[#2d2d2d] to-[#1a1a1a] rounded-lg shadow-md border border-gray-700 py-2 z-50">
           {/* Header del dropdown */}
           <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-700">
             <p className="text-xs sm:text-sm font-semibold text-white truncate">{user.firstName} {user.lastName}</p>

@@ -19,7 +19,7 @@ export const BatchListLocal = memo(({ batches, onDeleteBatch }: BatchListLocalPr
   // Estado vacío
   if (batches.length === 0) {
     return (
-      <div className={`text-center py-8 rounded-lg border-2 border-dashed ${isDark ? 'border-[#334155] bg-[#0F172A]/30' : 'border-gray-300 bg-gray-50'}`}>
+      <div className={`text-center py-8 rounded-lg border border-dashed ${isDark ? 'border-[#334155] bg-[#0F172A]/30' : 'border-gray-300 bg-gray-50'}`}>
         <p className={`text-sm ${isDark ? 'text-[#94A3B8]' : 'text-gray-600'}`}>
           Aún no hay batches agregados
         </p>

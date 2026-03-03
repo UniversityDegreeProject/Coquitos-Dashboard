@@ -77,7 +77,7 @@ export const ActivityLogCard = ({
     <div
       className={`${
         isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-200"
-      } rounded-xl p-5 border-2 hover:shadow-lg transition-all duration-200`}
+      } rounded-xl p-5 border hover:shadow-sm transition-all duration-200`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4 flex-1">
@@ -108,17 +108,17 @@ export const ActivityLogCard = ({
             {/* Entity and Action badges */}
             <div className="flex items-center gap-2 flex-wrap">
               <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-medium ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-medium border ${
                   isDark
-                    ? "bg-[#0F172A] text-blue-400"
-                    : "bg-blue-50 text-blue-700"
+                    ? "bg-blue-900/10 border-blue-500/20 text-blue-400"
+                    : "bg-blue-50 border-blue-200 text-blue-700"
                 }`}
               >
                 {getEntityIcon(log.entity)}
                 {log.entity}
               </span>
               <span
-                className={`px-3 py-1 rounded-lg text-sm font-medium ${actionBadgeClass}`}
+                className={`px-2.5 py-0.5 rounded-lg text-xs font-medium ${actionBadgeClass}`}
               >
                 {log.action}
               </span>

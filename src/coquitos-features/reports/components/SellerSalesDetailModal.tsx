@@ -103,7 +103,7 @@ export const SellerSalesDetailModal = memo(
             isDark
               ? "bg-[#1E293B] border-[#334155]"
               : "bg-white border-gray-200"
-          } rounded-2xl border-2 max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl`}
+          } rounded-2xl border max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl`}
         >
           {/* Header */}
           <div

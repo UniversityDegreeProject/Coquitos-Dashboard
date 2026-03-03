@@ -583,7 +583,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
                         {...field}
                         type="date"
                         min={new Date().toISOString().split('T')[0]}
-                        className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]'} focus:ring-4 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
+                        className={`w-full pl-12 pr-4 py-3 rounded-xl border ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]'} focus:ring-2 ring-offset-1 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
                       />
                     )}
                   />
@@ -619,7 +619,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
                   />
                   <label
                     htmlFor="image-upload"
-                    className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 ${
+                    className={`flex items-center gap-2 px-4 py-3 rounded-xl border ${
                       isDark 
                         ? 'border-[#334155] bg-[#1E293B] hover:bg-[#334155]/50 text-[#F8FAFC]' 
                         : 'border-gray-200 bg-white hover:bg-gray-50 text-gray-700'
@@ -633,7 +633,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
 
               {/* Preview de la imagen (grande) */}
               <div className="flex-1">
-                <div className={`relative w-full h-48 rounded-xl border-2 ${
+                <div className={`relative w-full h-48 rounded-xl border ${
                   isDark ? 'border-[#334155]' : 'border-gray-200'
                 } overflow-hidden flex items-center justify-center`}
                 style={{
@@ -647,7 +647,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
                       <img
                         src={imagePreview}
                         alt="Preview"
-                        className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
                       />
                     </div>
                   ) : (
@@ -722,7 +722,7 @@ export const FormProductModal = ({ currentParams, onNewPageCreated }: FormProduc
             <button 
               type="submit"
               disabled={isPending || !isValid}
-              className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
+              className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-sm font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
             >
               {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               {isPending 

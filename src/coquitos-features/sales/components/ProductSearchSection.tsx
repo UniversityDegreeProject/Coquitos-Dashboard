@@ -35,7 +35,7 @@ export const ProductSearchSection = memo(({
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Buscar productos..."
-          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-400 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:border-[#275081]'} focus:ring-4 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
+          className={`w-full pl-12 pr-4 py-3.5 rounded-xl border ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-400 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-500 focus:border-[#275081]'} focus:ring-2 ring-offset-1 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
         />
       </div>
 

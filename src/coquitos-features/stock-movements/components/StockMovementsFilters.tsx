@@ -22,7 +22,7 @@ export const StockMovementsFilters = ({
   const { colors, isDark } = useTheme();
 
   return (
-    <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-6 shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
+    <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl p-6 shadow-sm border ${isDark ? 'border-[#334155]' : 'border-gray-100'}`}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Búsqueda */}
         <div className="relative">

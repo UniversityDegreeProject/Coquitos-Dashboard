@@ -90,7 +90,7 @@ export const UnauthorizedUser = () => {
                 style={{ backgroundColor: "#99AEBF" }}
               ></div>
               <div
-                className="relative rounded-full p-6 shadow-lg"
+                className="relative rounded-full p-6 shadow-sm"
                 style={{
                   background:
                     "linear-gradient(135deg, #99AEBF 0%, #7A95AA 100%)",
@@ -102,7 +102,7 @@ export const UnauthorizedUser = () => {
                 />
               </div>
               <div
-                className="absolute bottom-0 right-0 rounded-full p-1.5 shadow-lg"
+                className="absolute bottom-0 right-0 rounded-full p-1.5 shadow-sm"
                 style={{ backgroundColor: "#D4A574" }}
               >
                 <Lock className="w-8 h-8 text-white" />
@@ -144,7 +144,7 @@ export const UnauthorizedUser = () => {
           <div className="space-y-3">
             <button
               onClick={() => window.history.back()}
-              className="w-full text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center justify-center gap-2 group"
+              className="w-full text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-md flex items-center justify-center gap-2 group"
               style={{
                 background: "linear-gradient(135deg, #99AEBF 0%, #7A95AA 100%)",
               }}
@@ -155,7 +155,7 @@ export const UnauthorizedUser = () => {
 
             <button
               onClick={() => (window.location.href = "/")}
-              className="w-full font-semibold py-4 px-6 rounded-xl transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2 group"
+              className="w-full font-semibold py-4 px-6 rounded-xl transition-all duration-300 hover:shadow-sm flex items-center justify-center gap-2 group"
               style={{
                 backgroundColor: "#F5F7E7",
                 color: "#4A5C6A",

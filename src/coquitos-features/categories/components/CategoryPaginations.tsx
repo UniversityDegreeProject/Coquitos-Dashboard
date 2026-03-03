@@ -114,7 +114,7 @@ export const CategoryPaginations = memo(({
     <div
       className={`${
         isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-[#E5E7EB]"
-      } rounded-xl p-6 shadow-lg border backdrop-blur-sm transition-all duration-300`}
+      } rounded-xl p-6 shadow-sm border backdrop-blur-sm transition-all duration-300`}
     >
       <div className="flex flex-col items-center gap-6">
         {/* Información y selector en la parte superior */}
@@ -143,11 +143,11 @@ export const CategoryPaginations = memo(({
               value={currentLimit}
               onChange={(e) => onLimitChange(Number(e.target.value))}
               disabled={isLoading}
-              className={`px-3 py-1.5 rounded-lg border-2 ${
+              className={`px-3 py-1.5 rounded-lg border ${
                 isDark
                   ? "bg-[#1E293B] border-[#334155] text-[#F8FAFC] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20"
                   : "bg-white border-[#E5E7EB] text-[#1F2937] focus:border-[#275081] focus:ring-[#275081]/20"
-              } focus:ring-4 outline-none transition-all duration-200 text-sm ${
+              } focus:ring-2 ring-offset-1 outline-none transition-all duration-200 text-sm ${
                 isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               }`}
             >
@@ -228,9 +228,9 @@ export const CategoryPaginations = memo(({
                       isActive
                         ? `${
                             isDark
-                              ? "bg-gradient-to-r from-[#1E3A8A]/30 to-[#F59E0B]/30 text-[#F59E0B] border-2 border-[#F59E0B]/50"
-                              : "bg-gradient-to-r from-[#275081]/20 to-[#F9E44E]/20 text-[#275081] border-2 border-[#275081]/50"
-                          } shadow-lg ${isLoading ? "opacity-75" : ""}`
+                              ? "bg-gradient-to-r from-[#1E3A8A]/30 to-[#F59E0B]/30 text-[#F59E0B] border border-[#F59E0B]/50"
+                              : "bg-gradient-to-r from-[#275081]/20 to-[#F9E44E]/20 text-[#275081] border border-[#275081]/50"
+                          } shadow-sm ${isLoading ? "opacity-75" : ""}`
                         : `${
                             isDark
                               ? "text-[#94A3B8] hover:bg-[#334155] hover:text-[#F8FAFC]"

@@ -46,7 +46,7 @@ export const ActivityLogFilters = ({
     <div
       className={`${
         isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100"
-      } rounded-xl p-6 shadow-lg border-2 mb-6`}
+      } rounded-xl p-6 shadow-sm border mb-6`}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {/* Search */}

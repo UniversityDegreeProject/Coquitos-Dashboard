@@ -188,7 +188,7 @@ export const ProductPage = () => {
           {/* Botón para ver historial de movimientos */}
           <button
             onClick={handleNavigateToStockMovements}
-            className={`flex items-center px-3 py-2 sm:px-3.5 sm:py-2 lg:px-4 lg:py-2.5 ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-200'} rounded-lg hover:shadow-lg transition-all duration-200 cursor-pointer`}
+            className={`flex items-center px-3 py-2 sm:px-3.5 sm:py-2 lg:px-4 lg:py-2.5 ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-200'} rounded-lg hover:shadow-sm transition-all duration-200 cursor-pointer`}
           >
             <ClipboardList className={`w-4 h-4 lg:w-5 lg:h-5 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
             <span className={`${colors.text.primary} font-medium text-xs lg:text-sm ml-1.5 lg:ml-2 hidden md:inline`}>Ver Movimientos</span>
@@ -197,7 +197,7 @@ export const ProductPage = () => {
           {/* Botón para agregar producto - más ancho */}
           <button
             onClick={handleOpenModal}
-            className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-2 lg:px-8 lg:py-2.5 xl:px-10 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-lg hover:shadow-xl transition-all duration-200 shadow-md cursor-pointer min-w-[120px] sm:min-w-[140px] lg:min-w-[160px]`}
+            className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-2 lg:px-8 lg:py-2.5 xl:px-10 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-lg hover:shadow-md transition-all duration-200 shadow-md cursor-pointer min-w-[120px] sm:min-w-[140px] lg:min-w-[160px]`}
           >
             <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-[#2309095c]" />
             <span className="text-[#08080865] font-semibold lg:font-bold text-sm lg:text-base ml-1.5 lg:ml-2">Agregar Producto</span>

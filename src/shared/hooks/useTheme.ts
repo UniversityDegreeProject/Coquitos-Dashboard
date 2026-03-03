@@ -58,7 +58,7 @@ export const useTheme = () => {
           muted: '#6B7280'       // Texto gris suave
         },
         border: '#E5E7EB',       // Bordes suaves
-        shadow: 'shadow-lg',     // Sombras más suaves
+        shadow: 'shadow-sm',     // Sombras más suaves
         gradient: {
           primary: 'from-[#F5F7E7] to-[#F9E44E]',
           surface: 'from-[#F5F7E7] to-[#FFFFFF]',
@@ -74,7 +74,7 @@ export const useTheme = () => {
     sidebar: {
       background: isDark ? 'bg-[#1E293B]' : 'bg-[#F5F7E7]',
       border: isDark ? 'border-[#334155]' : 'border-[#E5E7EB]',
-      shadow: isDark ? 'shadow-2xl' : 'shadow-lg'
+      shadow: isDark ? 'shadow-2xl' : 'shadow-sm'
     },
     
     // Clases para topbar
@@ -96,8 +96,8 @@ export const useTheme = () => {
         ? 'hover:bg-gradient-to-r hover:from-[#334155]/60 hover:to-[#475569]/40 hover:text-[#F8FAFC] transition-all duration-200' 
         : 'hover:bg-gradient-to-r hover:from-[#275081]/10 hover:to-[#F9E44E]/20 hover:text-[#275081] transition-all duration-200',
       active: isDark
-        ? 'bg-gradient-to-r from-[#1E3A8A] to-[#F59E0B] text-white shadow-lg'
-        : 'bg-gradient-to-r from-[#275081] to-[#F9E44E] text-white shadow-lg'
+        ? 'bg-gradient-to-r from-[#1E3A8A] to-[#F59E0B] text-white shadow-sm'
+        : 'bg-gradient-to-r from-[#275081] to-[#F9E44E] text-white shadow-sm'
     }
   }), [isDark]);
 

@@ -58,13 +58,13 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Disponible':
-        return 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/50';
+        return 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-sm shadow-emerald-500/50';
       case 'SinStock':
-        return 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/50';
+        return 'bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-sm shadow-red-500/50';
       case 'Descontinuado':
-        return 'bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-lg shadow-gray-500/50';
+        return 'bg-gradient-to-r from-gray-500 to-slate-500 text-white shadow-sm shadow-gray-500/50';
       default:
-        return 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-500/50';
+        return 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm shadow-blue-500/50';
     }
   };
 
@@ -113,7 +113,7 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
           
           {/* Badge de stock bajo - solo mostrar si stock > 0 y stock <= minStock */}
           {product.stock > 0 && product.stock <= product.minStock && effectiveStatus !== 'SinStock' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg shadow-yellow-500/50 animate-pulse">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-sm shadow-yellow-500/50 animate-pulse">
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
@@ -123,7 +123,7 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
           
           {/* Badge de próximo a vencer - mostrar si faltan 4, 3 o 2 días */}
           {isNearExpiration && product.stock > 0 && effectiveStatus !== 'SinStock' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-lg shadow-red-500/50 animate-pulse">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-sm shadow-red-500/50 animate-pulse">
               <Clock className="w-3 h-3" />
               Próximo a vencer
             </span>
@@ -131,7 +131,7 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
           
           {/* Badge de vence mañana - mostrar solo si falta 1 día */}
           {daysUntilExpiration === 1 && product.stock > 0 && effectiveStatus !== 'SinStock' && !isNearExpiration && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/50 animate-pulse">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-sm shadow-orange-500/50 animate-pulse">
               <Clock className="w-3 h-3" />
               Vence Mañana
             </span>
@@ -139,7 +139,7 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
           
           {/* Badge de vence hoy - mostrar solo si es el día exacto */}
           {daysUntilExpiration === 0 && product.stock > 0 && effectiveStatus !== 'SinStock' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg shadow-red-600/50 animate-pulse">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-red-600 to-red-800 text-white shadow-sm shadow-red-600/50 animate-pulse">
               <Clock className="w-3 h-3" />
               Vence Hoy
             </span>

@@ -48,13 +48,13 @@ export const LabelTextarea = <T extends FieldValues>({
             <textarea
               {...field}
               id={name}
-              className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3 rounded-xl border-2 ${
+              className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3 rounded-xl border ${
                 error
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
                   : isDark
                   ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/10 bg-[#0F172A] text-[#F8FAFC]'
                   : 'border-gray-200 focus:border-[#275081] focus:ring-[#275081]/10 bg-white text-gray-800'
-              } focus:ring-4 outline-none transition-all ${isDark ? 'placeholder:text-[#64748B]' : 'placeholder:text-gray-400'} disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'disabled:bg-[#1E293B]' : 'disabled:bg-gray-50'} resize-none`}
+              } focus:ring-2 ring-offset-1 outline-none transition-all ${isDark ? 'placeholder:text-[#64748B]' : 'placeholder:text-gray-400'} disabled:opacity-50 disabled:cursor-not-allowed ${isDark ? 'disabled:bg-[#1E293B]' : 'disabled:bg-gray-50'} resize-none`}
               placeholder={placeholder}
               disabled={disabled}
               rows={rows}

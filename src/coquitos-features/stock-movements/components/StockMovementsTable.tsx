@@ -24,17 +24,17 @@ export const StockMovementsTable = ({
   const getTypeColor = (type: StockMovementType): string => {
     const colors = {
       Reabastecimiento:
-        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50",
+        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-sm shadow-blue-500/50",
       Compra:
-        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50",
+        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-sm shadow-blue-500/50",
       Venta:
-        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50",
+        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-sm shadow-blue-500/50",
       Ajuste:
-        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50",
+        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-sm shadow-blue-500/50",
       Devolucion:
-        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50",
+        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-sm shadow-blue-500/50",
       Dañado:
-        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-lg shadow-blue-500/50",
+        "bg-gradient-to-r from-[#275081] to-[#F59E0B] text-white shadow-sm shadow-blue-500/50",
     };
     return colors[type];
   };
@@ -53,7 +53,7 @@ export const StockMovementsTable = ({
   if (isLoading) {
     return (
       <div
-        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-xl shadow-lg border ${isDark ? "border-[#334155]" : "border-gray-100"} overflow-hidden`}
+        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-xl shadow-sm border ${isDark ? "border-[#334155]" : "border-gray-100"} overflow-hidden`}
       >
         <div className="p-8 text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -66,7 +66,7 @@ export const StockMovementsTable = ({
   if (movements.length === 0) {
     return (
       <div
-        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-xl shadow-lg border ${isDark ? "border-[#334155]" : "border-gray-100"} overflow-hidden`}
+        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-xl shadow-sm border ${isDark ? "border-[#334155]" : "border-gray-100"} overflow-hidden`}
       >
         <div className="p-8 text-center">
           <ClipboardList
@@ -87,7 +87,7 @@ export const StockMovementsTable = ({
 
   return (
     <div
-      className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-xl shadow-lg border ${isDark ? "border-[#334155]" : "border-gray-100"} overflow-hidden`}
+      className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-xl shadow-sm border ${isDark ? "border-[#334155]" : "border-gray-100"} overflow-hidden`}
     >
       <div className="overflow-x-auto">
         <table className="w-full">

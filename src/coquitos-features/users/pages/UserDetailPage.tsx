@@ -73,11 +73,11 @@ export const UserDetailPage = () => {
       </div>
 
       {/* Card principal con información del usuario */}
-      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'} overflow-hidden`}>
+      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl shadow-sm border ${isDark ? 'border-[#334155]' : 'border-gray-100'} overflow-hidden`}>
         {/* Banner superior con gradiente */}
         <div className={`h-32 bg-gradient-to-r ${colors.gradient.accent} relative`}>
           <div className="absolute -bottom-16 left-8">
-            <div className={`w-32 h-32 rounded-full ${isDark ? 'bg-[#1E293B]' : 'bg-white'} p-2 shadow-xl`}>
+            <div className={`w-32 h-32 rounded-full ${isDark ? 'bg-[#1E293B]' : 'bg-white'} p-2 shadow-md`}>
               <div className={`w-full h-full rounded-full bg-gradient-to-br ${colors.gradient.accent} flex items-center justify-center`}>
                 <User className="w-16 h-16 text-white" />
               </div>
@@ -188,7 +188,7 @@ export const UserDetailPage = () => {
       </div>
 
       {/* Card de actividad reciente (puedes expandir esto más adelante) */}
-      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl shadow-lg border ${isDark ? 'border-[#334155]' : 'border-gray-100'} p-6`}>
+      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-xl shadow-sm border ${isDark ? 'border-[#334155]' : 'border-gray-100'} p-6`}>
         <h2 className={`text-xl font-bold mb-4 ${colors.text.primary}`}>
           Actividad Reciente
         </h2>

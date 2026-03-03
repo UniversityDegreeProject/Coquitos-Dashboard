@@ -44,7 +44,7 @@ export const SidebarHeader = memo(
             <div
               className={`${
                 isCollapsed ? "w-10 h-10" : "w-14 h-14"
-              } bg-gradient-to-br from-[#F59E0B] to-[#FEF3C7] rounded-2xl flex items-center justify-center shadow-lg ring-4 ring-[#F59E0B]/20 overflow-hidden`}
+              } bg-gradient-to-br from-[#F59E0B] to-[#FEF3C7] rounded-2xl flex items-center justify-center shadow-sm ring-2 ring-offset-1 ring-[#F59E0B]/20 overflow-hidden`}
             >
               <img
                 src={restaurantLogo}
@@ -60,9 +60,9 @@ export const SidebarHeader = memo(
             ></div>
             {/* Punto de estado */}
             <div
-              className={`absolute -top-1 -right-1 w-4 h-4 bg-[#F59E0B] rounded-full border-2 ${
+              className={`absolute -top-1 -right-1 w-4 h-4 bg-[#F59E0B] rounded-full border ${
                 isDark ? "border-[#1E293B]" : "border-white"
-              } shadow-lg`}
+              } shadow-sm`}
             ></div>
           </div>
 

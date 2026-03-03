@@ -55,11 +55,11 @@ export const LabelInputNumber = <T extends FieldValues>({
                 const val = e.target.value;
                 onChange(val === '' ? undefined : parseFloat(val));
               }}
-              className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3 rounded-xl border-2 ${
+              className={`w-full ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3 rounded-xl border ${
                 error
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
                   : 'border-gray-200 focus:border-[#275081] focus:ring-[#275081]/10'
-              } focus:ring-4 outline-none transition-all text-gray-800 placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
+              } focus:ring-2 ring-offset-1 outline-none transition-all text-gray-800 placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
               placeholder={placeholder}
               disabled={disabled}
               min={min}

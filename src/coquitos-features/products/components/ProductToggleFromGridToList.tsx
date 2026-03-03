@@ -22,14 +22,14 @@ export const ProductToggleFromGridToList = ({ products, total, }: ProductToggleF
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewMode("grid")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 ${
               viewMode === "grid"
                 ? isDark
                   ? "bg-[#F59E0B]/20 border-[#F59E0B] text-[#F59E0B]"
                   : "bg-[#275081]/10 border-[#275081] text-[#275081]"
                 : isDark
-                ? "bg-[#1E293B] border-[#334155] text-[#94A3B8] hover:border-[#475569]"
-                : "bg-white border-[#E5E7EB] text-[#6B7280] hover:border-[#D1D5DB]"
+                ? "bg-[#1E293B] border-[#334155] text-[#94A3B8] hover:border-[#64748B]"
+                : "bg-white border-[#E5E7EB] text-[#6B7280] hover:border-[#E5E7EB]"
             }`}
             title="Vista en cuadrícula"
           >
@@ -38,14 +38,14 @@ export const ProductToggleFromGridToList = ({ products, total, }: ProductToggleF
           </button>
           <button
             onClick={() => setViewMode("list")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 transition-all duration-200 ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all duration-200 ${
               viewMode === "list"
                 ? isDark
                   ? "bg-[#F59E0B]/20 border-[#F59E0B] text-[#F59E0B]"
                   : "bg-[#275081]/10 border-[#275081] text-[#275081]"
                 : isDark
-                ? "bg-[#1E293B] border-[#334155] text-[#94A3B8] hover:border-[#475569]"
-                : "bg-white border-[#E5E7EB] text-[#6B7280] hover:border-[#D1D5DB]"
+                ? "bg-[#1E293B] border-[#334155] text-[#94A3B8] hover:border-[#64748B]"
+                : "bg-white border-[#E5E7EB] text-[#6B7280] hover:border-[#E5E7EB]"
             }`}
             title="Vista en lista"
           >

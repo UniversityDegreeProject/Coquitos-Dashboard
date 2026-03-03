@@ -209,7 +209,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product, mode = 'edit', o
                     {...field}
                     type="date"
                     min={new Date().toISOString().split('T')[0]}
-                    className={`w-full pl-12 pr-4 py-3 rounded-xl border-2 ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]'} focus:ring-4 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border ${isDark ? 'bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]' : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]'} focus:ring-2 ring-offset-1 ${isDark ? 'focus:ring-[#F59E0B]/20' : 'focus:ring-[#275081]/20'} outline-none transition-all duration-200`}
                   />
                 )}
               />
@@ -250,12 +250,12 @@ export const FormBatchModal = memo(({ isOpen, onClose, product, mode = 'edit', o
             </button>
             <button
               type="submit"
-              className={`flex-1 px-4 py-2.5 rounded-lg font-medium bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+              className={`flex-1 px-4 py-2.5 rounded-lg font-medium bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white transition-all duration-200 shadow-md hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
               disabled={!isCreateMode && useCreateBatchMutation.isPending}
             >
               {!isCreateMode && useCreateBatchMutation.isPending ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin" />
                   Creando...
                 </>
               ) : (

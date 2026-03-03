@@ -29,7 +29,7 @@ export const BatchSelectionModal = memo(({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-2xl w-full max-w-2xl shadow-2xl border-2 ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
+      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-2xl w-full max-w-2xl shadow-2xl border ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
         {/* Header */}
         <div className={`p-6 border-b ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
           <div className="flex items-center justify-between">
@@ -70,7 +70,7 @@ export const BatchSelectionModal = memo(({
                     key={batch.id}
                     onClick={() => onSelectBatch(batch)}
                     type="button"
-                    className={`${isDark ? 'bg-[#0F172A] border-[#334155] hover:border-[#F59E0B]' : 'bg-gray-50 border-gray-200 hover:border-[#275081]'} border-2 rounded-xl p-4 transition-all duration-200 hover:shadow-lg cursor-pointer`}
+                    className={`${isDark ? 'bg-[#0F172A] border-[#334155] hover:border-[#F59E0B]' : 'bg-gray-50 border-gray-200 hover:border-[#275081]'} border rounded-xl p-4 transition-all duration-200 hover:shadow-sm cursor-pointer`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="text-left flex-1">

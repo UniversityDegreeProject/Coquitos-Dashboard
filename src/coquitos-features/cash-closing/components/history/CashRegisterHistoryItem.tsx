@@ -63,7 +63,7 @@ export const CashRegisterHistoryItem = memo(
     return (
       <div
         className={cn(
-          "rounded-xl shadow-lg border p-4 sm:p-6 hover:shadow-xl transition-all duration-200",
+          "rounded-xl shadow-sm border p-4 sm:p-6 hover:shadow-md transition-all duration-200",
           isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100",
         )}
       >

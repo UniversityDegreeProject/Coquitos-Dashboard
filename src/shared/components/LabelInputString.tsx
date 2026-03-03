@@ -77,15 +77,15 @@ export const LabelInputString = <T extends FieldValues>({
               inputMode={inputMode}
               className={`w-full ${
                 Icon ? "pl-12" : "pl-4"
-              } pr-4 py-3.5 rounded-xl border-2 ${
+              } pr-4 py-3.5 rounded-xl border ${
                 isDark ? "bg-[#1E293B]" : "bg-white"
               } backdrop-blur-sm shadow-sm ${
                 error
                   ? "border-red-300 focus:border-red-500 focus:ring-red-500/20 focus:shadow-red-100"
                   : isDark
-                  ? "border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20 hover:border-[#475569]"
-                  : "border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20 hover:border-[#D1D5DB]"
-              } focus:ring-4 outline-none transition-all duration-200 ${
+                  ? "border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20 hover:border-[#64748B]"
+                  : "border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20 hover:border-[#E5E7EB]"
+              } focus:ring-2 ring-offset-1 outline-none transition-all duration-200 ${
                 isDark
                   ? "text-[#F8FAFC] placeholder:text-[#94A3B8]"
                   : "text-[#1F2937] placeholder:text-[#6B7280]"

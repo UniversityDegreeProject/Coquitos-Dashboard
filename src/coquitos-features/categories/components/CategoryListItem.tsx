@@ -28,7 +28,7 @@ export const CategoryListItem = memo(({ category, currentParams, onPageEmpty }: 
   return (
     <div
       className={cn(
-        'rounded-xl shadow-lg border p-4 hover:shadow-xl transition-all duration-200',
+        'rounded-xl shadow-sm border p-4 hover:shadow-md transition-all duration-200',
         isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-gray-100'
       )}
     >

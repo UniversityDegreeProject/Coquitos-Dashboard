@@ -9,7 +9,7 @@ export const CashRegisterEmptyState = memo(() => {
   const { isDark } = useTheme();
 
   return (
-    <div className={`${isDark ? 'bg-gradient-to-br from-red-900/20 via-[#1E293B] to-red-900/20 border-red-500/30' : 'bg-gradient-to-br from-red-50 via-white to-red-50 border-red-200'} rounded-2xl p-6 shadow-xl border-2`}>
+    <div className={`${isDark ? 'bg-gradient-to-br from-red-900/20 via-[#1E293B] to-red-900/20 border-red-500/30' : 'bg-gradient-to-br from-red-50 via-white to-red-50 border-red-200'} rounded-2xl p-6 shadow-md border`}>
       <div className="text-center py-6">
         <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl ${isDark ? 'bg-red-500/20 text-red-400' : 'bg-red-100 text-red-700'}`}>
           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />

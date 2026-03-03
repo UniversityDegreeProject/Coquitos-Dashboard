@@ -26,7 +26,7 @@ export const ProductCard = memo(({ product, onAddToCart }: ProductCardProps) => 
     <button
       onClick={() => onAddToCart(product)}
       type="button"
-      className={`group relative overflow-hidden rounded-xl border-2 ${isDark ? 'bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-[#334155] hover:border-[#F59E0B]' : 'bg-gradient-to-br from-white to-gray-50 border-gray-200 hover:border-[#275081]'} p-4 transition-all duration-300 hover:shadow-2xl hover:scale-105 cursor-pointer`}
+      className={`group relative overflow-hidden rounded-xl border ${isDark ? 'bg-gradient-to-br from-[#1E293B] to-[#0F172A] border-[#334155] hover:border-[#F59E0B]' : 'bg-gradient-to-br from-white to-gray-50 border-gray-200 hover:border-[#275081]'} p-4 transition-all duration-300 hover:shadow-2xl hover:scale-105 cursor-pointer`}
     >
       {/* Imagen */}
       <div className="relative h-32 mb-3 rounded-lg overflow-hidden">

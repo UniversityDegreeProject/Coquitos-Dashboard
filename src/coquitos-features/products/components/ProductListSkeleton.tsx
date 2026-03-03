@@ -13,7 +13,7 @@ export const ProductListSkeleton = memo(() => {
       {[...Array(6)].map((_, index) => (
         <div
           key={index}
-          className={`animate-pulse rounded-xl shadow-lg ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'} p-4`}
+          className={`animate-pulse rounded-xl shadow-sm ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-100'} p-4`}
         >
           <div className="flex items-center space-x-4">
             {/* Imagen */}

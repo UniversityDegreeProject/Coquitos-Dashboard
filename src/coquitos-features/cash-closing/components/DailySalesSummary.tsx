@@ -24,7 +24,7 @@ export const DailySalesSummary = memo(({ cashRegister }: DailySalesSummaryProps)
   const expectedTotal = cashRegister.openingAmount + cashRegister.totalSales;
 
   return (
-    <div className={`${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-gray-100'} rounded-2xl p-6 shadow-xl border-2`}>
+    <div className={`${isDark ? 'bg-[#1E293B] border-[#334155]' : 'bg-white border-gray-100'} rounded-2xl p-6 shadow-md border`}>
       <h2 className={`text-xl font-bold mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
         Resumen de Ventas del Día
       </h2>

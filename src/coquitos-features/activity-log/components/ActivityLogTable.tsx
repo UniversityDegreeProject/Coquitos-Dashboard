@@ -57,7 +57,7 @@ export const ActivityLogTable = ({
       <div
         className={`${
           isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-200"
-        } rounded-xl p-12 text-center border-2`}
+        } rounded-xl p-12 text-center border`}
       >
         <p className={`text-xl ${colors.text.muted}`}>
           No se encontraron actividades con los filtros seleccionados
@@ -85,7 +85,7 @@ export const ActivityLogTable = ({
             isDark
               ? "bg-[#1E293B] border-[#334155]"
               : "bg-white border-gray-200"
-          } rounded-xl border-2`}
+          } rounded-xl border`}
         >
           <button
             onClick={() => onPageChange(pagination.page - 1)}

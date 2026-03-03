@@ -140,7 +140,7 @@ export const FormSystemConfig = () => {
       <div
         className={`${
           isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100"
-        } rounded-2xl p-8 shadow-xl border-2 transition-all`}
+        } rounded-2xl p-8 shadow-md border transition-all`}
       >
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           {/* Logo Upload Section */}
@@ -150,7 +150,7 @@ export const FormSystemConfig = () => {
             </h3>
             <div className="relative">
               <div
-                className={`w-full aspect-square rounded-xl border-2 border-dashed ${
+                className={`w-full aspect-square rounded-xl border border-dashed ${
                   isDark ? "border-[#334155]" : "border-gray-300"
                 } flex items-center justify-center overflow-hidden ${
                   imagePreview ? "p-0" : "p-6"
@@ -259,7 +259,7 @@ export const FormSystemConfig = () => {
       <div
         className={`${
           isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100"
-        } rounded-2xl p-8 shadow-xl border-2`}
+        } rounded-2xl p-8 shadow-md border`}
       >
         <div className="flex items-center mb-6">
           <div
@@ -324,12 +324,12 @@ export const FormSystemConfig = () => {
             transition-all duration-300 
             flex items-center gap-3 
             disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
-            shadow-lg shadow-blue-500/30
+            shadow-sm shadow-blue-500/30
           `}
         >
           {isUpdating ? (
             <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border border-white border-t-transparent rounded-full animate-spin" />
               Guardando...
             </>
           ) : (

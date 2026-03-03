@@ -206,7 +206,7 @@ export const FormSystemConfig = () => {
                 />
               </div>
               <h2 className={`text-2xl font-bold ${colors.text.primary}`}>
-                Información del Restaurante
+                Información de la empresa
               </h2>
             </div>
 

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { reportsQueries } from "../const/reports-queries";
 import { getSellersReport } from "../services/report.service";
 import type { GetSellersReportParams } from "@/shared/reports";
+import { useSocketEvent } from "@/lib/socket";
 
 /**
  * Hook para obtener el reporte de vendedores
@@ -18,6 +19,9 @@ export const useGetSellersReport = (
     staleTime: 1000 * 60 * 5, // 5 minutos
     refetchOnWindowFocus: false,
   });
+
+  // Socket real-time
+  useSocketEvent("sale:created", reportsQueries.allReports);
 
   return {
     report: data?.report,

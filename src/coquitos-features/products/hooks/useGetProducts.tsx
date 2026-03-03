@@ -25,6 +25,9 @@ export const useGetProducts = (params: SearchProductsParams) => {
     queryFn: () => getProducts(params),
     placeholderData: keepPreviousData,
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    staleTime: 0,
   });
 
   // Socket real-time invalidación de productos y sus lotes correspondientes

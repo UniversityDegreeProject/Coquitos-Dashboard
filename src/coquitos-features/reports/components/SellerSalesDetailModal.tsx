@@ -148,7 +148,7 @@ export const SellerSalesDetailModal = memo(
                 : "border-gray-200 bg-gray-50"
             }`}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
                   <Calendar className={`w-4 h-4 ${colors.text.muted}`} />
@@ -158,7 +158,7 @@ export const SellerSalesDetailModal = memo(
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-6">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-2 sm:mt-0">
                 <div className="flex items-center gap-2">
                   <Banknote
                     className={`w-4 h-4 ${isDark ? "text-green-400" : "text-green-600"}`}
@@ -221,11 +221,11 @@ export const SellerSalesDetailModal = memo(
                       {/* Sale Header (clickable) */}
                       <button
                         onClick={() => toggleExpand(sale.id || "")}
-                        className={`w-full p-4 flex items-center justify-between text-left transition-colors ${
+                        className={`w-full p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between text-left transition-colors gap-4 ${
                           isDark ? "hover:bg-slate-700" : "hover:bg-gray-50"
                         }`}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 w-full sm:w-auto">
                           <div
                             className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                               isDark ? "bg-blue-900/30" : "bg-blue-100"
@@ -252,9 +252,9 @@ export const SellerSalesDetailModal = memo(
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-6">
+                        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-4 sm:gap-6 w-full sm:w-auto">
                           {/* Cliente */}
-                          <div className="text-right">
+                          <div className="text-left sm:text-right">
                             <p className={`text-sm ${colors.text.muted}`}>
                               Cliente
                             </p>

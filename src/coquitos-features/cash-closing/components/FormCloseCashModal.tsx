@@ -331,7 +331,7 @@ export const FormCloseCashModal = ({
           </div>
 
           {/* Botones */}
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               type="button"
               onClick={closeCloseCashModal}

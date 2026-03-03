@@ -2,10 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { productBatchesQueries } from "../const";
 import { getBatchesByProduct } from "../services/product-batch.service";
 import type { ProductBatch } from "../interfaces";
+import { useSocketEvent } from "@/lib/socket";
 
 /**
  * Hook para obtener todos los batches de un producto específico
- * 
+ *
  * Solo para productos con isVariableWeight = true
  */
 export const useGetBatches = (productId: string, enabled: boolean = true) => {
@@ -21,6 +22,11 @@ export const useGetBatches = (productId: string, enabled: boolean = true) => {
     enabled: enabled && !!productId, // Solo ejecuta si hay productId y está habilitado
   });
 
+  useSocketEvent("sale:created", productBatchesQueries.allBatches);
+  useSocketEvent("product-batch:updated", productBatchesQueries.allBatches);
+  useSocketEvent("product-batch:created", productBatchesQueries.allBatches);
+  useSocketEvent("product-batch:deleted", productBatchesQueries.allBatches);
+
   const batches: ProductBatch[] = useQueryBatches.data || [];
 
   return {
@@ -28,4 +34,3 @@ export const useGetBatches = (productId: string, enabled: boolean = true) => {
     batches,
   };
 };
-

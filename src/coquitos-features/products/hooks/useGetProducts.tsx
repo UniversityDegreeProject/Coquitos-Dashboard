@@ -34,6 +34,7 @@ export const useGetProducts = (params: SearchProductsParams) => {
   useSocketEvent("product-batch:created", productsQueries.allProducts);
   useSocketEvent("product-batch:updated", productsQueries.allProducts);
   useSocketEvent("product-batch:deleted", productsQueries.allProducts);
+  useSocketEvent("sale:created", productsQueries.allProducts);
 
   const responseData = useQueryProducts.data || defaultResponse;
 

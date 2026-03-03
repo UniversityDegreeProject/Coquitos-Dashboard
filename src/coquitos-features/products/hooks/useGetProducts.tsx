@@ -3,6 +3,7 @@ import { productsQueries } from "../const";
 import { isProductExpiringSoon } from "../helpers";
 import type { GetProductsResponse, SearchProductsParams } from "../interfaces";
 import { getProducts } from "../services/product.service";
+import { useSocketEvent } from "@/lib/socket";
 
 const defaultResponse: GetProductsResponse = {
   data: [],
@@ -25,6 +26,14 @@ export const useGetProducts = (params: SearchProductsParams) => {
     placeholderData: keepPreviousData,
     refetchOnMount: true,
   });
+
+  // Socket real-time invalidación de productos y sus lotes correspondientes
+  useSocketEvent("product:created", productsQueries.allProducts);
+  useSocketEvent("product:updated", productsQueries.allProducts);
+  useSocketEvent("product:deleted", productsQueries.allProducts);
+  useSocketEvent("product-batch:created", productsQueries.allProducts);
+  useSocketEvent("product-batch:updated", productsQueries.allProducts);
+  useSocketEvent("product-batch:deleted", productsQueries.allProducts);
 
   const responseData = useQueryProducts.data || defaultResponse;
 

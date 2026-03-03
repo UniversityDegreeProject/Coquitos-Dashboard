@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { SearchSalesParams } from "../interfaces";
 import { salesQueries } from "../const/sales-queries";
 import { getSales } from "../services/sale.service";
+import { useSocketEvent } from "@/lib/socket";
 
 export interface SalesStatsData {
   totalSalesCount: number;
@@ -97,6 +98,9 @@ export const useSalesStats = (
     staleTime: 30000,
     refetchOnWindowFocus: false,
   });
+
+  // Socket real-time invalidación de estadísticas
+  useSocketEvent("sale:created", salesQueries.allSales);
 
   // Calcular estadísticas
   const stats: SalesStatsData = useMemo(() => {

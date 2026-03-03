@@ -1,6 +1,7 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { categoriesQueries } from "../const";
 import { getCategories } from "../services/category.service";
+import { useSocketEvent } from "@/lib/socket";
 import type {
   SearchCategoriesParams,
   GetCategoriesResponse,
@@ -23,6 +24,11 @@ export const useGetCategories = (params: SearchCategoriesParams) => {
     placeholderData: keepPreviousData,
     refetchOnMount: true,
   });
+
+  // Socket real-time invalidación
+  useSocketEvent("category:created", categoriesQueries.allCategories);
+  useSocketEvent("category:updated", categoriesQueries.allCategories);
+  useSocketEvent("category:deleted", categoriesQueries.allCategories);
 
   const {
     data: categories,

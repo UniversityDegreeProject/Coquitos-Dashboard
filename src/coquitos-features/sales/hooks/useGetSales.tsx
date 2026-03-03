@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { salesQueries } from "../const/sales-queries";
 import { getSales } from "../services/sale.service";
 import type { SearchSalesParams } from "../interfaces";
+import { useSocketEvent } from "@/lib/socket";
 
 /**
  * Hook para obtener ventas con paginación y filtros
@@ -20,7 +21,7 @@ export const useGetSales = (searchParams: SearchSalesParams) => {
       const year = searchParams.startDate.getFullYear();
       const month = String(searchParams.startDate.getMonth() + 1).padStart(
         2,
-        "0"
+        "0",
       );
       const day = String(searchParams.startDate.getDate()).padStart(2, "0");
       serialized.startDate = `${year}-${month}-${day}`;
@@ -29,7 +30,7 @@ export const useGetSales = (searchParams: SearchSalesParams) => {
       const year = searchParams.endDate.getFullYear();
       const month = String(searchParams.endDate.getMonth() + 1).padStart(
         2,
-        "0"
+        "0",
       );
       const day = String(searchParams.endDate.getDate()).padStart(2, "0");
       serialized.endDate = `${year}-${month}-${day}`;
@@ -44,6 +45,9 @@ export const useGetSales = (searchParams: SearchSalesParams) => {
     staleTime: 0, // Refrescar inmediatamente
     refetchOnWindowFocus: false,
   });
+
+  // Socket real-time invalidación de ventas
+  useSocketEvent("sale:created", salesQueries.allSales);
 
   return {
     sales: data?.data ?? [],

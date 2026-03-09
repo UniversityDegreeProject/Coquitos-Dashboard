@@ -1,5 +1,6 @@
 import { Clock } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
+import { useMidnightReset } from "@/shared/hooks/useMidnightReset";
 import {
   KPICards,
   PaymentMethodsSummary,
@@ -13,6 +14,7 @@ import {
  */
 export const DashboardPage = () => {
   const { isDark } = useTheme();
+  useMidnightReset();
 
   return (
     <div className="space-y-6">

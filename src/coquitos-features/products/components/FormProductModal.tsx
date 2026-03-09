@@ -78,16 +78,12 @@ const initialValues: ProductSchema = {
 
 interface FormProductModalProps {
   currentParams: SearchProductsParams;
-  onNewPageCreated: (newPage: number) => void;
 }
 /**
  * Modal de formulario para crear/editar productos
  * Implementa validación con React Hook Form y Zod
  */
-export const FormProductModal = ({
-  currentParams,
-  onNewPageCreated,
-}: FormProductModalProps) => {
+export const FormProductModal = ({ currentParams }: FormProductModalProps) => {
   // * Estado local para batches pendientes (solo en modo creación)
   const [pendingBatches, setPendingBatches] = useState<PendingBatch[]>([]);
   // * Estado local para modal de batch
@@ -112,7 +108,6 @@ export const FormProductModal = ({
   const { useCreateProductMutation, isPending: isCreatingProduct } =
     useCreateProduct({
       currentParams,
-      onNewPageCreated,
     });
   const { updateProductMutation, isPending: isUpdatingProduct } =
     useUpdateProduct({

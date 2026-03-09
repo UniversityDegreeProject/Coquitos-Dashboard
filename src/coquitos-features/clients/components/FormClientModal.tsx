@@ -31,11 +31,10 @@ const initialValues: CreateClientFormData = {
 
 interface FormClientModalProps {
   currentParams: SearchClientsParams;
-  onNewPageCreated?: (newPage: number) => void;
 }
 
 export const FormClientModal = (props: FormClientModalProps) => {
-  const { currentParams, onNewPageCreated } = props;
+  const { currentParams } = props;
   const { isDark } = useTheme();
 
   // * Zustand
@@ -52,7 +51,6 @@ export const FormClientModal = (props: FormClientModalProps) => {
   const { useCreateClientMutation, isPending: isCreatingClient } =
     useCreateClient({
       currentParams,
-      onNewPageCreated,
       onSuccessCallback: closeModal,
       onFinally: () => setIsMutating(false),
     });

@@ -4,6 +4,7 @@ import { useGetSales } from "@/coquitos-features/sales/hooks/useGetSales";
 import { formatCurrency } from "@/coquitos-features/sales/helpers/format-currency";
 import { GenericGridLoader } from "@/shared/components";
 import type { Sale } from "@/coquitos-features/sales/interfaces";
+import { getTodayDateKey, getTodayRange } from "@/shared/helpers";
 
 /**
  * Componente de tabla de últimas ventas
@@ -12,21 +13,12 @@ import type { Sale } from "@/coquitos-features/sales/interfaces";
 export const RecentSalesTable = memo(() => {
   const { isDark } = useTheme();
 
+  const todayKey = getTodayDateKey();
+
   // Calcular fechas del día actual usando componentes locales para evitar problemas de zona horaria
   const todayDates = useMemo(() => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const day = today.getDate();
-
-    const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
-    const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
-
-    return {
-      startDate: startOfDay,
-      endDate: endOfDay,
-    };
-  }, []);
+    return getTodayRange(todayKey);
+  }, [todayKey]);
 
   // Obtener últimas ventas completadas del día actual
   const { sales, isLoading } = useGetSales({

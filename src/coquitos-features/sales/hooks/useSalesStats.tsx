@@ -4,6 +4,7 @@ import type { SearchSalesParams } from "../interfaces";
 import { salesQueries } from "../const/sales-queries";
 import { getSales } from "../services/sale.service";
 import { useSocketEvent } from "@/lib/socket";
+import { getTodayDateKey, getTodayRange } from "@/shared/helpers";
 
 export interface SalesStatsData {
   totalSalesCount: number;
@@ -30,6 +31,8 @@ export const useSalesStats = (
   const { filterByToday = false, startDate, endDate, userId } = options || {};
 
   // Calcular fechas según los parámetros recibidos
+  const todayKey = getTodayDateKey();
+
   const dateRange = useMemo(() => {
     if (startDate && endDate) {
       return {
@@ -39,22 +42,11 @@ export const useSalesStats = (
     }
 
     if (filterByToday) {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = today.getMonth();
-      const day = today.getDate();
-
-      const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
-      const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
-
-      return {
-        startDate: startOfDay,
-        endDate: endOfDay,
-      };
+      return getTodayRange(todayKey);
     }
 
     return undefined;
-  }, [filterByToday, startDate, endDate]);
+  }, [filterByToday, startDate, endDate, todayKey]);
 
   // Query key estable
   const queryKey = useMemo(() => {

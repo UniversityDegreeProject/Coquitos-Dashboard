@@ -45,11 +45,10 @@ const initialValues: RegisterUserSchema = {
 
 interface FormUserModalProps {
   currentParams: SearchUsersParams;
-  onNewPageCreated?: (newPage: number) => void;
 }
 
 export const FormUserModal = (props: FormUserModalProps) => {
-  const { currentParams, onNewPageCreated } = props;
+  const { currentParams } = props;
   // * React State
   const [showPasswordField, setShowPasswordField] = useState(false);
 
@@ -67,7 +66,6 @@ export const FormUserModal = (props: FormUserModalProps) => {
   // * TanstackQuery
   const { useCreateUserMutation, isPending: isCreatingUser } = useCreateUser({
     currentParams,
-    onNewPageCreated,
     onSuccessCallback: closeModal,
     onFinally: () => setIsMutating(false),
   });

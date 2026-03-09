@@ -1,8 +1,15 @@
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Plus, ClipboardList, Package} from 'lucide-react';
-import { useNavigate } from 'react-router';
-import { useIsMutating } from '@tanstack/react-query';
-import { ProductGrid, ProductStats, FormProductModal, ProductPagination, ProductSearchPage, ProductToggleFromGridToList } from "../components";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { Plus, ClipboardList, Package } from "lucide-react";
+import { useNavigate } from "react-router";
+import { useIsMutating } from "@tanstack/react-query";
+import {
+  ProductGrid,
+  ProductStats,
+  FormProductModal,
+  ProductPagination,
+  ProductSearchPage,
+  ProductToggleFromGridToList,
+} from "../components";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { useDebounce } from "@/coquitos-features/users/hooks/useDebounce";
 import { useGetProducts, useProductsStats } from "../hooks";
@@ -12,25 +19,25 @@ import type { SearchProductsParams } from "../interfaces";
 import { FormStockMovementModal } from "@/coquitos-features/stock-movements/components";
 import { useStockMovementStore } from "@/coquitos-features/stock-movements/store/stock-movement.store";
 import { paths } from "@/router/paths";
-import type { SearchProductsSchema} from '../schemas';
-import type { ProductStatus } from '../interfaces';
+import type { SearchProductsSchema } from "../schemas";
+import type { ProductStatus } from "../interfaces";
 import { useGetCategories } from "@/coquitos-features/categories/hooks/useGetCategories";
 
-
-const filtersDefault : SearchProductsSchema = {
+const filtersDefault: SearchProductsSchema = {
   search: "",
   categoryId: "",
   status: "",
   lowStock: false,
   nearExpiration: false,
   page: 1,
-  limit: 4
-}
+  limit: 4,
+};
 export const ProductPage = () => {
   // * Estados locales para filtros
-  const [ page, setPage ] = useState<number>(1);
-  const [ limit, setLimit ] = useState<number>(4);
-  const [searchFilters, setSearchFilters] = useState<SearchProductsSchema>(filtersDefault);
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(4);
+  const [searchFilters, setSearchFilters] =
+    useState<SearchProductsSchema>(filtersDefault);
 
   // * Debounce para la búsqueda (500ms)
   const debouncedSearch = useDebounce(searchFilters.search, 500);
@@ -42,43 +49,55 @@ export const ProductPage = () => {
 
   // * Zustand - Optimizado con selectores específicos
   const modalMode = useProductStore(useShallow((state) => state.modalMode));
-  const setOpenModalCreate = useProductStore(useShallow((state) => state.setOpenModalCreate));
-
+  const setOpenModalCreate = useProductStore(
+    useShallow((state) => state.setOpenModalCreate),
+  );
 
   // * Stock Movement Modal
-  const isStockModalOpen = useStockMovementStore(useShallow((state) => state.isModalOpen));
-  
+  const isStockModalOpen = useStockMovementStore(
+    useShallow((state) => state.isModalOpen),
+  );
+
   // * Navigation
   const navigate = useNavigate();
 
   // * Params of search
-  const currentParams: SearchProductsParams = useMemo(() => ({
-    search: debouncedSearch,
-    categoryId: debouncedCategoryId,
-    status: searchFilters.status,
-    lowStock: searchFilters.lowStock,
-    nearExpiration: searchFilters.nearExpiration,
-    page: page,
-    limit: limit
-  }), [debouncedSearch, debouncedCategoryId, searchFilters.status, searchFilters.lowStock, searchFilters.nearExpiration, page, limit]);
+  const currentParams: SearchProductsParams = useMemo(
+    () => ({
+      search: debouncedSearch,
+      categoryId: debouncedCategoryId,
+      status: searchFilters.status,
+      lowStock: searchFilters.lowStock,
+      nearExpiration: searchFilters.nearExpiration,
+      page: page,
+      limit: limit,
+    }),
+    [
+      debouncedSearch,
+      debouncedCategoryId,
+      searchFilters.status,
+      searchFilters.lowStock,
+      searchFilters.nearExpiration,
+      page,
+      limit,
+    ],
+  );
 
   // * TanStack Query
 
   const {
     products,
     total,
-    page:
-    currentPage,
-    limit:
-    currentLimit,
+    page: currentPage,
+    limit: currentLimit,
     totalPages,
     nextPage,
     previousPage,
     isLoading,
-    isFetching 
+    isFetching,
   } = useGetProducts(currentParams);
 
-    // * Hook para estadísticas globales (todos los usuarios, no solo la página actual)
+  // * Hook para estadísticas globales (todos los usuarios, no solo la página actual)
 
   const { productsStats } = useProductsStats({
     search: debouncedSearch,
@@ -94,7 +113,7 @@ export const ProductPage = () => {
     search: "",
     status: "",
     page: 1,
-    limit: 100
+    limit: 100,
   });
 
   // * Memoizar callbacks
@@ -106,11 +125,13 @@ export const ProductPage = () => {
     navigate(paths.dashboard.stockMovements);
   }, [navigate]);
 
-
   // * Handler cuando cambian los filtros del buscador
-  const handleSearchFiltersChange = useCallback((values: SearchProductsSchema) => {
-    setSearchFilters(values);
-  }, []);
+  const handleSearchFiltersChange = useCallback(
+    (values: SearchProductsSchema) => {
+      setSearchFilters(values);
+    },
+    [],
+  );
 
   // * Callback cuando una página queda vacía después de eliminar
   const handlePageEmpty = useCallback(() => {
@@ -135,10 +156,18 @@ export const ProductPage = () => {
   // * Resetear página cuando cambian los filtros
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, debouncedCategoryId, searchFilters.status, searchFilters.lowStock]);
+  }, [
+    debouncedSearch,
+    debouncedCategoryId,
+    searchFilters.status,
+    searchFilters.lowStock,
+  ]);
 
   // * Detectar si hay cambios pendientes en la búsqueda (usuario escribiendo)
-  const isSearchPending = searchFilters.search !== debouncedSearch || searchFilters.categoryId !== debouncedCategoryId || searchFilters.status !== debouncedStatus;
+  const isSearchPending =
+    searchFilters.search !== debouncedSearch ||
+    searchFilters.categoryId !== debouncedCategoryId ||
+    searchFilters.status !== debouncedStatus;
 
   // * Ref para rastrear si hay un fetch intencional (usuario busca/filtra)
   const isIntentionalFetchRef = useRef(false);
@@ -147,11 +176,20 @@ export const ProductPage = () => {
   // Esto sucede ANTES del debounce, asegurando que el flag esté listo cuando el fetch inicie
   useEffect(() => {
     // Activar el flag si el usuario tiene algo escrito O cambió filtros de select
-    const productIsSearching = searchFilters.search !== '' || searchFilters.categoryId !== '' || searchFilters.status !== '' || searchFilters.lowStock === true;
+    const productIsSearching =
+      searchFilters.search !== "" ||
+      searchFilters.categoryId !== "" ||
+      searchFilters.status !== "" ||
+      searchFilters.lowStock === true;
     if (productIsSearching) {
       isIntentionalFetchRef.current = true;
     }
-  }, [searchFilters.search, searchFilters.categoryId, searchFilters.status, searchFilters.lowStock]);
+  }, [
+    searchFilters.search,
+    searchFilters.categoryId,
+    searchFilters.status,
+    searchFilters.lowStock,
+  ]);
 
   // * Resetear el flag cuando el fetch termina exitosamente
   useEffect(() => {
@@ -165,8 +203,11 @@ export const ProductPage = () => {
   }, [isFetching]);
 
   // * Loader para búsquedas/filtros: Solo se muestra para fetches INTENCIONALES
-  const isSearching = isIntentionalFetchRef.current && isFetching && !isSearchPending && !isMutating;
-
+  const isSearching =
+    isIntentionalFetchRef.current &&
+    isFetching &&
+    !isSearchPending &&
+    !isMutating;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -175,10 +216,16 @@ export const ProductPage = () => {
         {/* Título con icono y toggle tema */}
         <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className={`p-1.5 sm:p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
-              <Package className={`w-5 h-5 sm:w-6 sm:h-6 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
+            <div
+              className={`p-1.5 sm:p-2 rounded-lg ${isDark ? "bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20" : "bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20"}`}
+            >
+              <Package
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${isDark ? "text-[#F59E0B]" : "text-[#275081]"}`}
+              />
             </div>
-            <h3 className={`text-lg sm:text-xl lg:text-2xl font-bold ${colors.text.primary}`}>
+            <h3
+              className={`text-lg sm:text-xl lg:text-2xl font-bold ${colors.text.primary}`}
+            >
               Productos del Sistema
             </h3>
           </div>
@@ -188,19 +235,27 @@ export const ProductPage = () => {
           {/* Botón para ver historial de movimientos */}
           <button
             onClick={handleNavigateToStockMovements}
-            className={`flex items-center px-3 py-2 sm:px-3.5 sm:py-2 lg:px-4 lg:py-2.5 ${isDark ? 'bg-[#1E293B]' : 'bg-white'} border ${isDark ? 'border-[#334155]' : 'border-gray-200'} rounded-lg hover:shadow-sm transition-all duration-200 cursor-pointer`}
+            className={`flex items-center px-3 py-2 sm:px-3.5 sm:py-2 lg:px-4 lg:py-2.5 ${isDark ? "bg-[#1E293B]" : "bg-white"} border ${isDark ? "border-[#334155]" : "border-gray-200"} rounded-lg hover:shadow-sm transition-all duration-200 cursor-pointer`}
           >
-            <ClipboardList className={`w-4 h-4 lg:w-5 lg:h-5 ${isDark ? 'text-[#F59E0B]' : 'text-[#275081]'}`} />
-            <span className={`${colors.text.primary} font-medium text-xs lg:text-sm ml-1.5 lg:ml-2 hidden md:inline`}>Ver Movimientos</span>
+            <ClipboardList
+              className={`w-4 h-4 lg:w-5 lg:h-5 ${isDark ? "text-[#F59E0B]" : "text-[#275081]"}`}
+            />
+            <span
+              className={`${colors.text.primary} font-medium text-xs lg:text-sm ml-1.5 lg:ml-2 hidden md:inline`}
+            >
+              Ver Movimientos
+            </span>
           </button>
-          
+
           {/* Botón para agregar producto - más ancho */}
           <button
             onClick={handleOpenModal}
             className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-2 lg:px-8 lg:py-2.5 xl:px-10 bg-gradient-to-r ${colors.gradient.accent} text-white rounded-lg hover:shadow-md transition-all duration-200 shadow-md cursor-pointer min-w-[120px] sm:min-w-[140px] lg:min-w-[160px]`}
           >
             <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-[#2309095c]" />
-            <span className="text-[#08080865] font-semibold lg:font-bold text-sm lg:text-base ml-1.5 lg:ml-2">Agregar Producto</span>
+            <span className="text-[#08080865] font-semibold lg:font-bold text-sm lg:text-base ml-1.5 lg:ml-2">
+              Agregar Producto
+            </span>
           </button>
         </div>
       </div>
@@ -211,23 +266,33 @@ export const ProductPage = () => {
       {/* Search and Filters */}
       <ProductSearchPage
         searchValue={searchFilters.search || ""}
-        onSearchChange={(value: string) => handleSearchFiltersChange({ ...searchFilters, search: value })}
+        onSearchChange={(value: string) =>
+          handleSearchFiltersChange({ ...searchFilters, search: value })
+        }
         categoryFilter={searchFilters.categoryId || ""}
-        onCategoryChange={(value: string) => handleSearchFiltersChange({ ...searchFilters, categoryId: value })}
+        onCategoryChange={(value: string) =>
+          handleSearchFiltersChange({ ...searchFilters, categoryId: value })
+        }
         statusFilter={searchFilters.status as ProductStatus | ""}
-        onStatusChange={(value: ProductStatus | "") => handleSearchFiltersChange({ ...searchFilters, status: value })}
+        onStatusChange={(value: ProductStatus | "") =>
+          handleSearchFiltersChange({ ...searchFilters, status: value })
+        }
         lowStockFilter={searchFilters.lowStock || false}
-        onLowStockChange={(value: boolean) => handleSearchFiltersChange({ ...searchFilters, lowStock: value })}
+        onLowStockChange={(value: boolean) =>
+          handleSearchFiltersChange({ ...searchFilters, lowStock: value })
+        }
         nearExpirationFilter={searchFilters.nearExpiration || false}
-        onNearExpirationChange={(value: boolean) => handleSearchFiltersChange({ ...searchFilters, nearExpiration: value })}
+        onNearExpirationChange={(value: boolean) =>
+          handleSearchFiltersChange({ ...searchFilters, nearExpiration: value })
+        }
         categories={categories}
         isLoadingCategories={isLoadingCategories}
       />
 
-     <ProductToggleFromGridToList products={products} total={total} />
+      <ProductToggleFromGridToList products={products} total={total} />
 
       {/* Products Grid */}
-      <ProductGrid 
+      <ProductGrid
         products={products}
         isLoading={isLoading || isMutating || isSearching}
         currentParams={currentParams}
@@ -237,13 +302,13 @@ export const ProductPage = () => {
       {/* Pagination */}
       {total > 0 && (
         <ProductPagination
-          paginationData={{ 
-            total, 
-            page: currentPage, 
-            limit: currentLimit, 
-            totalPages, 
-            nextPage, 
-            previousPage 
+          paginationData={{
+            total,
+            page: currentPage,
+            limit: currentLimit,
+            totalPages,
+            nextPage,
+            previousPage,
           }}
           onPageChange={handlePageChange}
           onLimitChange={handleLimitChange}
@@ -253,14 +318,14 @@ export const ProductPage = () => {
       )}
 
       {/* Create Product Modal */}
-      {modalMode === 'create' && (
-        <FormProductModal currentParams={currentParams} onNewPageCreated={handlePageChange} />
+      {modalMode === "create" && (
+        <FormProductModal currentParams={currentParams} />
       )}
       {/* Update Product Modal */}
-      {modalMode === 'update' && (
-        <FormProductModal currentParams={currentParams} onNewPageCreated={handlePageChange} />
+      {modalMode === "update" && (
+        <FormProductModal currentParams={currentParams} />
       )}
-      
+
       {/* Stock Movement Modal */}
       {isStockModalOpen && (
         <FormStockMovementModal currentParams={currentParams} />

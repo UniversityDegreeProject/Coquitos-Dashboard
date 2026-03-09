@@ -4,6 +4,7 @@ import { useTheme } from "@/shared/hooks/useTheme";
 import { useGetSales } from "@/coquitos-features/sales/hooks/useGetSales";
 import { formatCurrency } from "@/coquitos-features/sales/helpers/format-currency";
 import type { Sale } from "@/coquitos-features/sales/interfaces";
+import { getTodayDateKey, getTodayRange } from "@/shared/helpers";
 
 interface TopProduct {
   name: string;
@@ -18,21 +19,12 @@ interface TopProduct {
 export const TopProductsSection = memo(() => {
   const { isDark } = useTheme();
 
+  const todayKey = getTodayDateKey();
+
   // Calcular fechas del día actual usando componentes locales para evitar problemas de zona horaria
   const todayDates = useMemo(() => {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const day = today.getDate();
-
-    const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
-    const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
-
-    return {
-      startDate: startOfDay,
-      endDate: endOfDay,
-    };
-  }, []);
+    return getTodayRange(todayKey);
+  }, [todayKey]);
 
   // Obtener ventas completadas del día actual (máximo 100 según limitación del backend)
   const { sales, isLoading } = useGetSales({

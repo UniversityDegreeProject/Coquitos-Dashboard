@@ -117,7 +117,7 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
           aria-label="Enviar verificación"
           title="Enviar verificación"
           type="button"
-          disabled={pendingEmailVerifications.has(user.id!) || isSendingVerificationEmail}
+          disabled={isSendingVerificationEmail}
         >
           {isSendingVerificationEmail ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -125,7 +125,7 @@ export const UserButtonsActions = memo(({ user, currentParams, onPageEmpty }: Us
             <MailCheck 
               className={`w-4 h-4 transition-all duration-300 ${
                 pendingEmailVerifications.has(user.id!) && !user.emailVerified 
-                  ? 'animate-pulse opacity-50 scale-95' 
+                  ? 'animate-pulse opacity-80' 
                   : ''
               }`} 
             />

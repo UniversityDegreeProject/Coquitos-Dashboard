@@ -209,6 +209,28 @@ export const ProductPage = () => {
     !isSearchPending &&
     !isMutating;
 
+  // ✅ Callbacks estables para ProductSearchPage (evitan re-renders innecesarios)
+  const handleSearchChange = useCallback(
+    (value: string) => handleSearchFiltersChange({ ...searchFilters, search: value }),
+    [handleSearchFiltersChange, searchFilters],
+  );
+  const handleCategoryChange = useCallback(
+    (value: string) => handleSearchFiltersChange({ ...searchFilters, categoryId: value }),
+    [handleSearchFiltersChange, searchFilters],
+  );
+  const handleStatusChange = useCallback(
+    (value: ProductStatus | "") => handleSearchFiltersChange({ ...searchFilters, status: value }),
+    [handleSearchFiltersChange, searchFilters],
+  );
+  const handleLowStockChange = useCallback(
+    (value: boolean) => handleSearchFiltersChange({ ...searchFilters, lowStock: value }),
+    [handleSearchFiltersChange, searchFilters],
+  );
+  const handleNearExpirationChange = useCallback(
+    (value: boolean) => handleSearchFiltersChange({ ...searchFilters, nearExpiration: value }),
+    [handleSearchFiltersChange, searchFilters],
+  );
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header - Responsive */}
@@ -266,25 +288,15 @@ export const ProductPage = () => {
       {/* Search and Filters */}
       <ProductSearchPage
         searchValue={searchFilters.search || ""}
-        onSearchChange={(value: string) =>
-          handleSearchFiltersChange({ ...searchFilters, search: value })
-        }
+        onSearchChange={handleSearchChange}
         categoryFilter={searchFilters.categoryId || ""}
-        onCategoryChange={(value: string) =>
-          handleSearchFiltersChange({ ...searchFilters, categoryId: value })
-        }
+        onCategoryChange={handleCategoryChange}
         statusFilter={searchFilters.status as ProductStatus | ""}
-        onStatusChange={(value: ProductStatus | "") =>
-          handleSearchFiltersChange({ ...searchFilters, status: value })
-        }
+        onStatusChange={handleStatusChange}
         lowStockFilter={searchFilters.lowStock || false}
-        onLowStockChange={(value: boolean) =>
-          handleSearchFiltersChange({ ...searchFilters, lowStock: value })
-        }
+        onLowStockChange={handleLowStockChange}
         nearExpirationFilter={searchFilters.nearExpiration || false}
-        onNearExpirationChange={(value: boolean) =>
-          handleSearchFiltersChange({ ...searchFilters, nearExpiration: value })
-        }
+        onNearExpirationChange={handleNearExpirationChange}
         categories={categories}
         isLoadingCategories={isLoadingCategories}
       />

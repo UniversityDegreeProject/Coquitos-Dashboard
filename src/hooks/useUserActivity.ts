@@ -10,6 +10,7 @@ interface UseUserActivityOptions {
 /**
  * Hook para detectar actividad e inactividad del usuario
  * Escucha eventos de mouse, teclado y touch para determinar si el usuario está activo
+ * ✅ Optimizado con throttle de 1s para evitar ejecuciones excesivas
  */
 export const useUserActivity = (options: UseUserActivityOptions = {}) => {
   const { inactivityTimeout = 5 * 60 * 1000, onInactive, onActive } = options;
@@ -18,18 +19,26 @@ export const useUserActivity = (options: UseUserActivityOptions = {}) => {
   const lastActivityRef = useRef<number>(Date.now());
   
   // Referencia al timer de inactividad
-  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Estado interno para saber si el usuario está activo
   const isActiveRef = useRef<boolean>(true);
 
+  // Throttle: evitar ejecutar updateActivity más de 1 vez por segundo
+  const lastThrottleRef = useRef<number>(0);
+
   /**
    * Actualiza el timestamp de la última actividad
+   * ✅ Con throttle de 1s para evitar cientos de ejecuciones por segundo
    */
   const updateActivity = useCallback(() => {
     const now = Date.now();
-    lastActivityRef.current = now;
 
+    // Throttle: ignorar si no pasó al menos 1 segundo desde la última ejecución
+    if (now - lastThrottleRef.current < 1000) return;
+    lastThrottleRef.current = now;
+
+    lastActivityRef.current = now;
 
     // Si estaba inactivo, ejecutar callback de activación
     if (!isActiveRef.current) {
@@ -65,20 +74,14 @@ export const useUserActivity = (options: UseUserActivityOptions = {}) => {
   }, []);
 
   useEffect(() => {
-    // Lista de eventos que indican actividad del usuario
+    // ✅ Solo los eventos esenciales (6 en vez de 11)
     const events = [
-      'mousedown',
-      'mousemove',
-      'keydown',      // ← Detecta presionar cualquier tecla (reemplaza keypress)
-      'keyup',        // ← Detecta soltar teclas
-      'input',        // ← Detecta cambios en inputs (CRÍTICO para formularios)
-      'change',       // ← Detecta cambios en selects, checkboxes, etc.
-      'scroll',
-      'touchstart',
-      'touchmove',    // ← Detecta movimiento en pantallas táctiles
-      'click',
-      'focus',        // ← Detecta cuando haces focus en un campo
-      'blur',         // ← Detecta cuando sales de un campo
+      'mousedown',    // Click detecta actividad mejor que mousemove
+      'keydown',      // Detecta presionar cualquier tecla
+      'input',        // Detecta cambios en inputs (formularios)
+      'scroll',       // Detecta scroll
+      'touchstart',   // Detecta toque en pantallas táctiles
+      'click',        // Detecta clicks
     ];
 
     // Agregar listeners a todos los eventos

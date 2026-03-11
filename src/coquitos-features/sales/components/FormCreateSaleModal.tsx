@@ -283,11 +283,11 @@ export const FormCreateSaleModal = () => {
     useCreateSaleMutation.mutate(saleData);
   };
 
-  // * Preparar opciones de clientes
-  const clientOptions = clients.map((client) => ({
+  // ✅ Memoizar para evitar recálculo en cada render del modal
+  const clientOptions = useMemo(() => clients.map((client) => ({
     label: `${client.firstName} ${client.lastName}`,
     value: client.id || "",
-  }));
+  })), [clients]);
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">

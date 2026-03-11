@@ -11,6 +11,10 @@ export const useSocketStore = create<SocketState>()((set) => ({
   isConnected: false,
 
   connect: () => {
+    // ✅ Limpiar listeners previos para evitar duplicados (StrictMode, remounts)
+    socket.off("connect");
+    socket.off("disconnect");
+
     socket.connect();
 
     socket.on("connect", () => {

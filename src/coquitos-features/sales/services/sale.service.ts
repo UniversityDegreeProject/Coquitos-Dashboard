@@ -37,26 +37,14 @@ export const getSales = async (
   }
   if (searchParams.startDate) {
     if (searchParams.startDate instanceof Date) {
-      const year = searchParams.startDate.getFullYear();
-      const month = String(searchParams.startDate.getMonth() + 1).padStart(
-        2,
-        "0",
-      );
-      const day = String(searchParams.startDate.getDate()).padStart(2, "0");
-      clearParams.startDate = `${year}-${month}-${day}`;
+      clearParams.startDate = searchParams.startDate.toISOString();
     } else {
       clearParams.startDate = searchParams.startDate;
     }
   }
   if (searchParams.endDate) {
     if (searchParams.endDate instanceof Date) {
-      const year = searchParams.endDate.getFullYear();
-      const month = String(searchParams.endDate.getMonth() + 1).padStart(
-        2,
-        "0",
-      );
-      const day = String(searchParams.endDate.getDate()).padStart(2, "0");
-      clearParams.endDate = `${year}-${month}-${day}T23:59:59.999`;
+      clearParams.endDate = searchParams.endDate.toISOString();
     } else {
       clearParams.endDate = searchParams.endDate;
     }

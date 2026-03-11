@@ -25,9 +25,9 @@ export const useGetProducts = (params: SearchProductsParams) => {
     queryFn: () => getProducts(params),
     placeholderData: keepPreviousData,
     refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: true, // ✅ Necesario para el flujo QR (cambio de pestaña)
     refetchOnReconnect: true,
-    staleTime: 0,
+    staleTime: 30000, // ✅ 30s: evita refetches redundantes (socket ya actualiza en real-time)
   });
 
   // Socket real-time invalidación de productos y sus lotes correspondientes

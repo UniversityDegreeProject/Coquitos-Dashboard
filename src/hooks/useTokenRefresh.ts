@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { useShallow } from 'zustand/shallow';
 import { useUserActivity } from './useUserActivity';
 import { useAuthStore } from '@/auth/store/auth.store';
 import { refreshAccessToken } from '@/auth/services/auth.service';
@@ -30,10 +31,15 @@ export const useTokenRefresh = (options: UseTokenRefreshOptions = {}) => {
 
   const { renewBeforeExpiry = 5, inactivityTimeout = 5, checkInterval = 2 } = options;
 
-  const { accessToken, refreshToken, updateTokens, logout, status } = useAuthStore();
+  // ✅ Selectores individuales para evitar re-renders innecesarios
+  const accessToken = useAuthStore(useShallow((s) => s.accessToken));
+  const refreshToken = useAuthStore(useShallow((s) => s.refreshToken));
+  const status = useAuthStore(useShallow((s) => s.status));
+  const updateTokens = useAuthStore(useShallow((s) => s.updateTokens));
+  const logout = useAuthStore(useShallow((s) => s.logout));
 
   const isRenewingRef = useRef(false);
-  const inactivityLogoutTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const inactivityLogoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /**
    * Decodifica el token y obtiene el tiempo de expiración

@@ -57,7 +57,7 @@ export const FormCloseCashModal = ({
     control,
     handleSubmit,
     watch,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<CloseCashRegisterSchema>({
     resolver: zodResolver(closeCashRegisterSchema),
     defaultValues: {
@@ -65,7 +65,7 @@ export const FormCloseCashModal = ({
       closingAmount: "",
       notes: "",
     },
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
   const watchedClosingAmount = watch("closingAmount");
@@ -85,7 +85,7 @@ export const FormCloseCashModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div
         className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl border ${isDark ? "border-red-500/30" : "border-red-200"}`}
       >
@@ -349,9 +349,9 @@ export const FormCloseCashModal = ({
             </button>
             <button
               type="submit"
-              disabled={isPending || !isValid}
+              disabled={isPending}
               className={`flex-1 px-4 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
-                isPending || !isValid
+                isPending
                   ? "bg-gray-400 cursor-not-allowed"
                   : isDark
                     ? "bg-gradient-to-r from-red-700 to-red-500 hover:shadow-2xl hover:shadow-red-500/50"

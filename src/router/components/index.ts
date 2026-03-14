@@ -4,4 +4,5 @@
 export { PrivateRoute } from './PrivateRoute';
 export { PublicRoute } from './PublicRoute';
 export { RootRedirect } from './RootRedirect';
+export { SuspenseWrapper } from './SuspenseWrapper';
 

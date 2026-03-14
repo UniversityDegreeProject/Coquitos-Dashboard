@@ -1,27 +1,89 @@
 import { createBrowserRouter, Navigate } from "react-router";
+import { lazy } from "react";
 
 // components Layouts
 import { CoquitoLayout } from "@/coquitos-features/dashboard/layouts/CoquitoLayout";
 
-// components Route Guards
-import { PrivateRoute, PublicRoute, RootRedirect } from "./components";
+// components Route Guards & Wrapper
+import {
+  PrivateRoute,
+  PublicRoute,
+  RootRedirect,
+  SuspenseWrapper,
+} from "./components";
 
-// components Pages
-import { DashboardPage } from "@/coquitos-features/dashboard/pages/DashboardPage";
-import { SalesPage } from "@/coquitos-features/sales/pages/SalesPage";
-import { SaleDetailPage } from "@/coquitos-features/sales/pages/SaleDetailPage";
-import { ProductPage } from "@/coquitos-features/products/pages/ProductPage";
-import { CategoriesPage } from "@/coquitos-features/categories/pages/CategoriesPage";
-import { ClientsPage } from "@/coquitos-features/clients/pages/ClientsPage";
-import { UsersPage } from "@/coquitos-features/users/pages/UsersPage";
-import { UserDetailPage } from "@/coquitos-features/users/pages/UserDetailPage";
-import { ReportPage } from "@/coquitos-features/reports/pages/ReportPage";
-import { CashClosePage } from "@/coquitos-features/cash-closing/pages/CashClosePage";
-import { SettingPage } from "@/coquitos-features/settings/pages/SettingPage";
-import { StockMovementsPage } from "@/coquitos-features/stock-movements/pages/StockMovementsPage";
-import { ActivityLogPage } from "@/coquitos-features/activity-log/pages/ActivityLogPage";
-import { LoginPage } from "@/auth/pages/LoginPage";
-import { NotFoundPage } from "@/shared/pages";
+// Lazy-loaded Pages (code-splitting para mejor rendimiento en móvil)
+const DashboardPage = lazy(() =>
+  import("@/coquitos-features/dashboard/pages/DashboardPage").then((m) => ({
+    default: m.DashboardPage,
+  })),
+);
+const SalesPage = lazy(() =>
+  import("@/coquitos-features/sales/pages/SalesPage").then((m) => ({
+    default: m.SalesPage,
+  })),
+);
+const SaleDetailPage = lazy(() =>
+  import("@/coquitos-features/sales/pages/SaleDetailPage").then((m) => ({
+    default: m.SaleDetailPage,
+  })),
+);
+const ProductPage = lazy(() =>
+  import("@/coquitos-features/products/pages/ProductPage").then((m) => ({
+    default: m.ProductPage,
+  })),
+);
+const CategoriesPage = lazy(() =>
+  import("@/coquitos-features/categories/pages/CategoriesPage").then((m) => ({
+    default: m.CategoriesPage,
+  })),
+);
+const ClientsPage = lazy(() =>
+  import("@/coquitos-features/clients/pages/ClientsPage").then((m) => ({
+    default: m.ClientsPage,
+  })),
+);
+const UsersPage = lazy(() =>
+  import("@/coquitos-features/users/pages/UsersPage").then((m) => ({
+    default: m.UsersPage,
+  })),
+);
+const UserDetailPage = lazy(() =>
+  import("@/coquitos-features/users/pages/UserDetailPage").then((m) => ({
+    default: m.UserDetailPage,
+  })),
+);
+const ReportPage = lazy(() =>
+  import("@/coquitos-features/reports/pages/ReportPage").then((m) => ({
+    default: m.ReportPage,
+  })),
+);
+const CashClosePage = lazy(() =>
+  import("@/coquitos-features/cash-closing/pages/CashClosePage").then((m) => ({
+    default: m.CashClosePage,
+  })),
+);
+const SettingPage = lazy(() =>
+  import("@/coquitos-features/settings/pages/SettingPage").then((m) => ({
+    default: m.SettingPage,
+  })),
+);
+const StockMovementsPage = lazy(() =>
+  import("@/coquitos-features/stock-movements/pages/StockMovementsPage").then(
+    (m) => ({ default: m.StockMovementsPage }),
+  ),
+);
+const ActivityLogPage = lazy(() =>
+  import("@/coquitos-features/activity-log/pages/ActivityLogPage").then(
+    (m) => ({ default: m.ActivityLogPage }),
+  ),
+);
+const LoginPage = lazy(() =>
+  import("@/auth/pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+);
+const NotFoundPage = lazy(() =>
+  import("@/shared/pages").then((m) => ({ default: m.NotFoundPage })),
+);
 
 export const appRouter = createBrowserRouter([
   {
@@ -34,7 +96,11 @@ export const appRouter = createBrowserRouter([
     children: [
       {
         path: "login",
-        element: <LoginPage />,
+        element: (
+          <SuspenseWrapper>
+            <LoginPage />
+          </SuspenseWrapper>
+        ),
       },
     ],
   },
@@ -52,63 +118,123 @@ export const appRouter = createBrowserRouter([
           },
           {
             path: "home",
-            element: <DashboardPage />,
+            element: (
+              <SuspenseWrapper>
+                <DashboardPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "sales",
-            element: <SalesPage />,
+            element: (
+              <SuspenseWrapper>
+                <SalesPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "sales/:saleId",
-            element: <SaleDetailPage />,
+            element: (
+              <SuspenseWrapper>
+                <SaleDetailPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "products",
-            element: <ProductPage />,
+            element: (
+              <SuspenseWrapper>
+                <ProductPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "categories",
-            element: <CategoriesPage />,
+            element: (
+              <SuspenseWrapper>
+                <CategoriesPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "clients",
-            element: <ClientsPage />,
+            element: (
+              <SuspenseWrapper>
+                <ClientsPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "users",
-            element: <UsersPage />,
+            element: (
+              <SuspenseWrapper>
+                <UsersPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "users/:userId",
-            element: <UserDetailPage />,
+            element: (
+              <SuspenseWrapper>
+                <UserDetailPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "reports",
-            element: <ReportPage />,
+            element: (
+              <SuspenseWrapper>
+                <ReportPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "cash-closing",
-            element: <CashClosePage />,
+            element: (
+              <SuspenseWrapper>
+                <CashClosePage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "settings",
-            element: <SettingPage />,
+            element: (
+              <SuspenseWrapper>
+                <SettingPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "stock-movements",
-            element: <StockMovementsPage />,
+            element: (
+              <SuspenseWrapper>
+                <StockMovementsPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "activity-log",
-            element: <ActivityLogPage />,
+            element: (
+              <SuspenseWrapper>
+                <ActivityLogPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "404",
-            element: <NotFoundPage />,
+            element: (
+              <SuspenseWrapper>
+                <NotFoundPage />
+              </SuspenseWrapper>
+            ),
           },
           {
             path: "*",
-            element: <NotFoundPage />,
+            element: (
+              <SuspenseWrapper>
+                <NotFoundPage />
+              </SuspenseWrapper>
+            ),
           },
         ],
       },
@@ -116,6 +242,10 @@ export const appRouter = createBrowserRouter([
   },
   {
     path: "*",
-    element: <NotFoundPage />,
+    element: (
+      <SuspenseWrapper>
+        <NotFoundPage />
+      </SuspenseWrapper>
+    ),
   },
 ]);

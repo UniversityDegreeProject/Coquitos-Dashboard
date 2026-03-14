@@ -82,11 +82,11 @@ export const FormUserModal = (props: FormUserModalProps) => {
     control,
     setValue,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<RegisterUserSchema>({
     resolver: zodResolver(createUserSchema),
     defaultValues: initialValues,
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
   const handleTogglePassword = () => {
@@ -125,13 +125,13 @@ export const FormUserModal = (props: FormUserModalProps) => {
   }, [modalMode, setValue, userToUpdate]);
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
       <div
-        className={`${isDark ? "bg-[#1E293B]/95" : "bg-white/95"} backdrop-blur-md rounded-2xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border ${isDark ? "border-[#334155]/20" : "border-white/20"}`}
+        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-2xl w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border ${isDark ? "border-[#334155]/20" : "border-white/20"}`}
       >
         {/* Header */}
         <div
-          className={`sticky top-0 ${isDark ? "bg-[#1E293B]/80" : "bg-white/80"} backdrop-blur-md p-4 border-b ${isDark ? "border-[#334155]/50" : "border-gray-200/50"} flex items-center justify-between rounded-t-2xl`}
+          className={`sticky top-0 ${isDark ? "bg-[#1E293B]" : "bg-white"} p-4 border-b ${isDark ? "border-[#334155]/50" : "border-gray-200/50"} flex items-center justify-between rounded-t-2xl`}
         >
           <div className="flex items-center space-x-3">
             <div
@@ -324,7 +324,7 @@ export const FormUserModal = (props: FormUserModalProps) => {
             </button>
             <button
               type="submit"
-              disabled={isCreatingUser || isUpdatingUser || !isValid}
+              disabled={isCreatingUser || isUpdatingUser}
               className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? "from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90" : "from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90"} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-sm font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
             >
               {isCreatingUser && <Loader2 className="w-4 h-4 animate-spin" />}

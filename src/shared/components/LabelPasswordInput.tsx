@@ -51,7 +51,7 @@ export const LabelPasswordInput = <T extends FieldValues>({
               {...field}
               id={name}
               type={showPassword ? 'text' : 'password'}
-              className={`w-full pl-12 pr-12 py-3.5 rounded-xl border ${isDark ? 'bg-[#1E293B]' : 'bg-white'} backdrop-blur-sm shadow-sm ${
+              className={`w-full pl-12 pr-12 py-3.5 rounded-xl border ${isDark ? 'bg-[#1E293B]' : 'bg-white'} shadow-sm ${
                 error
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 focus:shadow-red-100'
                   : `${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'}`

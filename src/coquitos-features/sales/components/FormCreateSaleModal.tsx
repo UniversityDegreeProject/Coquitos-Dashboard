@@ -125,11 +125,11 @@ export const FormCreateSaleModal = () => {
     control,
     handleSubmit,
     watch,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<CreateSaleSchema>({
     resolver: zodResolver(createSaleSchema),
     defaultValues: initialValues,
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
   const watchedAmountPaid = watch("amountPaid");
@@ -290,7 +290,7 @@ export const FormCreateSaleModal = () => {
   })), [clients]);
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
       <div
         className={`${
           isDark ? "bg-[#0F172A]" : "bg-white"
@@ -401,7 +401,6 @@ export const FormCreateSaleModal = () => {
               <CheckoutForm
                 control={control}
                 errors={errors}
-                isValid={isValid}
                 isPending={isPending}
                 cartTotal={cartTotal}
                 amountPaid={amountPaidNumber}

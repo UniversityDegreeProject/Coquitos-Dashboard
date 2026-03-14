@@ -37,7 +37,7 @@ export const Topbar = ({  /* title, */ subtitle, onToggleSidebar, isSidebarColla
 
   return (
     <header 
-      className={`sticky top-0 z-20 flex h-16 sm:h-20 w-full items-center justify-between ${css.topbar.background} backdrop-blur-md border-b ${css.topbar.border} px-3 sm:px-6 lg:px-8 ${css.sidebar.shadow}`}
+      className={`sticky top-0 z-20 flex h-16 sm:h-20 w-full items-center justify-between ${css.topbar.background} border-b ${css.topbar.border} px-3 sm:px-6 lg:px-8 ${css.sidebar.shadow}`}
       aria-label="Barra de navegación superior"
     >
       {/* Sección Izquierda - Botón de colapso y título */}

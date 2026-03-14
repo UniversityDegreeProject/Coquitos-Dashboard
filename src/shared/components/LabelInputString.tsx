@@ -79,7 +79,7 @@ export const LabelInputString = <T extends FieldValues>({
                 Icon ? "pl-12" : "pl-4"
               } pr-4 py-3.5 rounded-xl border ${
                 isDark ? "bg-[#1E293B]" : "bg-white"
-              } backdrop-blur-sm shadow-sm ${
+              } shadow-sm ${
                 error
                   ? "border-red-300 focus:border-red-500 focus:ring-red-500/20 focus:shadow-red-100"
                   : isDark

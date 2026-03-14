@@ -140,7 +140,7 @@ export const GenericSearchBar = <T extends FieldValues>({
     <div
       className={`${
         isDark ? "bg-[#1E293B]/50" : "bg-white/50"
-      } backdrop-blur-md rounded-2xl p-6 shadow-sm border ${
+      } rounded-2xl p-6 shadow-sm border ${
         isDark ? "border-[#334155]/50" : "border-white/50"
       } ${className}`}
     >

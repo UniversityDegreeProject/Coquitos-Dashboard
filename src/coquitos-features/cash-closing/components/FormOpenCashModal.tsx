@@ -34,14 +34,14 @@ export const FormOpenCashModal = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
   } = useForm<OpenCashRegisterSchema>({
     resolver: zodResolver(openCashRegisterSchema),
     defaultValues: {
       userId: user?.id || "",
       openingAmount: "",
     },
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
   const onSubmit: SubmitHandler<OpenCashRegisterSchema> = (data) => {
@@ -54,7 +54,7 @@ export const FormOpenCashModal = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
       <div
         className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-3xl w-full max-w-lg shadow-2xl border ${isDark ? "border-[#1E3A8A]/30" : "border-[#275081]/20"}`}
       >
@@ -152,9 +152,9 @@ export const FormOpenCashModal = () => {
             </button>
             <button
               type="submit"
-              disabled={isPending || !isValid}
+              disabled={isPending}
               className={`flex-1 px-4 py-3 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
-                isPending || !isValid
+                isPending
                   ? "bg-gray-400 cursor-not-allowed"
                   : isDark
                     ? "bg-gradient-to-r from-emerald-600 to-green-500 hover:shadow-2xl hover:shadow-emerald-500/50"

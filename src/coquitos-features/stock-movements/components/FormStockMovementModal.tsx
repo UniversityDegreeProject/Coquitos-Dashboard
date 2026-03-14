@@ -49,10 +49,10 @@ export const FormStockMovementModal = ({ currentParams }: FormStockMovementModal
   const { useCreateStockMovementMutation, isPending } = useCreateStockMovement({ currentParams });
   
   // * React Hook Form
-  const { control, setValue, handleSubmit, watch, formState: { errors, isValid } } = useForm<StockMovementSchema>({
+  const { control, setValue, handleSubmit, watch, formState: { errors } } = useForm<StockMovementSchema>({
     resolver: zodResolver(createStockMovementSchema),
     defaultValues: initialValues,
-    mode: "onChange",
+    mode: "onSubmit",
   });
 
   // Observar la cantidad y tipo para mostrar información útil
@@ -110,10 +110,10 @@ export const FormStockMovementModal = ({ currentParams }: FormStockMovementModal
   if (!selectedProduct) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className={`${isDark ? 'bg-[#1E293B]/95' : 'bg-white/95'} backdrop-blur-md rounded-2xl w-full max-w-3xl mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border ${isDark ? 'border-[#334155]/20' : 'border-white/20'}`}>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+      <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-2xl w-full max-w-3xl mx-auto max-h-[90vh] overflow-y-auto shadow-2xl border ${isDark ? 'border-[#334155]/20' : 'border-white/20'}`}>
         {/* Header */}
-        <div className={`sticky top-0 ${isDark ? 'bg-[#1E293B]/80' : 'bg-white/80'} backdrop-blur-md p-4 border-b ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'} rounded-t-2xl`}>
+        <div className={`sticky top-0 ${isDark ? 'bg-[#1E293B]' : 'bg-white'} p-4 border-b ${isDark ? 'border-[#334155]/50' : 'border-gray-200/50'} rounded-t-2xl`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className={`p-2 rounded-lg ${isDark ? 'bg-gradient-to-r from-[#1E3A8A]/20 to-[#F59E0B]/20' : 'bg-gradient-to-r from-[#275081]/10 to-[#F9E44E]/20'}`}>
@@ -239,7 +239,7 @@ export const FormStockMovementModal = ({ currentParams }: FormStockMovementModal
             </button>
             <button 
               type="submit"
-              disabled={isPending || !isValid}
+              disabled={isPending}
               className={`flex-1 px-4 py-2.5 bg-gradient-to-r ${isDark ? 'from-[#1E3A8A] to-[#F59E0B] hover:from-[#1E3A8A]/90 hover:to-[#F59E0B]/90' : 'from-[#275081] to-[#F9E44E] hover:from-[#275081]/90 hover:to-[#F9E44E]/90'} text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-sm font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2`}
             >
               {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

@@ -20,7 +20,6 @@ import type { PaymentMethod } from "../interfaces";
 interface CheckoutFormProps {
   control: Control<CreateSaleSchema>;
   errors: FieldErrors<CreateSaleSchema>;
-  isValid: boolean;
   isPending: boolean;
   cartTotal: number;
   amountPaid: number;
@@ -48,7 +47,6 @@ export const CheckoutForm = memo(
   ({
     control,
     errors,
-    isValid,
     isPending,
     cartTotal,
     amountPaid,
@@ -265,7 +263,6 @@ export const CheckoutForm = memo(
           type="submit"
           disabled={
             isPending ||
-            !isValid ||
             !isPaymentSufficient ||
             cartItemsCount === 0 ||
             !hasCashRegister ||
@@ -274,7 +271,6 @@ export const CheckoutForm = memo(
           }
           className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
             isPending ||
-            !isValid ||
             !isPaymentSufficient ||
             cartItemsCount === 0 ||
             !hasCashRegister

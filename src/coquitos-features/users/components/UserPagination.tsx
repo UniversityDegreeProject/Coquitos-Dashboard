@@ -114,7 +114,7 @@ export const UserPagination = memo(({
     <div
       className={`${
         isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-[#E5E7EB]"
-      } rounded-xl p-6 shadow-sm border backdrop-blur-sm transition-all duration-300`}
+      } rounded-xl p-6 shadow-sm border transition-all duration-300`}
     >
       <div className="flex flex-col items-center gap-6">
         {/* Información y selector en la parte superior */}

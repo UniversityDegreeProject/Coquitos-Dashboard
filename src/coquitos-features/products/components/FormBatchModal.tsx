@@ -135,7 +135,7 @@ export const FormBatchModal = memo(({ isOpen, onClose, product, mode = 'edit', o
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/50"
         onClick={handleCloseModal}
       />
 

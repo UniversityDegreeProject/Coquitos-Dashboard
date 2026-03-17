@@ -113,7 +113,7 @@ export const FormUpdateBatchStockModal = memo(
       <div className="fixed inset-0 z-[60] flex items-center justify-center">
         {/* Overlay */}
         <div
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/50"
           onClick={onClose}
         />
 

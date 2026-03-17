@@ -29,7 +29,7 @@ export const GenericGridLoader = memo(({
     <div
       className={`
         w-full flex items-center justify-center
-        rounded-xl shadow-sm border backdrop-blur-sm
+        rounded-xl shadow-sm border
         ${isDark ? 'bg-[#1E293B]/50 border-[#334155]/50' : 'bg-white/50 border-white/50'}
         transition-all duration-300
         ${minHeightClass} 

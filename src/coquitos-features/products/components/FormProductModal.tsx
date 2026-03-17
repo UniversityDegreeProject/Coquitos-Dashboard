@@ -753,7 +753,7 @@ export const FormProductModal = ({ currentParams }: FormProductModalProps) => {
                   ) : (
                     <div className="text-center p-4 z-10 relative">
                       <div
-                        className={`${isDark ? "bg-[#1E293B]/80" : "bg-white/80"} backdrop-blur-sm rounded-xl p-4`}
+                        className={`${isDark ? "bg-[#1E293B]" : "bg-white"} rounded-xl p-4`}
                       >
                         <ImageIcon
                           className={`w-12 h-12 mx-auto mb-2 ${isDark ? "text-[#64748B]" : "text-gray-400"}`}

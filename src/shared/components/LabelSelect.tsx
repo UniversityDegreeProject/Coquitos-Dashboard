@@ -55,7 +55,7 @@ export const LabelSelect = <T extends FieldValues>({
                 error
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20 focus:shadow-red-100'
                   : `${isDark ? 'border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20' : 'border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20'}`
-              } focus:ring-2 ring-offset-1 outline-none transition-all duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
+              } focus:ring-2 ring-offset-1 outline-none transition-colors duration-200 ${isDark ? 'text-[#F8FAFC]' : 'text-[#1F2937]'} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 appearance-none cursor-pointer hover:${isDark ? 'border-[#475569]' : 'border-[#D1D5DB]'}`}
               disabled={disabled}
               aria-invalid={error ? 'true' : 'false'}
               aria-describedby={error ? `${name}-error` : undefined}

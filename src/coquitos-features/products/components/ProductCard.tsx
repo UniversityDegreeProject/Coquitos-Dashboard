@@ -73,8 +73,8 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
     <div className={`
       group relative overflow-hidden rounded-2xl 
       ${isDark 
-        ? 'bg-gradient-to-br from-gray-800/90 via-gray-900/80 to-black/90 backdrop-blur-xl border border-white/20' 
-        : 'bg-gradient-to-br from-white/95 via-gray-50/90 to-white/95 backdrop-blur-xl border border-gray-200/50'
+        ? 'bg-gradient-to-br from-gray-800/90 via-gray-900/80 to-black/90 border border-white/20' 
+        : 'bg-gradient-to-br from-white/95 via-gray-50/90 to-white/95 border border-gray-200/50'
       }
       shadow-2xl hover:shadow-3xl 
       transition-all duration-500 ease-out 

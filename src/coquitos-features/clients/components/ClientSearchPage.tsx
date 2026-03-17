@@ -38,7 +38,7 @@ export const ClientSearchPage = memo(({
     <div
       className={`${
         isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-[#E5E7EB]"
-      } rounded-xl p-6 shadow-sm border backdrop-blur-sm transition-all duration-300 hover:shadow-md`}
+      } rounded-xl p-6 shadow-sm border transition-all duration-300 hover:shadow-md`}
     >
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Campo de búsqueda principal */}
@@ -67,7 +67,7 @@ export const ClientSearchPage = memo(({
                 placeholder="Buscar por nombre, email, teléfono..."
                 className={`w-full pl-12 pr-4 py-3.5 rounded-xl border ${
                   isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-[#E5E7EB]"
-                } backdrop-blur-sm shadow-sm ${
+                } shadow-sm ${
                   isDark
                     ? "border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20"
                     : "border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20"
@@ -112,7 +112,7 @@ export const ClientSearchPage = memo(({
                   onChange={e => onTypeChange(e.target.value as ClientType | "")}
                   className={`w-full pl-12 pr-10 py-3.5 rounded-xl border ${
                     isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-[#E5E7EB]"
-                  } backdrop-blur-sm shadow-sm ${
+                  } shadow-sm ${
                     isDark
                       ? "border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20"
                       : "border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20"

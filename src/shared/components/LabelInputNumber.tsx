@@ -59,7 +59,7 @@ export const LabelInputNumber = <T extends FieldValues>({
                 error
                   ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
                   : 'border-gray-200 focus:border-[#275081] focus:ring-[#275081]/10'
-              } focus:ring-2 ring-offset-1 outline-none transition-all text-gray-800 placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
+              } focus:ring-2 ring-offset-1 outline-none transition-colors text-gray-800 placeholder:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50`}
               placeholder={placeholder}
               disabled={disabled}
               min={min}

@@ -85,7 +85,7 @@ export const LabelInputString = <T extends FieldValues>({
                   : isDark
                   ? "border-[#334155] focus:border-[#F59E0B] focus:ring-[#F59E0B]/20 hover:border-[#64748B]"
                   : "border-[#E5E7EB] focus:border-[#275081] focus:ring-[#275081]/20 hover:border-[#E5E7EB]"
-              } focus:ring-2 ring-offset-1 outline-none transition-all duration-200 ${
+              } focus:ring-2 ring-offset-1 outline-none transition-colors duration-200 ${
                 isDark
                   ? "text-[#F8FAFC] placeholder:text-[#94A3B8]"
                   : "text-[#1F2937] placeholder:text-[#6B7280]"

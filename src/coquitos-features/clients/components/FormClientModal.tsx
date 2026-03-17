@@ -110,7 +110,7 @@ export const FormClientModal = (props: FormClientModalProps) => {
       >
         {/* Header */}
         <div
-          className={`sticky top-0 ${isDark ? "bg-[#1E293B]/80" : "bg-white/80"} backdrop-blur-md p-4 border-b ${isDark ? "border-[#334155]/50" : "border-gray-200/50"} flex items-center justify-between rounded-t-2xl`}
+          className={`sticky top-0 ${isDark ? "bg-[#1E293B]" : "bg-white"} p-4 border-b ${isDark ? "border-[#334155]/50" : "border-gray-200/50"} flex items-center justify-between rounded-t-2xl`}
         >
           <div className="flex items-center space-x-3">
             <div

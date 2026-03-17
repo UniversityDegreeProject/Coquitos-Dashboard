@@ -28,7 +28,7 @@ export const BatchSelectionModal = memo(({
   const { isDark } = useTheme();
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60]">
       <div className={`${isDark ? 'bg-[#1E293B]' : 'bg-white'} rounded-2xl w-full max-w-2xl shadow-2xl border ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>
         {/* Header */}
         <div className={`p-6 border-b ${isDark ? 'border-[#334155]' : 'border-gray-200'}`}>

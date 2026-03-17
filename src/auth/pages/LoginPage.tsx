@@ -118,7 +118,7 @@ export const LoginPage = () => {
         </div>
 
         <div className="w-full max-w-md mx-auto animate-scale-in flex flex-col justify-center" style={{ animationDelay: '0.2s' }}>
-          <div className="bg-white/98 backdrop-blur-md rounded-3xl lg:rounded-[2rem] shadow-2xl p-6 sm:p-7 lg:p-8 border border-white/30 relative overflow-hidden">
+          <div className="bg-white/98 rounded-3xl lg:rounded-[2rem] shadow-2xl p-6 sm:p-7 lg:p-8 border border-white/30 relative overflow-hidden">
             {/* Efecto de brillo sutil en el fondo del formulario */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#87CEEB]/5 to-[#4682B4]/5 rounded-3xl lg:rounded-[2rem]"></div>
             

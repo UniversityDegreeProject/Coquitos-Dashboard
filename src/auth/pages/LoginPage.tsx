@@ -11,7 +11,7 @@ import { loginUserSchema } from '../schemas/login-user.schema';
 import type { AuthLoginFormData } from '../interface';
 import { paths } from '@/router/paths';
 import { LabelInputString, LabelPasswordInput } from '@/shared/components';
-import SplashCursor from '@/components/SplashCursor';
+
 import { toast } from 'sonner';
 
 export const LoginPage = () => {
@@ -231,9 +231,7 @@ export const LoginPage = () => {
           </div>
         </div>
       </div>
-      
-      {/* SlashCursor personalizado para el login */}
-      <SplashCursor />
+
     </div>
   );
 };

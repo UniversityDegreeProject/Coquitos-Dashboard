@@ -17,10 +17,10 @@ const SOCKET_URL = new URL(getEnvsAdapter.API_URL, window.location.origin)
 export const socket: Socket = io(SOCKET_URL, {
   autoConnect: false,
   reconnection: true,
-  reconnectionAttempts: Infinity,
+  reconnectionAttempts: 10,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
-  transports: ["websocket", "polling"],
+  transports: ["websocket"],
   extraHeaders: {
     "ngrok-skip-browser-warning": "true",
   },

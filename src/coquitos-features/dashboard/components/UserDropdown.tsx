@@ -1,5 +1,5 @@
 import { paths } from '@/router/paths';
-import { LogOut, User, Settings, ChevronDown } from 'lucide-react';
+import { LogOut, Settings, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import type { User as UserType } from '@/coquitos-features/users/interfaces/user.interface';
@@ -12,7 +12,7 @@ interface UserDropdownProps {
 
 /**
  * Componente del menú desplegable del usuario
- * Incluye opciones como perfil, configuración y cerrar sesión
+ * Incluye opciones como configuración y cerrar sesión
  */
 export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +31,11 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleNavigateToSettings = useCallback(() => {
+    setIsOpen(false);
+    navigate(paths.dashboard.settings);
+  }, [navigate]);
 
   const handleLogout = useCallback(() => {
     toast.info('Cerrando Sesion...');
@@ -82,12 +87,10 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
 
           {/* Opciones del menú */}
           <div className="py-1">
-                    <button className="w-full flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-300 hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 hover:text-white">
-              <User className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-              <span>Mi Perfil</span>
-            </button>
-            
-                    <button className="w-full flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-300 hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 hover:text-white">
+            <button
+              onClick={handleNavigateToSettings}
+              className="w-full flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-300 hover:bg-gradient-to-r hover:from-[#275081]/20 hover:to-[#F9E44E]/10 hover:text-white"
+            >
               <Settings className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>Configuración</span>
             </button>
@@ -100,7 +103,7 @@ export const UserDropdown = ({ user, onLogout }: UserDropdownProps) => {
           <div className="py-1">
             <button
               onClick={handleLogout}
-                      className="w-full flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300"
+              className="w-full flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-400 hover:bg-red-500/20 hover:text-red-300"
             >
               <LogOut className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
               <span>Salir</span>

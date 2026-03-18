@@ -454,7 +454,7 @@ export const generateCompleteDashboardExcel = async (
   report: CompleteDashboardReport
 ): Promise<void> => {
   const workbook = new ExcelJS.Workbook();
-  const { salesReport, productsReport, customersReport } = report;
+  const { salesReport, productsReport, customersReport, sellersReport } = report;
 
   // Calcular número de métodos de pago utilizados
   const paymentMethodsCount = [
@@ -761,6 +761,61 @@ export const generateCompleteDashboardExcel = async (
 
     // Nota: Los gráficos de ExcelJS requieren configuración adicional en el navegador
     // Los datos están disponibles para crear gráficos manualmente en Excel
+  }
+
+  // Hoja 6: Rendimiento por Vendedor
+  if (sellersReport && sellersReport.sellers.length > 0) {
+    const sellersSheet = workbook.addWorksheet("Rendimiento Vendedores");
+    sellersSheet.columns = [
+      { width: 30 },
+      { width: 15 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 15 },
+    ];
+
+    let sellersRow = 1;
+
+    // Agregar logo si está disponible
+    if (logoId !== undefined) {
+      sellersSheet.addImage(logoId, {
+        tl: { col: 0, row: sellersRow - 1 },
+        ext: { width: 200, height: 100 },
+      });
+      sellersRow += 5;
+    }
+
+    sellersSheet.mergeCells(`A${sellersRow}:F${sellersRow}`);
+    const sellersTitleCell = sellersSheet.getCell(`A${sellersRow}`);
+    sellersTitleCell.value = `Rendimiento por Vendedor - ${formatDateRange(
+      sellersReport.startDate,
+      sellersReport.endDate
+    )}`;
+    sellersTitleCell.font = { size: 14, bold: true };
+    sellersTitleCell.alignment = { horizontal: "center", vertical: "middle" };
+    sellersRow += 2;
+
+    sellersSheet.getCell(`A${sellersRow}`).value = "Vendedor";
+    sellersSheet.getCell(`B${sellersRow}`).value = "Órdenes";
+    sellersSheet.getCell(`C${sellersRow}`).value = "Total Ventas";
+    sellersSheet.getCell(`D${sellersRow}`).value = "Efectivo";
+    sellersSheet.getCell(`E${sellersRow}`).value = "QR";
+    sellersSheet.getCell(`F${sellersRow}`).value = "Porcentaje";
+    sellersSheet.getRow(sellersRow).font = { bold: true };
+    sellersRow++;
+
+    sellersReport.sellers.forEach((seller) => {
+      sellersSheet.getCell(`A${sellersRow}`).value = seller.sellerName;
+      sellersSheet.getCell(`B${sellersRow}`).value = seller.totalOrders;
+      sellersSheet.getCell(`C${sellersRow}`).value = Number(seller.totalSales);
+      sellersSheet.getCell(`D${sellersRow}`).value = Number(seller.cashTotal);
+      sellersSheet.getCell(`E${sellersRow}`).value = Number(seller.qrTotal);
+      sellersSheet.getCell(
+        `F${sellersRow}`
+      ).value = `${seller.percentage.toFixed(2)}%`;
+      sellersRow++;
+    });
   }
 
   // Generar buffer y descargar

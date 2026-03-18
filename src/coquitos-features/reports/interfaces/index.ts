@@ -24,5 +24,9 @@ export type {
   GetProductsReportParams,
   GetCustomersReportParams,
   GetCashRegisterSummaryParams,
+  SellersReport,
+  SellerReportItem,
+  SellersReportResponse,
+  GetSellersReportParams,
 } from "@/shared/reports";
 

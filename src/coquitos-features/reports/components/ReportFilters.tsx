@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Calendar, FileSpreadsheet, FileText } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
-import type { SalesReport, ProductsReport, CustomersReport, CashRegisterSummaryReport } from "../interfaces";
+import type { SalesReport, ProductsReport, CustomersReport, CashRegisterSummaryReport, SellersReport } from "../interfaces";
 import {
   generateSalesReportPDF,
   generateSalesReportExcel,
@@ -26,6 +26,7 @@ interface ReportFiltersProps {
   productsReport?: ProductsReport;
   customersReport?: CustomersReport;
   cashRegisterSummary?: CashRegisterSummaryReport;
+  sellersReport?: SellersReport;
 }
 
 /**
@@ -42,6 +43,7 @@ export const ReportFilters = ({
   productsReport,
   customersReport,
   cashRegisterSummary,
+  sellersReport,
 }: ReportFiltersProps) => {
   const { isDark } = useTheme();
 
@@ -70,6 +72,7 @@ export const ReportFilters = ({
           salesReport,
           productsReport,
           customersReport,
+          sellersReport,
         });
       } else if (salesReport) {
         await generateSalesReportPDF(salesReport);
@@ -93,6 +96,7 @@ export const ReportFilters = ({
           salesReport,
           productsReport,
           customersReport,
+          sellersReport,
         });
       } else if (salesReport) {
         await generateSalesReportExcel(salesReport);

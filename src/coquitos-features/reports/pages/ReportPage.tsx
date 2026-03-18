@@ -160,6 +160,7 @@ export const ReportPage = () => {
         salesReport={salesReport}
         productsReport={productsReport}
         customersReport={customersReport}
+        sellersReport={isAdmin ? sellersReport : undefined}
       />
 
       {/* Loading State */}

@@ -8,6 +8,7 @@ import type {
   ProductsReport,
   CustomersReport,
   CashRegisterSummaryReport,
+  SellersReport,
 } from "../types/report.types";
 import { formatCurrency, formatDateShort, formatDateRange } from "../utils";
 
@@ -16,6 +17,7 @@ export interface CompleteDashboardReport {
   salesReport: SalesReport;
   productsReport?: ProductsReport;
   customersReport?: CustomersReport;
+  sellersReport?: SellersReport;
 }
 
 /**
@@ -477,7 +479,7 @@ export const generateCashRegisterSummaryPDF = async (report: CashRegisterSummary
  * Incluye todos los datos: KPIs, ventas por hora, métodos de pago, productos más vendidos, mejores clientes y ventas por día
  */
 const CompleteDashboardReportPDF: React.FC<{ report: CompleteDashboardReport }> = ({ report }) => {
-  const { salesReport, productsReport, customersReport } = report;
+  const { salesReport, productsReport, customersReport, sellersReport } = report;
   
   // Calcular número de métodos de pago utilizados
   const paymentMethodsCount = [
@@ -763,6 +765,69 @@ const CompleteDashboardReportPDF: React.FC<{ report: CompleteDashboardReport }> 
                   <Text style={styles.tableCell}>{formatDateShort(day.date)}</Text>
                   <Text style={styles.tableCell}>{formatCurrency(day.total)}</Text>
                   <Text style={styles.tableCell}>{day.orders}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* Rendimiento por Vendedor */}
+        {sellersReport && sellersReport.sellers.length > 0 && (
+          <View style={styles.section} break>
+            <Text style={styles.sectionTitle}>Rendimiento por Vendedor</Text>
+            {/* Gráfico de barras horizontales */}
+            <View style={styles.chartContainer}>
+              {sellersReport.sellers.slice(0, 5).map((seller, index) => {
+                const maxSales = Math.max(...sellersReport.sellers.map((s) => s.totalSales), 1);
+                const barWidth = maxSales > 0 ? (seller.totalSales / maxSales) * 100 : 0;
+                return (
+                  <View key={index} style={{ marginBottom: 12 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
+                      <Text style={{ fontSize: 8, width: 120, flexShrink: 0 }}>
+                        {seller.sellerName.length > 25
+                          ? `${seller.sellerName.substring(0, 25)}...`
+                          : seller.sellerName}
+                      </Text>
+                      <View
+                        style={{
+                          height: 16,
+                          backgroundColor: "#F59E0B",
+                          borderRadius: 2,
+                          width: `${barWidth}%`,
+                          maxWidth: "200px",
+                          marginLeft: 8,
+                          marginRight: 8,
+                        }}
+                      />
+                      <Text style={{ fontSize: 8, fontWeight: "bold", width: 60, textAlign: "right" }}>
+                        {formatCurrency(seller.totalSales)}
+                      </Text>
+                      <Text style={{ fontSize: 7, color: "#666", width: 40, textAlign: "right", marginLeft: 4 }}>
+                        {seller.percentage.toFixed(1)}%
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+            {/* Tabla de datos */}
+            <View style={styles.table}>
+              <View style={styles.tableHeader}>
+                <Text style={[styles.tableCell, { flex: 1.5 }]}>Vendedor</Text>
+                <Text style={styles.tableCell}>Órdenes</Text>
+                <Text style={styles.tableCell}>Total Ventas</Text>
+                <Text style={styles.tableCell}>Efectivo</Text>
+                <Text style={styles.tableCell}>QR</Text>
+                <Text style={styles.tableCell}>%</Text>
+              </View>
+              {sellersReport.sellers.map((seller, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { flex: 1.5 }]}>{seller.sellerName}</Text>
+                  <Text style={styles.tableCell}>{seller.totalOrders}</Text>
+                  <Text style={styles.tableCell}>{formatCurrency(seller.totalSales)}</Text>
+                  <Text style={styles.tableCell}>{formatCurrency(seller.cashTotal)}</Text>
+                  <Text style={styles.tableCell}>{formatCurrency(seller.qrTotal)}</Text>
+                  <Text style={styles.tableCell}>{seller.percentage.toFixed(2)}%</Text>
                 </View>
               ))}
             </View>

@@ -93,7 +93,7 @@ export const generateDailyReportExcel = async (
   worksheet.getCell(`B${currentRow}`).value = report.totalOrders;
   currentRow++;
 
-  worksheet.getCell(`A${currentRow}`).value = "Ticket Promedio:";
+  worksheet.getCell(`A${currentRow}`).value = "Venta Promedio:";
   worksheet.getCell(`B${currentRow}`).value = formatCurrency(
     report.averageTicket
   );
@@ -173,7 +173,7 @@ export const generateSalesReportExcel = async (
   worksheet.getCell(`B${currentRow}`).value = report.totalOrders;
   currentRow++;
 
-  worksheet.getCell(`A${currentRow}`).value = "Ticket Promedio:";
+  worksheet.getCell(`A${currentRow}`).value = "Venta Promedio:";
   worksheet.getCell(`B${currentRow}`).value = formatCurrency(
     report.averageTicket
   );
@@ -523,7 +523,7 @@ export const generateCompleteDashboardExcel = async (
   summarySheet.getCell(`B${currentRow}`).value = salesReport.totalOrders;
   currentRow++;
 
-  summarySheet.getCell(`A${currentRow}`).value = "Ticket Promedio:";
+  summarySheet.getCell(`A${currentRow}`).value = "Venta Promedio:";
   summarySheet.getCell(`B${currentRow}`).value = formatCurrency(
     salesReport.averageTicket
   );

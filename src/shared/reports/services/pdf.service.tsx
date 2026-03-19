@@ -202,7 +202,7 @@ const DailyReportPDF: React.FC<{ report: DailyReport }> = ({ report }) => (
           <Text style={styles.value}>{report.totalOrders}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>Ticket Promedio:</Text>
+          <Text style={styles.label}>Venta Promedio:</Text>
           <Text style={styles.value}>{formatCurrency(report.averageTicket)}</Text>
         </View>
       </View>
@@ -252,7 +252,7 @@ const SalesReportPDF: React.FC<{ report: SalesReport }> = ({ report }) => (
           <Text style={styles.value}>{report.totalOrders}</Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>Ticket Promedio:</Text>
+          <Text style={styles.label}>Venta Promedio:</Text>
           <Text style={styles.value}>{formatCurrency(report.averageTicket)}</Text>
         </View>
       </View>
@@ -543,7 +543,7 @@ const CompleteDashboardReportPDF: React.FC<{ report: CompleteDashboardReport }> 
             <Text style={styles.value}>{salesReport.totalOrders}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Ticket Promedio:</Text>
+            <Text style={styles.label}>Venta Promedio:</Text>
             <Text style={styles.value}>{formatCurrency(salesReport.averageTicket)}</Text>
           </View>
           <View style={styles.row}>

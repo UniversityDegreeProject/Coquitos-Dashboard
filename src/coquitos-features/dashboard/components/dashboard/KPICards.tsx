@@ -48,7 +48,7 @@ export const KPICards = memo(() => {
         bgColor: isDark ? "bg-orange-500/10" : "bg-orange-50",
       },
       {
-        title: "Ticket promedio",
+        title: "Venta promedio",
         value: formatCurrency(averageTicket),
         change: "",
         icon: TrendingUp,

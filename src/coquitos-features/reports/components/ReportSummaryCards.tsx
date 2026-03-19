@@ -31,7 +31,7 @@ export const ReportSummaryCards = ({ report }: ReportSummaryCardsProps) => {
       iconColor: "text-blue-600",
     },
     {
-      title: "Ticket Promedio",
+      title: "Venta Promedio",
       value: formatCurrency(report.averageTicket),
       icon: CreditCard,
       color: "orange",

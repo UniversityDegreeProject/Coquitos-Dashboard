@@ -20,7 +20,17 @@ export const FormSystemConfig = () => {
   const { isDark, colors } = useTheme();
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  const { register, handleSubmit, setValue } = useForm<ConfigFormData>();
+  const { register, handleSubmit, setValue } = useForm<ConfigFormData>({
+    defaultValues: {
+      restaurantName: "",
+      address: "",
+      phone: "",
+      nit: "",
+      timezone: "America/La_Paz",
+      currency: "BOB",
+      dateFormat: "DD/MM/YYYY",
+    },
+  });
 
   // Populate form when data is loaded
   useEffect(() => {

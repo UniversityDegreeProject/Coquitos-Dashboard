@@ -28,8 +28,13 @@ export const menuItems = (isAdmin: boolean): MenuItem[] => {
     { to: paths.dashboard.home, label: "Inicio", icon: Home },
     { to: paths.dashboard.sales, label: "Ventas", icon: ShoppingCart },
     {
+      to: paths.dashboard.cashClosing,
+      label: "Caja",
+      icon: Calculator,
+    },
+    {
       to: paths.dashboard.products,
-      label: "Gestión de Ventas",
+      label: "Productos - Clientes",
       icon: Package,
       submenu: [
         { to: paths.dashboard.products, label: "Productos", icon: Package },
@@ -58,11 +63,7 @@ export const menuItems = (isAdmin: boolean): MenuItem[] => {
     ...(isAdmin
       ? [{ to: paths.dashboard.reports, label: "Reportes", icon: BarChart3 }]
       : []),
-    {
-      to: paths.dashboard.cashClosing,
-      label: "Caja",
-      icon: Calculator,
-    },
+
     ...(isAdmin
       ? [
           {

@@ -104,21 +104,22 @@ export const FormCategoryModal = (props: FormCategoryModalProps) => {
 
     if (similarMatches.length > 0) {
       const similarList = similarMatches
-        .map((m) => `<strong>${m.name}</strong> (${m.similarity.toFixed(0)}% similar)`)
-        .join('<br/>');
+        // TODO: en caso de poner el porcentaje de similitud -> ${m.similarity.toFixed(0)}%
+        .map((m) => `<strong>${m.name}</strong> (similar)`)
+        .join("<br/>");
 
       const result = await Swal.fire({
-        title: '¿Nombre similar detectado!',
+        title: "¿Nombre similar detectado!",
         html: `<p>Se encontró una categoría con nombre parecido:</p><br/>${similarList}<br/><br/><p>¿Desea continuar con el registro de <strong>"${data.name}"</strong>?</p>`,
-        icon: 'warning',
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#275081',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, continuar',
-        cancelButtonText: 'No, cancelar',
+        confirmButtonColor: "#275081",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, continuar",
+        cancelButtonText: "No, cancelar",
         customClass: {
-          popup: 'rounded-xl',
-          title: 'text-xl font-bold',
+          popup: "rounded-xl",
+          title: "text-xl font-bold",
         },
       });
 

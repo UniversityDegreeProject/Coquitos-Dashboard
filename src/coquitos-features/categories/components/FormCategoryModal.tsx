@@ -1,6 +1,7 @@
 // * Library
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { X, Layers, FileText, CheckCircle, Loader2 } from "lucide-react";
+import Swal from "sweetalert2";
 import { useEffect } from "react";
 
 // * Others
@@ -14,6 +15,7 @@ import { useTheme } from "@/shared/hooks/useTheme";
 import { statusOptions } from "../const";
 import { createCategorySchema, type CategorySchema } from "../schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { findSimilarNames } from "@/shared/utils/stringSimilarity";
 import { useCreateCategory } from "../hooks/useCreateCategory";
 import { useShallow } from "zustand/shallow";
 import { useUpdateCategory } from "../hooks/useUpdateCategory";
@@ -30,6 +32,7 @@ const initialValues: CategorySchema = {
 
 interface FormCategoryModalProps {
   currentParams: SearchCategoriesParams;
+  existingNames?: string[];
 }
 
 /**
@@ -37,7 +40,7 @@ interface FormCategoryModalProps {
  * Implementa validación con React Hook Form y Zod
  */
 export const FormCategoryModal = (props: FormCategoryModalProps) => {
-  const { currentParams } = props;
+  const { currentParams, existingNames = [] } = props;
   // * Zustand
   const closeModal = useCategoryStore(useShallow((state) => state.closeModal));
   const modalMode = useCategoryStore(useShallow((state) => state.modalMode));
@@ -80,15 +83,49 @@ export const FormCategoryModal = (props: FormCategoryModalProps) => {
     mode: "onSubmit",
   });
 
-  const handleSubmitForm: SubmitHandler<CategorySchema> = (data) => {
+  const proceedWithSubmit = (data: CategorySchema) => {
     closeModal();
     setIsMutation(true);
     if (isEditMode) {
       updateCategoryMutation.mutate(data);
       return;
     }
-
     useCreateCategoryMutation.mutate(data);
+  };
+
+  const handleSubmitForm: SubmitHandler<CategorySchema> = async (data) => {
+    // Buscar nombres similares entre las categorías existentes
+    const similarMatches = findSimilarNames(
+      data.name,
+      existingNames,
+      70,
+      isEditMode ? categoryToUpdate?.name : undefined,
+    );
+
+    if (similarMatches.length > 0) {
+      const similarList = similarMatches
+        .map((m) => `<strong>${m.name}</strong> (${m.similarity.toFixed(0)}% similar)`)
+        .join('<br/>');
+
+      const result = await Swal.fire({
+        title: '¿Nombre similar detectado!',
+        html: `<p>Se encontró una categoría con nombre parecido:</p><br/>${similarList}<br/><br/><p>¿Desea continuar con el registro de <strong>"${data.name}"</strong>?</p>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#275081',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, continuar',
+        cancelButtonText: 'No, cancelar',
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-xl font-bold',
+        },
+      });
+
+      if (!result.isConfirmed) return;
+    }
+
+    proceedWithSubmit(data);
   };
 
   // Effect para actualizar el modal en modo edición

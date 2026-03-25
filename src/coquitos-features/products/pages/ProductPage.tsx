@@ -331,11 +331,11 @@ export const ProductPage = () => {
 
       {/* Create Product Modal */}
       {modalMode === "create" && (
-        <FormProductModal currentParams={currentParams} />
+        <FormProductModal currentParams={currentParams} existingNames={products.map(p => p.name)} />
       )}
       {/* Update Product Modal */}
       {modalMode === "update" && (
-        <FormProductModal currentParams={currentParams} />
+        <FormProductModal currentParams={currentParams} existingNames={products.map(p => p.name)} />
       )}
 
       {/* Stock Movement Modal */}

@@ -232,10 +232,10 @@ export const CategoriesPage = () => {
 
       {/* Modals */}
       {modalMode === "create" && (
-        <FormCategoryModal currentParams={currentParams} />
+        <FormCategoryModal currentParams={currentParams} existingNames={categories.map(c => c.name)} />
       )}
       {modalMode === "update" && (
-        <FormCategoryModal currentParams={currentParams} />
+        <FormCategoryModal currentParams={currentParams} existingNames={categories.map(c => c.name)} />
       )}
     </div>
   );

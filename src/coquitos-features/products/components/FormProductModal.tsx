@@ -56,6 +56,7 @@ import { BatchList, BatchListLocal, FormBatchModal } from "./";
 import { productsQueries } from "../const";
 import { createBatch } from "../services/product-batch.service";
 import Swal from "sweetalert2";
+import { findSimilarNames } from "@/shared/utils/stringSimilarity";
 
 const onlyStatusOptions = statusOptions;
 
@@ -78,12 +79,16 @@ const initialValues: ProductSchema = {
 
 interface FormProductModalProps {
   currentParams: SearchProductsParams;
+  existingNames?: string[];
 }
 /**
  * Modal de formulario para crear/editar productos
  * Implementa validación con React Hook Form y Zod
  */
-export const FormProductModal = ({ currentParams }: FormProductModalProps) => {
+export const FormProductModal = ({
+  currentParams,
+  existingNames = [],
+}: FormProductModalProps) => {
   // * Estado local para batches pendientes (solo en modo creación)
   const [pendingBatches, setPendingBatches] = useState<PendingBatch[]>([]);
   // * Estado local para modal de batch
@@ -194,6 +199,38 @@ export const FormProductModal = ({ currentParams }: FormProductModalProps) => {
   }, []);
 
   const onSubmit: SubmitHandler<ProductSchema> = async (data) => {
+    // Verificar nombres similares antes de continuar
+    const similarMatches = findSimilarNames(
+      data.name,
+      existingNames,
+      70,
+      isEditMode ? productToUpdate?.name : undefined,
+    );
+
+    if (similarMatches.length > 0) {
+      const similarList = similarMatches
+        // TODO: en caso de poner el porcentaje de similitud -> ${m.similarity.toFixed(0)}%
+        .map((m) => `<strong>${m.name}</strong> (similar)`)
+        .join("<br/>");
+
+      const result = await Swal.fire({
+        title: "¡Nombre similar detectado!",
+        html: `<p>Se encontró un producto con nombre parecido:</p><br/>${similarList}<br/><br/><p>¿Desea continuar con el registro de <strong>"${data.name}"</strong>?</p>`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#275081",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, continuar",
+        cancelButtonText: "No, cancelar",
+        customClass: {
+          popup: "rounded-xl",
+          title: "text-xl font-bold",
+        },
+      });
+
+      if (!result.isConfirmed) return;
+    }
+
     /* eslint-disable @typescript-eslint/no-explicit-any */
     // Convertir strings a números para el backend
     const productData: any = {

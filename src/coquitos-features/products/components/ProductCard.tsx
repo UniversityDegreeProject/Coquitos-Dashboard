@@ -107,14 +107,14 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
         {/* Badges en la esquina superior derecha */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
           {/* Badge de estado */}
-          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-md ${getStatusColor(effectiveStatus)}`}>
+          <span className={`inline-flex px-2.5 py-1.5 text-sm font-medium rounded-md ${getStatusColor(effectiveStatus)}`}>
             {effectiveStatus === 'SinStock' ? 'Sin Stock' : effectiveStatus}
           </span>
           
           {/* Badge de stock bajo - solo mostrar si stock > 0 y stock <= minStock */}
           {product.stock > 0 && product.stock <= product.minStock && effectiveStatus !== 'SinStock' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-sm shadow-yellow-500/50 animate-pulse">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium rounded-md bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-sm shadow-yellow-500/50 animate-pulse">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
               Stock Bajo
@@ -123,24 +123,24 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
           
           {/* Badge de próximo a vencer - mostrar si faltan 4, 3 o 2 días */}
           {isNearExpiration && product.stock > 0 && effectiveStatus !== 'SinStock' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-sm shadow-red-500/50 animate-pulse">
-              <Clock className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium rounded-md bg-gradient-to-r from-red-500 to-rose-500 text-white shadow-sm shadow-red-500/50 animate-pulse">
+              <Clock className="w-3.5 h-3.5" />
               Próximo a vencer
             </span>
           )}
           
           {/* Badge de vence mañana - mostrar solo si falta 1 día */}
           {daysUntilExpiration === 1 && product.stock > 0 && effectiveStatus !== 'SinStock' && !isNearExpiration && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-sm shadow-orange-500/50 animate-pulse">
-              <Clock className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium rounded-md bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-sm shadow-orange-500/50 animate-pulse">
+              <Clock className="w-3.5 h-3.5" />
               Vence Mañana
             </span>
           )}
           
           {/* Badge de vence hoy - mostrar solo si es el día exacto */}
           {daysUntilExpiration === 0 && product.stock > 0 && effectiveStatus !== 'SinStock' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-red-600 to-red-800 text-white shadow-sm shadow-red-600/50 animate-pulse">
-              <Clock className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium rounded-md bg-gradient-to-r from-red-600 to-red-800 text-white shadow-sm shadow-red-600/50 animate-pulse">
+              <Clock className="w-3.5 h-3.5" />
               Vence Hoy
             </span>
           )}
@@ -156,8 +156,8 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
           </h3>
           {/* Badge de producto variable - solo para productos con gestión por lotes */}
           {product.isVariableWeight && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-md bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm flex-shrink-0">
-              <Layers className="w-3 h-3" />
+            <span className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium rounded-md bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-sm flex-shrink-0">
+              <Layers className="w-3.5 h-3.5" />
               Por Lotes
             </span>
           )}

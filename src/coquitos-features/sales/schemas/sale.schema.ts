@@ -16,7 +16,6 @@ export const createSaleSchema = z
 
     amountPaid: z
       .string({ error: "Monto pagado es requerido" })
-      .optional()
       .default(""),
 
     notes: z

@@ -138,13 +138,18 @@ export const FormCreateSaleModal = () => {
   const cartTotal = getCartTotal();
   const amountPaidNumber = parseFloat(watchedAmountPaid || "0");
   const change = amountPaidNumber - cartTotal;
-  const isPaymentSufficient = amountPaidNumber >= cartTotal && cartTotal > 0;
 
   // * Hook para generar QR
-  const { qrUrl, isPaid, isQrLoading, generateQR, transactionId, resetQR } =
+  const { qrUrl, isPaid, isQrLoading, generateQR, transactionId, codigoRecaudacion, resetQR } =
     usePaymentQR(cartTotal, cartItems);
 
   const selectedPaymentMethod = useWatch({ control, name: "paymentMethod" });
+
+  // Para QR: el monto lo valida Libélula → suficiente si isPaid=true
+  // Para Efectivo/Tarjeta: el vendedor ingresa el monto manualmente
+  const isPaymentSufficient = selectedPaymentMethod === "QR"
+    ? (isPaid && cartTotal > 0)
+    : (amountPaidNumber >= cartTotal && cartTotal > 0);
 
   // * Handler para agregar producto al carrito
   const handleAddProductToCart = useCallback(
@@ -274,10 +279,13 @@ export const FormCreateSaleModal = () => {
         batchId: item.batchId,
       })),
       paymentMethod: data.paymentMethod,
-      amountPaid: amountPaidNumber,
+      // Para QR: usar el total exacto del carrito (validado por Libélula)
+      // Para Efectivo: usar el monto que ingresó el vendedor
+      amountPaid: data.paymentMethod === "QR" ? cartTotal : amountPaidNumber,
       notes: data.notes,
-      // * pago por QR
+      // * pago por QR — código de recaudación para verificación server-side
       transactionId: data.paymentMethod === "QR" ? transactionId : null,
+      codigoRecaudacion: data.paymentMethod === "QR" ? codigoRecaudacion : undefined,
     };
 
     useCreateSaleMutation.mutate(saleData);

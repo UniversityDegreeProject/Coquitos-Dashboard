@@ -177,29 +177,51 @@ export const CheckoutForm = memo(
                 isDark ? "text-gray-400" : "text-gray-500"
               } z-10`}
             />
-            <Controller
-              name="amountPaid"
-              control={control}
-              render={({ field }) => (
-                <input
-                  {...field}
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0.00"
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
-                    isDark
-                      ? "bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]"
-                      : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]"
-                  } focus:ring-2 ring-offset-1 ${
-                    isDark
-                      ? "focus:ring-[#F59E0B]/20"
-                      : "focus:ring-[#275081]/20"
-                  } outline-none transition-all duration-200`}
-                />
-              )}
-            />
+            {selectedPaymentMethod === "QR" ? (
+              /* QR: Monto bloqueado = total del carrito */
+              <input
+                type="text"
+                value={cartTotal.toFixed(2)}
+                disabled
+                className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
+                  isDark
+                    ? "bg-[#1E293B]/50 border-[#334155] text-gray-400"
+                    : "bg-gray-100 border-gray-200 text-gray-500"
+                } cursor-not-allowed outline-none`}
+              />
+            ) : (
+              /* Efectivo/Tarjeta: Monto editable */
+              <Controller
+                name="amountPaid"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
+                      isDark
+                        ? "bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]"
+                        : "bg-white border-gray-200 text-gray-900 placeholder-gray-400 focus:border-[#275081]"
+                    } focus:ring-2 ring-offset-1 ${
+                      isDark
+                        ? "focus:ring-[#F59E0B]/20"
+                        : "focus:ring-[#275081]/20"
+                    } outline-none transition-all duration-200`}
+                  />
+                )}
+              />
+            )}
           </div>
-          {errors.amountPaid && (
+          {selectedPaymentMethod === "QR" && (
+            <p className={`text-xs font-medium ${
+              isDark ? "text-[#F59E0B]/80" : "text-[#275081]/80"
+            }`}>
+              🔒 El monto se valida automáticamente con la pasarela de pagos
+            </p>
+          )}
+          {errors.amountPaid && selectedPaymentMethod !== "QR" && (
             <p className="text-red-500 text-xs font-medium">
               {errors.amountPaid.message}
             </p>

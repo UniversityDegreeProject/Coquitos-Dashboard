@@ -18,4 +18,5 @@ export interface GenerateQRResponse {
 export interface PaymentStatusResponse {
   pagado: boolean;
   fecha_pago: string | null;
+  valor_total: number;
 }

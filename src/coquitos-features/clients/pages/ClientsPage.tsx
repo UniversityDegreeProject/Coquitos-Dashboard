@@ -14,7 +14,7 @@ import {
   FormClientModal,
 } from "../components";
 import { clientsSearchFilterOptions } from "../const";
-import { GenericSearchBar } from "@/shared/components";
+import { GenericSearchBar } from "@/shared/components/GenericSearchBar";
 
 //* Others
 

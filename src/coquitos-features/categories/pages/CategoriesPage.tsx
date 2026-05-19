@@ -20,7 +20,7 @@ import {
   categoriesSearchSchema,
   type SearchCategoriesSchema,
 } from "../schemas";
-import { GenericSearchBar } from "@/shared/components";
+import { GenericSearchBar } from "@/shared/components/GenericSearchBar";
 import { categoriesSearchFilterOptions } from "../const";
 
 const searchDefaultValues: SearchCategoriesSchema = {

@@ -14,9 +14,7 @@ export const createSaleSchema = z
       error: "Método de pago debe ser Efectivo o QR",
     }),
 
-    amountPaid: z
-      .string({ error: "Monto pagado es requerido" })
-      .default(""),
+    amountPaid: z.string({ error: "Monto pagado es requerido" }),
 
     notes: z
       .string()

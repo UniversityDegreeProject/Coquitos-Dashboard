@@ -19,7 +19,7 @@ import { UnauthorizedUser } from "@/shared/pages";
 import { useGetUsers } from "../hooks/useGetUsers";
 import { useUsersStats } from "../hooks/useUsersStats";
 import { userSearchSchema, type SearchUsersSchema } from "../schemas";
-import { GenericSearchBar } from "@/shared/components";
+import { GenericSearchBar } from "@/shared/components/GenericSearchBar";
 import { usersSearchFilterOptions } from "../const";
 
 const searchDefaultValues: SearchUsersSchema = {

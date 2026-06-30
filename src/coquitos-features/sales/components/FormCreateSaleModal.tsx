@@ -2,8 +2,10 @@ import { useForm, useWatch, type SubmitHandler } from "react-hook-form";
 import { X, ShoppingCart, AlertTriangle } from "lucide-react";
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { useShallow } from "zustand/shallow";
 import { toast } from "sonner";
+import Swal from "sweetalert2";
 
 // Hooks y stores
 import { useSaleStore } from "../store/sale.store";
@@ -18,10 +20,12 @@ import { isProductExpiredOrExpiringToday } from "@/coquitos-features/products/he
 
 // Schemas y constantes
 import { createSaleSchema, type CreateSaleSchema } from "../schemas";
-import { paymentMethodOptions } from "../const";
+import { paymentMethodOptions, salesQueries } from "../const";
+import { productsQueries } from "@/coquitos-features/products/const";
+import { cashRegisterQueries } from "@/coquitos-features/cash-closing/const";
 
 // Tipos
-import type { CartItem } from "../interfaces";
+import type { CartItem, Sale } from "../interfaces";
 import type { Product } from "@/coquitos-features/products/interfaces";
 import type { ProductBatch } from "@/coquitos-features/products/interfaces/product-batch.interface";
 
@@ -59,6 +63,9 @@ export const FormCreateSaleModal = () => {
   const getCartTotal = useSaleStore(useShallow((state) => state.getCartTotal));
 
   const user = useAuthStore(useShallow((state) => state.user));
+
+  // * TanStack Query client (para invalidaciones al completar venta QR)
+  const queryClient = useQueryClient();
 
   // * Theme
   const { isDark } = useTheme();
@@ -133,15 +140,76 @@ export const FormCreateSaleModal = () => {
   });
 
   const watchedAmountPaid = watch("amountPaid");
+  const watchedCustomerId = watch("customerId");
+  const watchedNotes = watch("notes");
 
   // * Calcular totales
   const cartTotal = getCartTotal();
   const amountPaidNumber = parseFloat(watchedAmountPaid || "0");
   const change = amountPaidNumber - cartTotal;
 
-  // * Hook para generar QR
-  const { qrUrl, isPaid, isQrLoading, generateQR, transactionId, codigoRecaudacion, resetQR } =
-    usePaymentQR(cartTotal, cartItems);
+  // * Al confirmarse el pago QR el backend ya registró la venta: refrescamos y cerramos
+  const onSaleCompleted = useCallback(
+    async (sale: Sale) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: salesQueries.allSales,
+          refetchType: "active",
+        }),
+        queryClient.invalidateQueries({
+          queryKey: productsQueries.allProducts,
+          refetchType: "all",
+        }),
+        queryClient.refetchQueries({
+          queryKey: productsQueries.allProducts,
+          type: "active",
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["stock-movements"],
+          refetchType: "active",
+        }),
+        queryClient.invalidateQueries({
+          queryKey: cashRegisterQueries.allCashRegisters,
+          refetchType: "active",
+        }),
+      ]);
+
+      closeCreateSaleModal();
+      clearCart();
+
+      await Swal.fire({
+        title: "¡Venta Registrada!",
+        text: `Venta ${sale.saleNumber ?? ""} creada exitosamente`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: {
+          popup: "rounded-xl",
+          title: "text-xl font-bold text-gray-800",
+          htmlContainer: "text-gray-600",
+        },
+      });
+    },
+    [queryClient, closeCreateSaleModal, clearCart],
+  );
+
+  // * Hook para generar QR (reserva stock y completa la venta automáticamente)
+  const {
+    qrUrl,
+    isPaid,
+    isQrLoading,
+    generateQR,
+    cancelQR,
+    resetQR,
+  } = usePaymentQR({
+    cartTotal,
+    cartItems,
+    customerId: watchedCustomerId || "",
+    userId: user?.id || "",
+    cashRegisterId: cashRegister?.id || "",
+    notes: watchedNotes,
+    onSaleCompleted,
+  });
 
   const selectedPaymentMethod = useWatch({ control, name: "paymentMethod" });
 
@@ -240,19 +308,23 @@ export const FormCreateSaleModal = () => {
     [selectedProductForBatch, addToCart, cartItems],
   );
 
-  // *Effect de pago
-
+  // * Al cambiar de QR a otro método liberamos la reserva de stock en backend
   useEffect(() => {
-    if (selectedPaymentMethod !== "QR") resetQR();
-  }, [selectedPaymentMethod, resetQR]);
-
-  // * Submit handler
-  const onSubmit: SubmitHandler<CreateSaleSchema> = (data) => {
-    // TODO: Comentar - descomentar para pagar por libelula
-    if (data.paymentMethod === "QR" && !isPaid) {
-      toast.error("Debe completar el pago por QR antes de confirmar");
-      return;
+    if (selectedPaymentMethod !== "QR") {
+      void cancelQR().finally(resetQR);
     }
+  }, [selectedPaymentMethod, cancelQR, resetQR]);
+
+  // * Cerrar el modal liberando la reserva QR si existe (caso tienda física)
+  const handleCloseModal = useCallback(() => {
+    void cancelQR();
+    closeCreateSaleModal();
+  }, [cancelQR, closeCreateSaleModal]);
+
+  // * Submit handler (solo Efectivo: el flujo QR se completa automáticamente)
+  const onSubmit: SubmitHandler<CreateSaleSchema> = (data) => {
+    if (data.paymentMethod === "QR") return;
+
     if (cartItems.length === 0) {
       toast.error("Debes agregar al menos un producto al carrito");
       return;
@@ -279,13 +351,8 @@ export const FormCreateSaleModal = () => {
         batchId: item.batchId,
       })),
       paymentMethod: data.paymentMethod,
-      // Para QR: usar el total exacto del carrito (validado por Libélula)
-      // Para Efectivo: usar el monto que ingresó el vendedor
-      amountPaid: data.paymentMethod === "QR" ? cartTotal : amountPaidNumber,
+      amountPaid: amountPaidNumber,
       notes: data.notes,
-      // * pago por QR — código de recaudación para verificación server-side
-      transactionId: data.paymentMethod === "QR" ? transactionId : null,
-      codigoRecaudacion: data.paymentMethod === "QR" ? codigoRecaudacion : undefined,
     };
 
     useCreateSaleMutation.mutate(saleData);
@@ -358,7 +425,7 @@ export const FormCreateSaleModal = () => {
               </div>
             </div>
             <button
-              onClick={closeCreateSaleModal}
+              onClick={handleCloseModal}
               className={`p-2 ${
                 isDark
                   ? "text-gray-400 hover:text-white hover:bg-[#1E293B]"

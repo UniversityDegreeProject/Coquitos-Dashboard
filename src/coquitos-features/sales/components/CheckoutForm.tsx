@@ -72,6 +72,15 @@ export const CheckoutForm = memo(
       name: "paymentMethod",
     });
 
+    const selectedCustomerId = useWatch({
+      control,
+      name: "customerId",
+    });
+
+    // Solo se puede generar el QR (que reserva stock) con cliente, carrito y caja
+    const canGenerateQR =
+      !!selectedCustomerId && cartItemsCount > 0 && hasCashRegister;
+
     return (
       <form
         onSubmit={(e) => {
@@ -235,19 +244,30 @@ export const CheckoutForm = memo(
             className={`p-4 rounded-xl border mb-4 ${isDark ? "bg-[#0F172A] border-[#F59E0B]/30" : "bg-blue-50 border-[#275081]/20"}`}
           >
             {!qrUrl ? (
-              <button
-                type="button"
-                onClick={onGenerateQR}
-                disabled={isQrLoading || cartItemsCount === 0}
-                className="w-full py-2 bg-[#F59E0B] text-white rounded-lg font-bold hover:bg-[#D97706] transition-colors flex items-center justify-center gap-2"
-              >
-                {isQrLoading ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <ShoppingCart size={18} />
+              <>
+                <button
+                  type="button"
+                  onClick={onGenerateQR}
+                  disabled={isQrLoading || !canGenerateQR}
+                  className="w-full py-2 bg-[#F59E0B] text-white rounded-lg font-bold hover:bg-[#D97706] transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  {isQrLoading ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <ShoppingCart size={18} />
+                  )}
+                  Generar QR de Cobro
+                </button>
+                {!canGenerateQR && (
+                  <p className="text-xs text-amber-600 mt-2 text-center">
+                    {!hasCashRegister
+                      ? "Debes abrir la caja para generar el QR"
+                      : !selectedCustomerId
+                        ? "Selecciona un cliente para generar el QR"
+                        : "Agrega al menos un producto al carrito"}
+                  </p>
                 )}
-                Generar QR de Cobro
-              </button>
+              </>
             ) : (
               <div className="flex flex-col items-center gap-2">
                 <img
@@ -280,45 +300,46 @@ export const CheckoutForm = memo(
           error={errors.notes?.message}
         />
 
-        {/* Botón de confirmar venta */}
-        <button
-          type="submit"
-          disabled={
-            isPending ||
-            !isPaymentSufficient ||
-            cartItemsCount === 0 ||
-            !hasCashRegister ||
-            // TODO: Comentar - descomentar esto para pagar por libelula
-            (selectedPaymentMethod === "QR" && !isPaid)
-          }
-          className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
-            isPending ||
-            !isPaymentSufficient ||
-            cartItemsCount === 0 ||
-            !hasCashRegister
-              ? "bg-gray-400 cursor-not-allowed"
-              : isDark
-                ? "bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B] hover:shadow-2xl hover:shadow-[#F59E0B]/50"
-                : "bg-gradient-to-r from-[#275081] via-blue-600 to-[#F9E44E] hover:shadow-2xl hover:shadow-[#275081]/50"
-          } text-white shadow-md`}
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Procesando...
-            </>
-          ) : !hasCashRegister ? (
-            <>
-              <AlertTriangle className="w-5 h-5" />
-              Caja Cerrada
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-5 h-5" />
-              Confirmar Venta
-            </>
-          )}
-        </button>
+        {/* Botón de confirmar venta — oculto en QR (la venta se registra
+            automáticamente al confirmarse el pago) */}
+        {selectedPaymentMethod !== "QR" && (
+          <button
+            type="submit"
+            disabled={
+              isPending ||
+              !isPaymentSufficient ||
+              cartItemsCount === 0 ||
+              !hasCashRegister
+            }
+            className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+              isPending ||
+              !isPaymentSufficient ||
+              cartItemsCount === 0 ||
+              !hasCashRegister
+                ? "bg-gray-400 cursor-not-allowed"
+                : isDark
+                  ? "bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B] hover:shadow-2xl hover:shadow-[#F59E0B]/50"
+                  : "bg-gradient-to-r from-[#275081] via-blue-600 to-[#F9E44E] hover:shadow-2xl hover:shadow-[#275081]/50"
+            } text-white shadow-md`}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Procesando...
+              </>
+            ) : !hasCashRegister ? (
+              <>
+                <AlertTriangle className="w-5 h-5" />
+                Caja Cerrada
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-5 h-5" />
+                Confirmar Venta
+              </>
+            )}
+          </button>
+        )}
       </form>
     );
   },

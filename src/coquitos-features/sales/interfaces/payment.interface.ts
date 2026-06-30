@@ -1,10 +1,16 @@
+import type { Sale } from "./sale.interface";
+
 export interface GenerateQRRequest {
-  amount: number;
+  customerId: string;
+  userId: string;
+  cashRegisterId: string;
   items: {
-    concepto: string;
-    cantidad: number;
-    costo_unitario: number;
+    productId: string;
+    quantity: number;
+    unitPrice: number;
+    batchId?: string;
   }[];
+  notes?: string;
 }
 
 export interface GenerateQRResponse {
@@ -17,6 +23,11 @@ export interface GenerateQRResponse {
 
 export interface PaymentStatusResponse {
   pagado: boolean;
-  fecha_pago: string | null;
   valor_total: number;
+  saleCompleted: boolean;
+  sale: Sale | null;
+}
+
+export interface CancelQRResponse {
+  released: boolean;
 }

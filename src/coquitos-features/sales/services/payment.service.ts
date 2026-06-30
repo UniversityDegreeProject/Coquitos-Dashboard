@@ -1,5 +1,6 @@
 import { CoquitoApi } from "@/config/axios.adapter";
 import type {
+  CancelQRResponse,
   GenerateQRRequest,
   GenerateQRResponse,
   PaymentStatusResponse,
@@ -16,10 +17,20 @@ export const generatePaymentQR = async (
 };
 
 export const checkPaymentStatus = async (
-  transactionId: string,
+  codigoRecaudacion: string,
 ): Promise<PaymentStatusResponse> => {
   const response = await CoquitoApi.get<PaymentStatusResponse>(
-    `/payments/status/${transactionId}`,
+    `/payments/status/${codigoRecaudacion}`,
+  );
+  return response.data;
+};
+
+export const cancelPaymentQR = async (
+  codigoRecaudacion: string,
+): Promise<CancelQRResponse> => {
+  const response = await CoquitoApi.post<CancelQRResponse>(
+    "/payments/cancel-qr",
+    { codigoRecaudacion },
   );
   return response.data;
 };

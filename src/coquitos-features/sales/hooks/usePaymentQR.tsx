@@ -9,6 +9,9 @@ import {
 import { toast } from "sonner";
 import type { CartItem, Sale } from "../interfaces";
 
+/** Intervalo de polling del estado QR (ms). */
+const QR_POLL_INTERVAL_MS = 3000;
+
 interface UsePaymentQRParams {
   cartTotal: number;
   cartItems: CartItem[];
@@ -16,8 +19,6 @@ interface UsePaymentQRParams {
   userId: string;
   cashRegisterId: string;
   notes?: string;
-  // Se ejecuta cuando el backend confirma el pago y registra la venta
-  onSaleCompleted?: (sale: Sale) => void;
 }
 
 export const usePaymentQR = ({
@@ -27,7 +28,6 @@ export const usePaymentQR = ({
   userId,
   cashRegisterId,
   notes,
-  onSaleCompleted,
 }: UsePaymentQRParams) => {
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState<string | null>(null);
@@ -35,12 +35,17 @@ export const usePaymentQR = ({
     null,
   );
   const [isPaid, setIsPaid] = useState(false);
+  // Venta ya creada en backend al detectar el pago (el cajero confirma en UI)
+  const [completedSale, setCompletedSale] = useState<Sale | null>(null);
 
-  // Mantener el callback más reciente sin re-suscribir el polling
-  const onSaleCompletedRef = useRef(onSaleCompleted);
+  const isPaidRef = useRef(false);
+  const completedSaleRef = useRef<Sale | null>(null);
   useEffect(() => {
-    onSaleCompletedRef.current = onSaleCompleted;
-  }, [onSaleCompleted]);
+    isPaidRef.current = isPaid;
+  }, [isPaid]);
+  useEffect(() => {
+    completedSaleRef.current = completedSale;
+  }, [completedSale]);
 
   const generateQRMutation = useMutation({
     mutationFn: () =>
@@ -60,6 +65,8 @@ export const usePaymentQR = ({
       setQrUrl(data.qr_simple_url);
       setTransactionId(data.id_transaccion);
       setCodigoRecaudacion(data.codigo_recaudacion);
+      setIsPaid(false);
+      setCompletedSale(null);
       toast.success("QR generado exitosamente");
     },
     onError: (error) => {
@@ -71,7 +78,7 @@ export const usePaymentQR = ({
     },
   });
 
-  // Polling del estado de pago: el backend completa la venta al primer pago
+  // Polling: solo refleja el pago en UI. El backend ya registra la venta.
   useEffect(() => {
     if (!codigoRecaudacion || isPaid) return;
 
@@ -81,11 +88,10 @@ export const usePaymentQR = ({
 
         if (status.pagado && status.saleCompleted && status.sale) {
           setIsPaid(true);
+          setCompletedSale(status.sale);
           clearInterval(interval);
           toast.success("¡Pago confirmado!");
-          onSaleCompletedRef.current?.(status.sale);
         } else if (status.pagado && !status.saleCompleted) {
-          // Pago detectado pero el monto no cubre el total
           toast.error(
             `El pago recibido no cubre el total (${cartTotal.toFixed(
               2,
@@ -96,31 +102,67 @@ export const usePaymentQR = ({
       } catch (error) {
         console.warn("Reintentando consulta de pago...", error);
       }
-    }, 5000);
+    }, QR_POLL_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [codigoRecaudacion, isPaid, cartTotal]);
 
-  // Libera la reserva de stock en el backend (solo si no se pagó aún)
-  const cancelQR = useCallback(async () => {
-    if (!codigoRecaudacion || isPaid) return;
+  /**
+   * Libera la reserva solo si aún no hay pago.
+   * Antes de cancelar consulta status una vez: si Libélula ya cobró,
+   * no cancela y devuelve la venta (para que el cajero no pierda el cobro).
+   */
+  const cancelQR = useCallback(async (): Promise<{
+    alreadyPaid: boolean;
+    sale: Sale | null;
+  }> => {
+    if (!codigoRecaudacion) {
+      return { alreadyPaid: false, sale: null };
+    }
+
+    if (isPaidRef.current) {
+      return { alreadyPaid: true, sale: completedSaleRef.current };
+    }
+
+    try {
+      const status = await checkPaymentStatus(codigoRecaudacion);
+      if (status.pagado && status.saleCompleted) {
+        setIsPaid(true);
+        if (status.sale) setCompletedSale(status.sale);
+        return { alreadyPaid: true, sale: status.sale ?? null };
+      }
+    } catch (error) {
+      console.warn(
+        "No se pudo verificar status antes de cancelar; se intenta liberar reserva",
+        error,
+      );
+    }
+
+    if (isPaidRef.current) {
+      return { alreadyPaid: true, sale: completedSaleRef.current };
+    }
+
     try {
       await cancelPaymentQR(codigoRecaudacion);
     } catch (error) {
       console.warn("No se pudo liberar la reserva QR", error);
     }
-  }, [codigoRecaudacion, isPaid]);
+
+    return { alreadyPaid: false, sale: null };
+  }, [codigoRecaudacion]);
 
   const resetQR = useCallback(() => {
     setQrUrl(null);
     setTransactionId(null);
     setCodigoRecaudacion(null);
     setIsPaid(false);
+    setCompletedSale(null);
   }, []);
 
   return {
     qrUrl,
     isPaid,
+    completedSale,
     transactionId,
     codigoRecaudacion,
     isQrLoading: generateQRMutation.isPending,

@@ -148,8 +148,9 @@ export const FormCreateSaleModal = () => {
   const amountPaidNumber = parseFloat(watchedAmountPaid || "0");
   const change = amountPaidNumber - cartTotal;
 
-  // * Al confirmarse el pago QR el backend ya registró la venta: refrescamos y cerramos
-  const onSaleCompleted = useCallback(
+  // * Al confirmar en UI tras pago QR: invalidar caches, cerrar y limpiar
+  //   (la venta ya fue creada por el backend al detectar el pago)
+  const onFinalizeQrSale = useCallback(
     async (sale: Sale) => {
       await Promise.all([
         queryClient.invalidateQueries({
@@ -193,10 +194,11 @@ export const FormCreateSaleModal = () => {
     [queryClient, closeCreateSaleModal, clearCart],
   );
 
-  // * Hook para generar QR (reserva stock y completa la venta automáticamente)
+  // * Hook QR: reserva stock; al pagar solo marca isPaid (sin auto-cerrar)
   const {
     qrUrl,
     isPaid,
+    completedSale,
     isQrLoading,
     generateQR,
     cancelQR,
@@ -208,7 +210,6 @@ export const FormCreateSaleModal = () => {
     userId: user?.id || "",
     cashRegisterId: cashRegister?.id || "",
     notes: watchedNotes,
-    onSaleCompleted,
   });
 
   const selectedPaymentMethod = useWatch({ control, name: "paymentMethod" });
@@ -308,22 +309,46 @@ export const FormCreateSaleModal = () => {
     [selectedProductForBatch, addToCart, cartItems],
   );
 
-  // * Al cambiar de QR a otro método liberamos la reserva de stock en backend
+  // * Al cambiar de QR a otro método: si ya pagó, finaliza; si no, libera stock
   useEffect(() => {
-    if (selectedPaymentMethod !== "QR") {
-      void cancelQR().finally(resetQR);
+    if (selectedPaymentMethod === "QR") return;
+
+    let cancelled = false;
+    void (async () => {
+      const result = await cancelQR();
+      if (cancelled) return;
+      if (result.alreadyPaid && result.sale) {
+        await onFinalizeQrSale(result.sale);
+        return;
+      }
+      resetQR();
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPaymentMethod, cancelQR, resetQR, onFinalizeQrSale]);
+
+  // * Cerrar modal: si ya pagó, finaliza UI (venta ya existe); si no, libera stock
+  const handleCloseModal = useCallback(async () => {
+    const result = await cancelQR();
+    if (result.alreadyPaid && result.sale) {
+      await onFinalizeQrSale(result.sale);
+      return;
     }
-  }, [selectedPaymentMethod, cancelQR, resetQR]);
-
-  // * Cerrar el modal liberando la reserva QR si existe (caso tienda física)
-  const handleCloseModal = useCallback(() => {
-    void cancelQR();
     closeCreateSaleModal();
-  }, [cancelQR, closeCreateSaleModal]);
+  }, [cancelQR, closeCreateSaleModal, onFinalizeQrSale]);
 
-  // * Submit handler (solo Efectivo: el flujo QR se completa automáticamente)
+  // * Submit: Efectivo → POST /sales; QR pagado → solo cerrar/limpiar (venta ya existe)
   const onSubmit: SubmitHandler<CreateSaleSchema> = (data) => {
-    if (data.paymentMethod === "QR") return;
+    if (data.paymentMethod === "QR") {
+      if (!isPaid || !completedSale) {
+        toast.error("Debe completar el pago por QR antes de confirmar");
+        return;
+      }
+      void onFinalizeQrSale(completedSale);
+      return;
+    }
 
     if (cartItems.length === 0) {
       toast.error("Debes agregar al menos un producto al carrito");

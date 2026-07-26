@@ -300,46 +300,51 @@ export const CheckoutForm = memo(
           error={errors.notes?.message}
         />
 
-        {/* Botón de confirmar venta — oculto en QR (la venta se registra
-            automáticamente al confirmarse el pago) */}
-        {selectedPaymentMethod !== "QR" && (
-          <button
-            type="submit"
-            disabled={
-              isPending ||
-              !isPaymentSufficient ||
-              cartItemsCount === 0 ||
-              !hasCashRegister
-            }
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
-              isPending ||
-              !isPaymentSufficient ||
-              cartItemsCount === 0 ||
-              !hasCashRegister
-                ? "bg-gray-400 cursor-not-allowed"
-                : isDark
-                  ? "bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B] hover:shadow-2xl hover:shadow-[#F59E0B]/50"
-                  : "bg-gradient-to-r from-[#275081] via-blue-600 to-[#F9E44E] hover:shadow-2xl hover:shadow-[#275081]/50"
-            } text-white shadow-md`}
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Procesando...
-              </>
-            ) : !hasCashRegister ? (
-              <>
-                <AlertTriangle className="w-5 h-5" />
-                Caja Cerrada
-              </>
-            ) : (
-              <>
-                <ShoppingCart className="w-5 h-5" />
-                Confirmar Venta
-              </>
-            )}
-          </button>
-        )}
+        {/* Confirmar Venta: en QR se habilita solo cuando el pago ya está confirmado
+            (la venta ya existe en backend; el click cierra/limpia la UI) */}
+        <button
+          type="submit"
+          disabled={
+            isPending ||
+            !isPaymentSufficient ||
+            cartItemsCount === 0 ||
+            !hasCashRegister ||
+            (selectedPaymentMethod === "QR" && !isPaid)
+          }
+          className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+            isPending ||
+            !isPaymentSufficient ||
+            cartItemsCount === 0 ||
+            !hasCashRegister ||
+            (selectedPaymentMethod === "QR" && !isPaid)
+              ? "bg-gray-400 cursor-not-allowed"
+              : isDark
+                ? "bg-gradient-to-r from-[#1E3A8A] via-[#0F172A] to-[#F59E0B] hover:shadow-2xl hover:shadow-[#F59E0B]/50"
+                : "bg-gradient-to-r from-[#275081] via-blue-600 to-[#F9E44E] hover:shadow-2xl hover:shadow-[#275081]/50"
+          } text-white shadow-md`}
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Procesando...
+            </>
+          ) : !hasCashRegister ? (
+            <>
+              <AlertTriangle className="w-5 h-5" />
+              Caja Cerrada
+            </>
+          ) : selectedPaymentMethod === "QR" && !isPaid ? (
+            <>
+              <ShoppingCart className="w-5 h-5" />
+              Esperando pago QR...
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="w-5 h-5" />
+              Confirmar Venta
+            </>
+          )}
+        </button>
       </form>
     );
   },

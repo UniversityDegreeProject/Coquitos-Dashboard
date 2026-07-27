@@ -276,9 +276,18 @@ export const CheckoutForm = memo(
                   className="w-48 h-48 bg-white p-2 rounded-lg"
                 />
                 {isPaid ? (
-                  <span className="text-green-500 font-bold flex items-center gap-1">
-                    Pago Confirmado ✅
-                  </span>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-green-500 font-bold flex items-center gap-1">
+                      Pago Confirmado ✅
+                    </span>
+                    <p
+                      className={`text-xs text-center ${
+                        isDark ? "text-gray-400" : "text-gray-600"
+                      }`}
+                    >
+                      Venta registrada. Presiona Finalizar para cerrar.
+                    </p>
+                  </div>
                 ) : (
                   <span className="text-sm animate-pulse text-amber-600">
                     Esperando pago...
@@ -300,8 +309,7 @@ export const CheckoutForm = memo(
           error={errors.notes?.message}
         />
 
-        {/* Confirmar Venta: en QR se habilita solo cuando el pago ya está confirmado
-            (la venta ya existe en backend; el click cierra/limpia la UI) */}
+        {/* QR pagado: Finalizar (cierra UI; venta ya existe). Efectivo: Confirmar Venta */}
         <button
           type="submit"
           disabled={
@@ -337,6 +345,11 @@ export const CheckoutForm = memo(
             <>
               <ShoppingCart className="w-5 h-5" />
               Esperando pago QR...
+            </>
+          ) : selectedPaymentMethod === "QR" && isPaid ? (
+            <>
+              <ShoppingCart className="w-5 h-5" />
+              Finalizar venta
             </>
           ) : (
             <>

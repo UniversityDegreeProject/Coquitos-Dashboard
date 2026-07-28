@@ -116,8 +116,8 @@ export const CoquitoLayout = () => {
           isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
         />
 
-        <main className="flex-1 overflow-y-auto main-content-scroll">
-          <div className="p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-auto main-content-scroll">
+          <div className="p-4 sm:p-6 min-w-0">
             <Outlet />
           </div>
         </main>

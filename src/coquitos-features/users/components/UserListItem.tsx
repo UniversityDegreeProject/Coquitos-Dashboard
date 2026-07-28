@@ -29,7 +29,6 @@ export const UserListItem = memo(
       return formateDatetime(user.lastConnection);
     }, [user.lastConnection]);
 
-    // Efecto para limpiar el estado cuando el email es verificado
     useEffect(() => {
       if (user.emailVerified && pendingEmailVerifications.has(user.id!)) {
         removePendingEmailVerification(user.id!);
@@ -48,68 +47,56 @@ export const UserListItem = memo(
           isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100",
         )}
       >
-        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:space-x-4">
-          {/* Sección izquierda: Avatar + Info principal */}
-          <div className="flex items-center space-x-4 flex-1 min-w-0">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* Info principal */}
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
               <UserCheck className="w-6 h-6 text-white" />
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <h3
-                className={`text-base sm:text-lg font-semibold mb-1 ${
-                  isDark ? "text-[#F8FAFC]" : "text-gray-800"
-                }`}
+                className={cn(
+                  "text-base sm:text-lg font-semibold mb-1 truncate",
+                  isDark ? "text-[#F8FAFC]" : "text-gray-800",
+                )}
               >
                 {user.firstName} {user.lastName}
               </h3>
-              <div className="flex items-center gap-2 text-xs sm:text-sm">
-                <p className={`${isDark ? "text-[#94A3B8]" : "text-gray-600"}`}>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm">
+                <p className={isDark ? "text-[#94A3B8]" : "text-gray-600"}>
                   @{user.username}
                 </p>
                 <span className={isDark ? "text-[#64748B]" : "text-gray-400"}>
                   •
                 </span>
                 <p
-                  className={`${isDark ? "text-[#94A3B8]" : "text-gray-600"} truncate`}
+                  className={cn(
+                    "truncate",
+                    isDark ? "text-[#94A3B8]" : "text-gray-600",
+                  )}
                 >
                   {user.email}
                 </p>
               </div>
-              <div className="flex items-center gap-2 mt-2 sm:hidden">
-                <span
-                  className={`inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}
-                >
-                  {user.role}
-                </span>
-                <span
-                  className={`inline-flex px-2.5 py-0.5 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
-                >
-                  {user.status}
-                </span>
-              </div>
             </div>
           </div>
 
-          {/* Sección derecha: Desktop */}
-          <div className="hidden sm:flex items-center gap-4 flex-shrink-0 self-center">
-            <div className="flex-shrink-0">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}
-              >
-                {user.role}
-              </span>
-            </div>
+          {/* Meta + acciones: siempre visibles */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:flex-nowrap lg:flex-shrink-0">
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full ${getRoleColor(user.role)}`}
+            >
+              {user.role}
+            </span>
 
-            <div className="flex-shrink-0">
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
-              >
-                {user.status}
-              </span>
-            </div>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}
+            >
+              {user.status}
+            </span>
 
-            <div className="flex-shrink-0 text-right min-w-[140px]">
+            <div className="min-w-[120px]">
               <p
                 className={`text-xs ${isDark ? "text-[#64748B]" : "text-gray-400"}`}
               >
@@ -122,29 +109,6 @@ export const UserListItem = memo(
               </p>
             </div>
 
-            {/* Pasar el callback */}
-            <UserButtonsActions
-              user={user}
-              currentParams={currentParams}
-              onPageEmpty={onPageEmpty}
-            />
-          </div>
-
-          {/* Móvil */}
-          <div className="flex sm:hidden items-center justify-between pt-2 border-t border-gray-200 dark:border-[#334155]">
-            <div className="text-left">
-              <p
-                className={`text-xs ${isDark ? "text-[#64748B]" : "text-gray-400"}`}
-              >
-                Última conexión
-              </p>
-              <p
-                className={`text-sm ${isDark ? "text-[#94A3B8]" : "text-gray-500"}`}
-              >
-                {formattedLastConnection}
-              </p>
-            </div>
-            {/* Pasar el callback */}
             <UserButtonsActions
               user={user}
               currentParams={currentParams}

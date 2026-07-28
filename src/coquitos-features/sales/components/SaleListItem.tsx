@@ -32,7 +32,7 @@ interface SaleListItemProps {
 
 /**
  * Item individual de venta en la lista
- * Diseño responsive con toda la información relevante
+ * Diseño responsive con toda la información relevante siempre visible
  */
 export const SaleListItem = memo(
   ({ sale, currentParams, onPageEmpty }: SaleListItemProps) => {
@@ -57,12 +57,12 @@ export const SaleListItem = memo(
       <div
         className={cn(
           "rounded-xl shadow-sm border p-4 hover:shadow-md transition-all duration-200",
-          isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100"
+          isDark ? "bg-[#1E293B] border-[#334155]" : "bg-white border-gray-100",
         )}
       >
-        <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:space-x-4">
-          {/* Sección izquierda: Icon + Info principal */}
-          <div className="flex items-center space-x-4 flex-1 min-w-0">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          {/* Info principal */}
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             <div
               className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
                 isDark
@@ -73,110 +73,86 @@ export const SaleListItem = memo(
               <ShoppingCart className="w-6 h-6 text-white" />
             </div>
 
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <h3
-                className={`text-base sm:text-lg font-semibold mb-1 ${
-                  isDark ? "text-[#F8FAFC]" : "text-gray-800"
-                }`}
+                className={cn(
+                  "text-base sm:text-lg font-semibold mb-1 truncate",
+                  isDark ? "text-[#F8FAFC]" : "text-gray-800",
+                )}
               >
                 {sale.saleNumber}
               </h3>
-              <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <p
+                className={cn(
+                  "text-xs sm:text-sm truncate",
+                  isDark ? "text-[#94A3B8]" : "text-gray-600",
+                )}
+              >
+                {customerName}
+              </p>
+              {sale.customer?.email ? (
                 <p
-                  className={`${
-                    isDark ? "text-[#94A3B8]" : "text-gray-600"
-                  } truncate`}
-                >
-                  {customerName}
-                </p>
-              </div>
-              {sale.customer?.email && (
-                <p
-                  className={`text-xs ${
-                    isDark ? "text-[#64748B]" : "text-gray-500"
-                  } truncate mt-1`}
+                  className={cn(
+                    "text-xs truncate mt-1",
+                    isDark ? "text-[#64748B]" : "text-gray-500",
+                  )}
                 >
                   {sale.customer.email}
                 </p>
-              )}
-              {sale.user && (
+              ) : null}
+              {sale.user ? (
                 <p
-                  className={`text-xs ${
-                    isDark ? "text-[#64748B]" : "text-gray-500"
-                  } truncate mt-1`}
+                  className={cn(
+                    "text-xs truncate mt-1",
+                    isDark ? "text-[#64748B]" : "text-gray-500",
+                  )}
                 >
                   Vendedor: {userName}
                 </p>
-              )}
-              {/* Badges para móvil */}
-              <div className="flex items-center gap-2 mt-2 sm:hidden">
-                <span
-                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                    sale.status || "Pendiente"
-                  )}`}
-                >
-                  {sale.status}
-                </span>
-                <span
-                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentMethodColor(
-                    sale.paymentMethod
-                  )}`}
-                >
-                  {sale.paymentMethod}
-                </span>
-              </div>
+              ) : null}
             </div>
           </div>
 
-          {/* Sección derecha: Desktop */}
-          <div className="hidden sm:flex items-center gap-4 flex-shrink-0 self-center">
-            {/* Badge de estado con label */}
-            <div className="flex-shrink-0 flex flex-col items-center">
+          {/* Meta + acciones: siempre visibles */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:flex-nowrap lg:flex-shrink-0">
+            <div className="flex flex-col items-start sm:items-center">
               <p
-                className={`text-xs mb-1 ${
-                  isDark ? "text-[#64748B]" : "text-gray-400"
-                }`}
+                className={`text-xs mb-1 ${isDark ? "text-[#64748B]" : "text-gray-400"}`}
               >
                 Estado
               </p>
               <span
                 className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                  sale.status || "Pendiente"
+                  sale.status || "Pendiente",
                 )}`}
               >
                 {sale.status}
               </span>
             </div>
 
-            {/* Badge de método de pago con label */}
-            <div className="flex-shrink-0 flex flex-col items-center">
+            <div className="flex flex-col items-start sm:items-center">
               <p
-                className={`text-xs mb-1 ${
-                  isDark ? "text-[#64748B]" : "text-gray-400"
-                }`}
+                className={`text-xs mb-1 ${isDark ? "text-[#64748B]" : "text-gray-400"}`}
               >
                 Método de pago
               </p>
               <span
                 className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${getPaymentMethodColor(
-                  sale.paymentMethod
+                  sale.paymentMethod,
                 )}`}
               >
                 {sale.paymentMethod}
               </span>
             </div>
 
-            {/* Total */}
-            <div className="flex-shrink-0 text-right min-w-[100px] flex flex-col items-center">
+            <div className="min-w-[90px]">
               <p
-                className={`text-xs text-center ${
-                  isDark ? "text-[#64748B]" : "text-gray-400"
-                }`}
+                className={`text-xs ${isDark ? "text-[#64748B]" : "text-gray-400"}`}
               >
                 Total
               </p>
               <p
-                className={`text-base font-bold text-center ${
+                className={`text-base font-bold ${
                   isDark ? "text-[#F59E0B]" : "text-[#275081]"
                 }`}
               >
@@ -184,63 +160,19 @@ export const SaleListItem = memo(
               </p>
             </div>
 
-            {/* Fecha */}
-            <div className="flex-shrink-0 text-right min-w-[140px] flex flex-col items-center">
+            <div className="min-w-[120px]">
               <p
-                className={`text-xs text-center ${
-                  isDark ? "text-[#64748B]" : "text-gray-400"
-                }`}
+                className={`text-xs ${isDark ? "text-[#64748B]" : "text-gray-400"}`}
               >
                 Fecha de creación
               </p>
               <p
-                className={`text-sm text-center ${
-                  isDark ? "text-[#94A3B8]" : "text-gray-500"
-                }`}
+                className={`text-sm ${isDark ? "text-[#94A3B8]" : "text-gray-500"}`}
               >
                 {formattedDate}
               </p>
             </div>
 
-            <SaleButtonsActions
-              sale={sale}
-              currentParams={currentParams}
-              onPageEmpty={onPageEmpty}
-            />
-          </div>
-
-          {/* Móvil */}
-          <div className="flex sm:hidden items-center justify-between pt-2 border-t border-gray-200 dark:border-[#334155]">
-            <div className="text-left">
-              <p
-                className={`text-xs ${
-                  isDark ? "text-[#64748B]" : "text-gray-400"
-                }`}
-              >
-                Total
-              </p>
-              <p
-                className={`text-lg font-bold ${
-                  isDark ? "text-[#F59E0B]" : "text-[#275081]"
-                }`}
-              >
-                {formatCurrency(sale.total)}
-              </p>
-              <p
-                className={`text-xs mt-1 ${
-                  isDark ? "text-[#64748B]" : "text-gray-400"
-                }`}
-              >
-                Fecha de creación
-              </p>
-              <p
-                className={`text-xs ${
-                  isDark ? "text-[#94A3B8]" : "text-gray-500"
-                }`}
-              >
-                {formattedDate}
-              </p>
-            </div>
             <SaleButtonsActions
               sale={sale}
               currentParams={currentParams}
@@ -250,5 +182,5 @@ export const SaleListItem = memo(
         </div>
       </div>
     );
-  }
+  },
 );

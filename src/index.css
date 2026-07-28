@@ -2,6 +2,20 @@
 @import "tailwindcss";
 @import "./styles/scrollbar.css";
 
+/* Oculta iconos de autocompletado del navegador dentro de inputs */
+input::-webkit-credentials-auto-fill-button,
+input::-webkit-strong-password-auto-fill-button,
+input::-webkit-caps-lock-indicator {
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
 /* Animaciones japonesas elegantes para el login */
 @keyframes float-slow {
   0%, 100% { transform: translateY(0px) rotate(0deg); }

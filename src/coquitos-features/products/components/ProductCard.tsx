@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Package, Tag, Clock, Layers } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { ProductButtomsActions } from "./ProducButtomsActions";
-import { isProductNearExpiration, getDaysUntilExpiration, getNearestExpirationDate, formatExpirationDate } from "../helpers";
+import { isProductNearExpiration, getDaysUntilExpiration, getNearestExpirationDate, formatExpirationDate, getEffectiveStatus } from "../helpers";
 import type { Product, SearchProductsParams } from "../interfaces";
 
 interface ProductCardProps {
@@ -35,16 +35,6 @@ export const ProductCard = memo(({ product, currentParams, onPageEmpty }: Produc
       default:
         return 'from-blue-500 via-gray-500 to-purple-500';
     }
-  };
-
-
-  // Determinar el estado real del producto (si stock = 0, forzar "SinStock")
-  const getEffectiveStatus = (product: Product): string => {
-    // Si el stock es 0, el estado debe ser "SinStock" independientemente del status del backend
-    if (product.stock === 0) {
-      return 'SinStock';
-    }
-    return product.status;
   };
 
   const effectiveStatus = getEffectiveStatus(product);

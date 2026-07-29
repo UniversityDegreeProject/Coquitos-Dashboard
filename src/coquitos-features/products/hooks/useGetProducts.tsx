@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { productsQueries } from "../const";
-import { isProductExpiringSoon } from "../helpers";
+import { getEffectiveStatus, isProductExpiringSoon } from "../helpers";
 import type { GetProductsResponse, SearchProductsParams } from "../interfaces";
 import { getProducts } from "../services/product.service";
 import { useSocketEvent } from "@/lib/socket";
@@ -17,7 +17,8 @@ const defaultResponse: GetProductsResponse = {
 
 /**
  * Hook para obtener todos los productos
- * Aplica filtro de stock bajo en el frontend si está activo
+ * Estado, stock bajo y próximos a vencer se filtran en el frontend
+ * (estado efectivo: stock=0 ⇒ SinStock)
  */
 export const useGetProducts = (params: SearchProductsParams) => {
   const useQueryProducts = useQuery({
@@ -25,12 +26,11 @@ export const useGetProducts = (params: SearchProductsParams) => {
     queryFn: () => getProducts(params),
     placeholderData: keepPreviousData,
     refetchOnMount: true,
-    refetchOnWindowFocus: true, // ✅ Necesario para el flujo QR (cambio de pestaña)
+    refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    staleTime: 30000, // ✅ 30s: evita refetches redundantes (socket ya actualiza en real-time)
+    staleTime: 30000,
   });
 
-  // Socket real-time invalidación de productos y sus lotes correspondientes
   useSocketEvent("product:created", productsQueries.allProducts);
   useSocketEvent("product:updated", productsQueries.allProducts);
   useSocketEvent("product:deleted", productsQueries.allProducts);
@@ -41,8 +41,14 @@ export const useGetProducts = (params: SearchProductsParams) => {
 
   const responseData = useQueryProducts.data || defaultResponse;
 
-  // Aplicar filtros en el frontend
   let filteredProducts = responseData.data;
+
+  // Filtro por estado efectivo (Disponible / SinStock / Descontinuado)
+  if (params.status && String(params.status).trim() !== "") {
+    filteredProducts = filteredProducts.filter(
+      (product) => getEffectiveStatus(product) === params.status,
+    );
+  }
 
   // Filtro de stock bajo
   if (params.lowStock === true) {
@@ -50,27 +56,29 @@ export const useGetProducts = (params: SearchProductsParams) => {
       (product) =>
         product.stock > 0 &&
         product.stock <= product.minStock &&
-        product.status !== "SinStock",
+        getEffectiveStatus(product) !== "SinStock",
     );
   }
 
-  // Filtro de productos próximos a vencer (incluye 4, 3, 2, 1 días y hoy)
+  // Filtro de productos próximos a vencer
   if (params.nearExpiration === true) {
     filteredProducts = filteredProducts.filter(
       (product) =>
         product.stock > 0 &&
-        product.status !== "SinStock" &&
+        getEffectiveStatus(product) !== "SinStock" &&
         isProductExpiringSoon(product),
     );
   }
 
+  const filteredTotal = filteredProducts.length;
+
   return {
     ...useQueryProducts,
     products: filteredProducts,
-    total: filteredProducts.length,
+    total: filteredTotal,
     page: responseData.page,
     limit: responseData.limit,
-    totalPages: Math.ceil(responseData.total / responseData.limit),
+    totalPages: Math.max(1, Math.ceil(filteredTotal / responseData.limit)),
     nextPage: responseData.nextPage,
     previousPage: responseData.previousPage,
   };

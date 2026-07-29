@@ -25,13 +25,11 @@ export const getProducts = async ( searchParams : SearchProductsParams): Promise
   if( searchParams.search && String(searchParams.search).trim() !== "" ) {
     clearParams.search = searchParams.search;
   }
-  if( searchParams.status && String(searchParams.status).trim() !== "" ) {
-    clearParams.status = searchParams.status;
-  }
+  // status se filtra en el frontend con getEffectiveStatus (stock=0 ⇒ SinStock)
   if( searchParams.categoryId && String(searchParams.categoryId).trim() !== "" ) {
     clearParams.categoryId = searchParams.categoryId;
   }
-  // lowStock se filtra en el frontend, no se envía al backend
+  // lowStock / nearExpiration se filtran en el frontend, no se envían al backend
 
   try {
     const response = await CoquitoApi.get<GetProductsResponse>(`/products`, { params: clearParams });

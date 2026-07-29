@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Package, AlertTriangle, Clock, Layers } from "lucide-react";
 import { useTheme } from "@/shared/hooks/useTheme";
 import { ProductButtomsActions } from "./ProducButtomsActions";
-import { isProductNearExpiration, getDaysUntilExpiration, getNearestExpirationDate, formatExpirationDate } from "../helpers";
+import { isProductNearExpiration, getDaysUntilExpiration, getNearestExpirationDate, formatExpirationDate, getEffectiveStatus } from "../helpers";
 import type { Product, SearchProductsParams } from "../interfaces";
 
 interface ProductListItemProps {
@@ -13,15 +13,6 @@ interface ProductListItemProps {
 
 export const ProductListItem = memo(({ product, currentParams, onPageEmpty }: ProductListItemProps) => {
   const { isDark } = useTheme();
-
-  // Determinar el estado real del producto (si stock = 0, forzar "SinStock")
-  const getEffectiveStatus = (product: Product): string => {
-    // Si el stock es 0, el estado debe ser "SinStock" independientemente del status del backend
-    if (product.stock === 0) {
-      return 'SinStock';
-    }
-    return product.status;
-  };
 
   const effectiveStatus = getEffectiveStatus(product);
   

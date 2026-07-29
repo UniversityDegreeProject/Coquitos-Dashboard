@@ -129,14 +129,14 @@ export const CheckoutForm = memo(
                 }`}
               >
                 <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-                  Vuelto:
+                  {change >= 0 ? "Vuelto:" : "Faltan:"}
                 </span>
                 <span
                   className={`font-bold ${
                     change >= 0 ? "text-green-500" : "text-red-500"
                   }`}
                 >
-                  {formatCurrency(Math.max(0, change))}
+                  {formatCurrency(change >= 0 ? change : Math.abs(change))}
                 </span>
               </div>
             )}
@@ -199,7 +199,7 @@ export const CheckoutForm = memo(
                 } cursor-not-allowed outline-none`}
               />
             ) : (
-              /* Efectivo/Tarjeta: Monto editable */
+              /* Efectivo/Tarjeta: Monto editable (solo dígitos y un decimal; sin negativos) */
               <Controller
                 name="amountPaid"
                 control={control}
@@ -209,6 +209,15 @@ export const CheckoutForm = memo(
                     type="text"
                     inputMode="decimal"
                     placeholder="0.00"
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^\d.]/g, "");
+                      const parts = raw.split(".");
+                      const sanitized =
+                        parts.length > 1
+                          ? `${parts[0]}.${parts.slice(1).join("")}`
+                          : parts[0];
+                      field.onChange(sanitized);
+                    }}
                     className={`w-full pl-12 pr-4 py-3 rounded-xl border ${
                       isDark
                         ? "bg-[#1E293B] border-[#334155] text-white placeholder-gray-500 focus:border-[#F59E0B]"
